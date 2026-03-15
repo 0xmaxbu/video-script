@@ -38,11 +38,14 @@
   },
   "dependencies": {
     "@mastra/core": "^1.13.2",
+    "@remotion/cli": "^4.0.435",
+    "@remotion/renderer": "^4.0.435",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "inquirer": "^13.3.0",
     "ora": "^9.3.0",
     "playwright": "^1.58.2",
+    "react": "^19.2.4",
     "shiki": "^4.0.2",
     "zod": "^4.3.6"
   },
