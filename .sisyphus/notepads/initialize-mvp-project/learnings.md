@@ -49,3 +49,49 @@
 - The actual command logic (create + config handlers) is deferred to subsequent tasks
 - Both command handlers currently echo received options for visibility
 - The CLI structure is ready for integration with Mastra agents in next phase
+
+## Interactive Input Flow Implementation (2025-03-15)
+
+### Implementation Details
+
+1. **Created `src/cli/prompts.ts`**
+   - Main export: `promptForInput(initialTitle?: string): Promise<ResearchInput>`
+   - Four helper functions for specific prompt types:
+     - `promptForTitle()`: Required title input with validation
+     - `promptForSourceType()`: Menu to choose between links, document, or no reference
+     - `promptForLinks()`: Comma-separated URL input with zod validation
+     - `promptForDocument()`: Multi-line editor input for document content
+   - All inputs use Zod schema validation for type safety
+   - Returns `ResearchInput` type matching existing schema
+
+2. **Updated `src/cli/index.ts`**
+   - Changed command signature from `create <title>` to `create [title]` (optional title)
+   - Made action handler async to support prompt interaction
+   - Conditional flow:
+     - If title provided: passes to `promptForInput(title)`
+     - If title missing: calls `promptForInput()` for full interactive flow
+   - Added error handling with formatted error messages
+   - Display formatted output of collected inputs
+
+3. **Key Design Decisions**
+   - Used inquirer's `editor` type for document input instead of multi-line `input`
+     - Opens user's default editor for better UX with large text
+   - URL validation happens during prompt, not after
+   - Zod schema parsing provides final validation before return
+   - Title is required in both interactive and CLI modes
+
+4. **Type Safety**
+   - All functions have explicit type annotations
+   - Zod schema validation ensures ResearchInput compliance
+   - No usage of `any` type
+   - TypeScript strict mode compilation passes
+
+5. **Testing Approach**
+   - Build and typecheck pass successfully
+   - Code compiles to dist/cli/ with source maps
+   - Ready for manual E2E testing via `npm run dev -- create`
+
+### Notes
+- ESM imports used throughout (`.js` extensions in imports)
+- Chalk styling matches existing CLI aesthetic
+- Follows project coding standards (no console.log, proper error handling)
