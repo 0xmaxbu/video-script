@@ -1,2 +1,3 @@
-// Tools will be exported here after implementation
-export {};
+export { webFetchTool } from './web-fetch';
+export { playwrightScreenshotTool } from './playwright-screenshot';
+export { codeHighlightTool } from './code-highlight';
