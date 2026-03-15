@@ -8,3 +8,8 @@ export {
   type RenderVideoInput,
   type RenderVideoOutput,
 } from "./video-renderer";
+export {
+  generateSrt,
+  type GenerateSrtInput,
+  type GenerateSrtOutput,
+} from "./srt-generator";
