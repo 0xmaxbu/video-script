@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { webFetchTool } from "../tools/web-fetch";
+import { webFetchTool } from "../tools/web-fetch.js";
 
 export const researchAgent = new Agent({
   id: "research-agent",

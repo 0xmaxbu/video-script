@@ -17,6 +17,6 @@ export const mastra = new Mastra({
   },
 });
 
-export * from "./agents";
-export * from "./workflows";
-export * from "./tools";
+export * from "./agents/index.js";
+export * from "./workflows/index.js";
+export * from "./tools/index.js";

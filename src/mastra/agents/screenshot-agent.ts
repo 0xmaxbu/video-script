@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
-import { playwrightScreenshotTool } from "../tools/playwright-screenshot";
-import { codeHighlightTool } from "../tools/code-highlight";
+import { playwrightScreenshotTool } from "../tools/playwright-screenshot.js";
+import { codeHighlightTool } from "../tools/code-highlight.js";
 
 export const screenshotAgent = new Agent({
   id: "screenshot-agent",

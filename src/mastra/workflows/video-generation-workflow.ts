@@ -1,14 +1,14 @@
 import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
-import { researchAgent } from "../agents/research-agent";
-import { scriptAgent } from "../agents/script-agent";
-import { screenshotAgent } from "../agents/screenshot-agent";
-import { composeAgent } from "../agents/compose-agent";
+import { researchAgent } from "../agents/research-agent.js";
+import { scriptAgent } from "../agents/script-agent.js";
+import { screenshotAgent } from "../agents/screenshot-agent.js";
+import { composeAgent } from "../agents/compose-agent.js";
 import {
   ResearchInputSchema,
   ResearchOutputSchema,
   ScriptOutputSchema,
-} from "../../types/index";
+} from "../../types/index.js";
 
 const researchStep = createStep(researchAgent, {
   structuredOutput: {

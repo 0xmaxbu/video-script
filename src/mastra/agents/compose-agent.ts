@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { remotionRenderTool } from "../tools/remotion-render";
+import { remotionRenderTool } from "../tools/remotion-render.js";
 
 export const composeAgent = new Agent({
   id: "compose-agent",
