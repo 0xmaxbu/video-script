@@ -13,3 +13,8 @@ export {
   type GenerateSrtInput,
   type GenerateSrtOutput,
 } from "./srt-generator";
+export {
+  cleanupTempFiles,
+  type CleanupOptions,
+  type CleanupResult,
+} from "./cleanup";
