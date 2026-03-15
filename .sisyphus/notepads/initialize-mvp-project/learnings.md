@@ -95,3 +95,52 @@
 - ESM imports used throughout (`.js` extensions in imports)
 - Chalk styling matches existing CLI aesthetic
 - Follows project coding standards (no console.log, proper error handling)
+
+## WebFetch Tool Implementation (2025-03-15)
+
+### Implementation Details
+
+1. **Created `src/mastra/tools/web-fetch.ts`**
+   - Used Mastra `createTool()` API from `@mastra/core/tools`
+   - Tool ID: `web-fetch`
+   - Input schema: Single required `url` field with Zod validation
+   - Output schema: Three fields (`content`, `title`, `url`) with descriptions
+
+2. **Core Functionality**
+   - **HTML to Markdown conversion**: Implemented as composition of pure functions:
+     - `removeScriptsAndStyles()`: Strips script/style tags
+     - `convertTagsToMarkdown()`: Converts HTML tags to MD (headers, emphasis, links, line breaks)
+     - `decodeHtmlEntities()`: Decodes HTML entities (&nbsp;, &amp;, etc.)
+     - `normalizeWhitespace()`: Cleans up excess newlines and spaces
+   - **Title extraction**: Priority order (1) `<title>` tag, (2) `<h1>` content, (3) fallback "Untitled"
+   - **Error handling**: Specific handling for 404, 5xx, timeouts, and generic fetch errors
+
+3. **MVP Features**
+   - 30-second timeout using AbortController
+   - User-Agent header to avoid bot blocking
+   - Proper HTTP error code handling
+   - Markdown output suitable for LLM processing
+   - Final URL tracking (handles redirects via `response.url`)
+
+4. **Code Patterns**
+   - Self-documenting function names instead of comments (refactored from initial implementation)
+   - Pure function composition for HTML processing
+   - Named constant `TIMEOUT_MS` for clarity
+   - Type-safe Zod schemas for input/output
+
+5. **Testing & Verification**
+   - ✅ TypeScript compilation passes (`npm run typecheck`)
+   - ✅ Build succeeds (`npm run build`)
+   - ✅ No linting issues after comment refactoring
+   - Tool ready for integration with Research Agent
+
+### Implementation Notes
+- Used native `fetch` API (no third-party scraping libraries per MVP constraints)
+- HTML to Markdown conversion is simple but suitable for MVP phase
+- Tool designed to be composable - output can be fed directly to LLM agents
+- Error messages are descriptive for debugging but generic for user display
+
+### Next Steps
+- Integrate into Research Agent once agent framework is set up
+- May need enhancement for JavaScript-heavy sites (if needed beyond MVP)
+- Can be extended with CSS selector support for more targeted content extraction
