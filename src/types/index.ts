@@ -1,48 +1,81 @@
-// Video Script Type Definitions
+import { z } from 'zod';
 
-export interface ResearchInput {
-  title: string;
-  links?: string[];
-  document?: string;
-  documentFile?: string;
-}
+export const ResearchInputSchema = z.object({
+  title: z.string().min(1),
+  links: z.array(z.string().url()).optional(),
+  document: z.string().optional(),
+  documentFile: z.string().optional(),
+});
 
-export interface ResearchOutput {
-  summary: string;
-  keyPoints: string[];
-  sources: string[];
-}
+export type ResearchInput = z.infer<typeof ResearchInputSchema>;
 
-export interface Scene {
-  id: string;
-  type: 'intro' | 'feature' | 'code' | 'outro';
-  title: string;
-  narration: string;
-  duration: number; // in seconds
-  screenshot?: ScreenshotSpec;
-  code?: CodeSpec;
-}
+export const ResearchOutputSchema = z.object({
+  summary: z.string(),
+  keyPoints: z.array(z.string()),
+  sources: z.array(z.string()),
+});
 
-export interface ScreenshotSpec {
-  url?: string;
-  selector?: string;
-  viewport: { width: number; height: number };
-}
+export type ResearchOutput = z.infer<typeof ResearchOutputSchema>;
 
-export interface CodeSpec {
-  language: string;
-  code: string;
-  highlightLines?: number[];
-}
+export const ScreenshotSpecSchema = z.object({
+  url: z.string().url().optional(),
+  selector: z.string().optional(),
+  viewport: z.object({
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  }),
+});
 
-export interface ScriptOutput {
-  title: string;
-  totalDuration: number;
-  scenes: Scene[];
-}
+export type ScreenshotSpec = z.infer<typeof ScreenshotSpecSchema>;
 
-export interface VideoConfig {
-  aspectRatio: '16:9' | '9:16';
-  fps: number;
-  outputDir: string;
-}
+export const CodeSpecSchema = z.object({
+  language: z.string(),
+  code: z.string(),
+  highlightLines: z.array(z.number().int().positive()).optional(),
+});
+
+export type CodeSpec = z.infer<typeof CodeSpecSchema>;
+
+export const SceneSchema = z.object({
+  id: z.string(),
+  type: z.enum(['intro', 'feature', 'code', 'outro']),
+  title: z.string(),
+  narration: z.string(),
+  duration: z.number().positive(),
+  screenshot: ScreenshotSpecSchema.optional(),
+  code: CodeSpecSchema.optional(),
+});
+
+export type Scene = z.infer<typeof SceneSchema>;
+
+export const ScriptOutputSchema = z.object({
+  title: z.string(),
+  totalDuration: z.number().positive(),
+  scenes: z.array(SceneSchema),
+});
+
+export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;
+
+export const VideoConfigSchema = z.object({
+  aspectRatio: z.enum(['16:9', '9:16']),
+  fps: z.number().int().positive().default(30),
+  outputDir: z.string(),
+});
+
+export type VideoConfig = z.infer<typeof VideoConfigSchema>;
+
+export const ScreenshotAgentInputSchema = z.object({
+  scenes: z.array(SceneSchema),
+  outputDir: z.string(),
+});
+
+export type ScreenshotAgentInput = z.infer<typeof ScreenshotAgentInputSchema>;
+
+export const ComposeAgentInputSchema = z.object({
+  script: ScriptOutputSchema,
+  screenshotDir: z.string(),
+  outputDir: z.string(),
+  config: VideoConfigSchema,
+});
+
+export type ComposeAgentInput = z.infer<typeof ComposeAgentInputSchema>;
