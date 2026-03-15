@@ -5,7 +5,10 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import chalk from "chalk";
+import ora from "ora";
 import { promptForInput } from "./prompts.js";
+import { mastra } from "../mastra/index.js";
+import type { ResearchInput } from "../types/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,13 +36,13 @@ program
   .option("--no-review", "Skip all review nodes and run automatically")
   .option("--output <dir>", "Output directory")
   .action(async (title, options) => {
+    const spinner = ora();
+
     try {
-      // If title is not provided, trigger interactive input flow
-      let input;
+      let input: ResearchInput;
       if (!title) {
         input = await promptForInput();
       } else {
-        // If title is provided, use CLI options or prompt for additional input if needed
         input = await promptForInput(title);
       }
 
@@ -66,10 +69,44 @@ program
         console.log(chalk.gray(`  Output directory: ${options.output}`));
       }
 
-      console.log(chalk.yellow("\nTODO: implement create command logic\n"));
+      const workflow = mastra.getWorkflow("videoGeneration");
+
+      spinner.start("🚀 Starting video generation workflow...");
+      const run = await workflow.createRun();
+
+      spinner.text = "🎬 Executing workflow steps...";
+      const workflowResult = await run.start({ inputData: input });
+
+      spinner.succeed("✅ Video generation completed!");
+
+      console.log(chalk.green("\n🎉 Video generation complete!\n"));
+
+      const result =
+        workflowResult.status === "success" ? workflowResult.result : null;
+
+      if (result) {
+        console.log(chalk.blue("📁 Project path:"), result.projectPath);
+        if (result.videoPath) {
+          console.log(chalk.blue("🎥 Video path:"), result.videoPath);
+        }
+        console.log(
+          chalk.blue("📐 Video config:"),
+          `${result.videoConfig.resolution} @ ${result.videoConfig.fps}fps, ${result.videoConfig.duration}s`,
+        );
+        if (result.warnings && result.warnings.length > 0) {
+          console.log(chalk.yellow("\n⚠️  Warnings:"));
+          result.warnings.forEach((w: string) =>
+            console.log(chalk.yellow(`  - ${w}`)),
+          );
+        }
+      }
     } catch (error) {
+      spinner.fail("❌ Video generation failed");
       if (error instanceof Error) {
         console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+        if (error.stack) {
+          console.error(chalk.gray(error.stack));
+        }
       } else {
         console.error(chalk.red("\n❌ An unexpected error occurred\n"));
       }
