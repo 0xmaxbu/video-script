@@ -18,3 +18,16 @@ export {
   type CleanupOptions,
   type CleanupResult,
 } from "./cleanup";
+export {
+  VideoGenerationErrorCode,
+  VideoGenerationError,
+  ValidationError,
+  TimeoutError,
+  NetworkError,
+  withRetry,
+  type RetryOptions,
+  logError,
+  normalizeError,
+  isRetryableError,
+  getUserFriendlyMessage,
+} from "./errors";
