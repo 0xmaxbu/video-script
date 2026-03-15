@@ -1,1 +1,1 @@
-export { videoGenerationWorkflow } from './video-generation-workflow';
+export { videoGenerationWorkflow } from "./video-generation-workflow";

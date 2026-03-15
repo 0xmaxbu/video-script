@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ResearchInputSchema = z.object({
   title: z.string().min(1),
@@ -38,7 +38,7 @@ export type CodeSpec = z.infer<typeof CodeSpecSchema>;
 
 export const SceneSchema = z.object({
   id: z.string(),
-  type: z.enum(['intro', 'feature', 'code', 'outro']),
+  type: z.enum(["intro", "feature", "code", "outro"]),
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
@@ -57,7 +57,7 @@ export const ScriptOutputSchema = z.object({
 export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;
 
 export const VideoConfigSchema = z.object({
-  aspectRatio: z.enum(['16:9', '9:16']),
+  aspectRatio: z.enum(["16:9", "9:16"]),
   fps: z.number().int().positive().default(30),
   outputDir: z.string(),
 });
