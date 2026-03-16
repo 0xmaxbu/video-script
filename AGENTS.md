@@ -305,13 +305,6 @@ refactor/compose: extract remotion project generator
 }
 ```
 
-### 环境变量
-
-```bash
-OPENAI_API_KEY=sk-...       # 必需
-ANTHROPIC_API_KEY=sk-...    # 可选
-```
-
 ---
 
 ## 开发流程

@@ -13,7 +13,7 @@ export const mastra = new Mastra({
     compose: composeAgent,
   },
   workflows: {
-    videoGeneration: videoGenerationWorkflow,
+    "video-generation-workflow": videoGenerationWorkflow,
   },
 });
 
