@@ -1,11 +1,11 @@
 import { extname, join } from "path";
-import { rm } from "fs/promises";
 import { z } from "zod";
 import { ScriptOutput } from "../types";
 import {
   generateRemotionProject,
   type GenerateProjectInput,
 } from "./remotion-project-generator";
+import { cleanupRemotionTempDir } from "./cleanup";
 
 /**
  * Input schema for video rendering
@@ -229,9 +229,10 @@ export async function renderVideo(
     onProgress?.(90);
 
     try {
-      await rm(projectResult.projectPath, { recursive: true, force: true });
+      await cleanupRemotionTempDir(projectResult.projectPath, {
+        preservePatterns: ["*.mp4", "*.srt", "*.json"],
+      });
     } catch (cleanupError) {
-      // Log cleanup error but don't fail the operation
       console.warn("Failed to clean up temporary project files:", cleanupError);
     }
 
