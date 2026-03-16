@@ -181,6 +181,80 @@ program
   });
 
 program
+  .command("resume <runId>")
+  .description("Resume a suspended workflow")
+  .option("--file <path>", "Path to edited script JSON file")
+  .action(async (runId, options) => {
+    const spinner = ora();
+
+    try {
+      const workflow = mastra.getWorkflow("video-generation-workflow");
+
+      spinner.start(`🔄 Resuming workflow ${runId}...`);
+
+      const run = await workflow.createRun({ runId });
+
+      let resumeData = undefined;
+      if (options.file) {
+        const { readFileSync } = await import("fs");
+        const fileContent = readFileSync(options.file, "utf-8");
+        resumeData = JSON.parse(fileContent);
+        spinner.text = "📄 Loaded edited script from file...";
+      }
+
+      const workflowResult = await run.resume({ resumeData });
+
+      if (workflowResult.status === "suspended") {
+        spinner.info("⏸️  Workflow still paused for review");
+        console.log(
+          chalk.yellow("\nReview not completed. Please provide edited script."),
+        );
+        console.log(
+          chalk.cyan(
+            `  video-script resume ${runId} --file <edited-script.json>`,
+          ),
+        );
+        return;
+      }
+
+      spinner.succeed("✅ Workflow resumed and completed!");
+
+      console.log(chalk.green("\n🎉 Video generation complete!\n"));
+
+      const result =
+        workflowResult.status === "success" ? workflowResult.result : null;
+
+      if (result) {
+        console.log(chalk.blue("📁 Project path:"), result.projectPath);
+        if (result.videoPath) {
+          console.log(chalk.blue("🎥 Video path:"), result.videoPath);
+        }
+        console.log(
+          chalk.blue("📐 Video config:"),
+          `${result.videoConfig.resolution} @ ${result.videoConfig.fps}fps, ${result.videoConfig.duration}s`,
+        );
+        if (result.warnings && result.warnings.length > 0) {
+          console.log(chalk.yellow("\n⚠️  Warnings:"));
+          result.warnings.forEach((w: string) =>
+            console.log(chalk.yellow(`  - ${w}`)),
+          );
+        }
+      }
+    } catch (error) {
+      spinner.fail("❌ Failed to resume workflow");
+      if (error instanceof Error) {
+        console.error(chalk.red(`\n❌ Error: ${error.message}\n`));
+        if (error.stack) {
+          console.error(chalk.gray(error.stack));
+        }
+      } else {
+        console.error(chalk.red("\n❌ An unexpected error occurred\n"));
+      }
+      process.exit(1);
+    }
+  });
+
+program
   .command("config")
   .description("View configuration")
   .action(() => {
