@@ -22,6 +22,55 @@ const scriptStep = createStep(scriptAgent, {
   },
 });
 
+const mapStep = createStep({
+  id: "map-script-output",
+  inputSchema: ScriptOutputSchema,
+  outputSchema: ScriptOutputSchema,
+  execute: async ({ inputData }) => {
+    const mappedScenes = inputData.scenes.map((scene, index) => {
+      const duration =
+        scene.duration ??
+        (scene.startTime !== undefined && scene.endTime !== undefined
+          ? scene.endTime - scene.startTime
+          : 30);
+
+      const visualType = scene.visualType ?? "text";
+      const type =
+        visualType === "code"
+          ? "code"
+          : visualType === "screenshot"
+            ? "feature"
+            : index === 0
+              ? "intro"
+              : index === inputData.scenes.length - 1
+                ? "outro"
+                : "feature";
+
+      return {
+        id: String(scene.id ?? index + 1),
+        type: type as "intro" | "feature" | "code" | "outro",
+        title: scene.title,
+        narration: scene.narration,
+        duration,
+        startTime: scene.startTime,
+        endTime: scene.endTime,
+        visualType,
+        visualContent: scene.visualContent,
+        screenshot: scene.screenshot,
+        code: scene.code,
+      };
+    });
+
+    return {
+      title: inputData.title,
+      totalDuration:
+        inputData.totalDuration ??
+        mappedScenes.reduce((sum, s) => sum + s.duration, 0),
+      scenes: mappedScenes,
+    };
+  },
+});
+
 const HumanReviewInputSchema = ScriptOutputSchema.extend({
   _skipReview: z.boolean().optional(),
 });
@@ -96,6 +145,7 @@ export const videoGenerationWorkflow = createWorkflow({
   steps: [
     researchStep,
     scriptStep,
+    mapStep,
     humanReviewStep,
     screenshotStep,
     composeStep,
