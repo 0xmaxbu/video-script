@@ -15,8 +15,11 @@ export {
 } from "./srt-generator";
 export {
   cleanupTempFiles,
+  cleanupRemotionTempDir,
+  DEFAULT_PRESERVE_PATTERNS,
   type CleanupOptions,
   type CleanupResult,
+  type CleanupTempOptions,
 } from "./cleanup";
 export {
   VideoGenerationErrorCode,

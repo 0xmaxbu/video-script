@@ -32,7 +32,7 @@ export const DEFAULT_PRESERVE_PATTERNS = ["*.mp4", "*.srt", "*.json"] as const;
 /**
  * Matches a filename against a glob pattern (supports * wildcard only)
  */
-function matchPattern(filename: string, pattern: string): boolean {
+export function matchPattern(filename: string, pattern: string): boolean {
   const regex = new RegExp(
     "^" +
       pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") +
@@ -44,7 +44,7 @@ function matchPattern(filename: string, pattern: string): boolean {
 /**
  * Checks if a file should be preserved based on patterns
  */
-function shouldPreserve(
+export function shouldPreserve(
   filePath: string,
   patterns: readonly string[],
 ): boolean {
