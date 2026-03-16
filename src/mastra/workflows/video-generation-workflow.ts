@@ -22,15 +22,25 @@ const scriptStep = createStep(scriptAgent, {
   },
 });
 
+const HumanReviewInputSchema = ScriptOutputSchema.extend({
+  _skipReview: z.boolean().optional(),
+});
+
 const humanReviewStep = createStep({
   id: "human-review",
-  inputSchema: ScriptOutputSchema,
+  inputSchema: HumanReviewInputSchema,
   outputSchema: ScriptOutputSchema,
   resumeSchema: ScriptOutputSchema,
   execute: async ({ inputData, suspend, resumeData }) => {
     if (resumeData) {
       return resumeData as z.infer<typeof ScriptOutputSchema>;
     }
+
+    if (inputData._skipReview) {
+      const { _skipReview, ...scriptData } = inputData;
+      return scriptData as z.infer<typeof ScriptOutputSchema>;
+    }
+
     await suspend(inputData, {
       resumeLabel: "script-approved",
     });
