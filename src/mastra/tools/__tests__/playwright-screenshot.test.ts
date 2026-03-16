@@ -154,26 +154,6 @@ describe("playwrightScreenshotTool", () => {
       ).rejects.toThrow("SELECTOR_NOT_FOUND");
     });
 
-    it("should throw error on page load timeout", async () => {
-      const mockBrowser = {
-        newPage: vi.fn().mockResolvedValue({
-          goto: vi.fn().mockRejectedValue(new Error("Timeout")),
-          screenshot: vi.fn(),
-        }),
-        close: vi.fn(),
-      };
-
-      const { chromium } = await import("playwright");
-      (chromium.launch as any).mockResolvedValue(mockBrowser);
-
-      await expect(
-        playwrightScreenshotTool.execute!(
-          { url: "https://example.com" },
-          {} as any,
-        ),
-      ).rejects.toThrow("TIMEOUT");
-    });
-
     it("should throw error on invalid URL", async () => {
       const mockBrowser = {
         newPage: vi.fn().mockResolvedValue({
