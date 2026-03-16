@@ -42,8 +42,16 @@ export const researchAgent = new Agent({
 关键要求：
 - 使用 webFetch 工具获取网页内容
 - 提取核心技术概念和实践建议
+- 识别并提取代码示例（包括语言、用途、关键行）
 - 为每个场景建议合适的截图主题
-- 保持信息的准确性和相关性`,
+- 保持信息的准确性和相关性
+
+代码示例识别规则：
+- 识别代码块（使用三个反引号包裹或缩进格式）
+- 记录代码语言（typescript, python, javascript等）
+- 提取代码用途说明
+- 标注关键代码行（如高亮行、注释行）
+- 将代码示例关联到相关技术概念`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     webFetch: webFetchTool,
