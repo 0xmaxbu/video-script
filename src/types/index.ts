@@ -10,9 +10,29 @@ export const ResearchInputSchema = z.object({
 export type ResearchInput = z.infer<typeof ResearchInputSchema>;
 
 export const ResearchOutputSchema = z.object({
-  summary: z.string(),
-  keyPoints: z.array(z.string()),
-  sources: z.array(z.string()),
+  title: z.string(),
+  overview: z.string(),
+  keyPoints: z.array(
+    z.object({
+      title: z.string(),
+      description: z.string(),
+    }),
+  ),
+  scenes: z.array(
+    z.object({
+      sceneTitle: z.string(),
+      duration: z.number(),
+      description: z.string(),
+      screenshotSubjects: z.array(z.string()),
+    }),
+  ),
+  sources: z.array(
+    z.object({
+      url: z.string(),
+      title: z.string(),
+      keyContent: z.string(),
+    }),
+  ),
 });
 
 export type ResearchOutput = z.infer<typeof ResearchOutputSchema>;
@@ -36,12 +56,18 @@ export const CodeSpecSchema = z.object({
 
 export type CodeSpec = z.infer<typeof CodeSpecSchema>;
 
+export const VisualTypeEnum = z.enum(["screenshot", "code", "text", "diagram"]);
+
 export const SceneSchema = z.object({
   id: z.string(),
   type: z.enum(["intro", "feature", "code", "outro"]),
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
+  startTime: z.number().optional(),
+  endTime: z.number().optional(),
+  visualType: VisualTypeEnum.optional(),
+  visualContent: z.string().optional(),
   screenshot: ScreenshotSpecSchema.optional(),
   code: CodeSpecSchema.optional(),
 });
