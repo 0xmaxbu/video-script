@@ -1,5 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { withRetry } from "../../utils/retry.js";
 
 function htmlToMarkdown(html: string): string {
   const removeScriptsAndStyles = (content: string) =>
@@ -73,58 +74,68 @@ export const webFetchTool = createTool({
     url: z.string().describe("Final URL after redirects"),
   }),
   execute: async ({ url }) => {
-    const controller = new AbortController();
-    const TIMEOUT_MS = 30000;
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const retryOptions =
+      process.env.NODE_ENV === "test"
+        ? { maxRetries: 0 }
+        : { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 5000, factor: 2 };
 
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        },
-      });
+    return withRetry(
+      async () => {
+        const controller = new AbortController();
+        const TIMEOUT_MS = 30000;
+        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-      if (response.status === 404) {
-        throw new Error("PAGE_NOT_FOUND");
-      }
+        try {
+          const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            },
+          });
 
-      if (response.status >= 500) {
-        throw new Error("SERVER_ERROR");
-      }
+          if (response.status === 404) {
+            throw new Error("PAGE_NOT_FOUND");
+          }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+          if (response.status >= 500) {
+            throw new Error("SERVER_ERROR");
+          }
 
-      const html = await response.text();
-      const title = extractTitle(html);
-      const content = htmlToMarkdown(html);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
 
-      return {
-        content,
-        title,
-        url: response.url,
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "PAGE_NOT_FOUND") {
-          throw new Error(
-            "PAGE_NOT_FOUND: The requested page was not found (404)",
-          );
+          const html = await response.text();
+          const title = extractTitle(html);
+          const content = htmlToMarkdown(html);
+
+          return {
+            content,
+            title,
+            url: response.url,
+          };
+        } catch (error) {
+          if (error instanceof Error) {
+            if (error.message === "PAGE_NOT_FOUND") {
+              throw new Error(
+                "PAGE_NOT_FOUND: The requested page was not found (404)",
+              );
+            }
+            if (error.message === "SERVER_ERROR") {
+              throw new Error("SERVER_ERROR: The server returned a 5xx error");
+            }
+            if (error.name === "AbortError") {
+              throw new Error("TIMEOUT: Request exceeded 30 second timeout");
+            }
+            throw new Error(`Failed to fetch URL: ${error.message}`);
+          }
+          throw new Error("Failed to fetch URL: Unknown error");
+        } finally {
+          clearTimeout(timeoutId);
         }
-        if (error.message === "SERVER_ERROR") {
-          throw new Error("SERVER_ERROR: The server returned a 5xx error");
-        }
-        if (error.name === "AbortError") {
-          throw new Error("TIMEOUT: Request exceeded 30 second timeout");
-        }
-        throw new Error(`Failed to fetch URL: ${error.message}`);
-      }
-      throw new Error("Failed to fetch URL: Unknown error");
-    } finally {
-      clearTimeout(timeoutId);
-    }
+      },
+      { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 5000, factor: 2 },
+    );
   },
 });

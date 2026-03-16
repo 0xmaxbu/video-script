@@ -3,6 +3,7 @@ import { z } from "zod";
 import { chromium } from "playwright";
 import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { withRetry } from "../../utils/retry.js";
 
 const OUTPUT_DIR = "./output/screenshots";
 
@@ -43,54 +44,57 @@ export const playwrightScreenshotTool = createTool({
     selector,
     viewport = { width: 1920, height: 1080 },
   }) => {
-    ensureOutputDir();
-    const browser = await chromium.launch();
-    const fileName = generateFileName();
-    const imagePath = join(OUTPUT_DIR, fileName);
+    return withRetry(
+      async () => {
+        ensureOutputDir();
+        const browser = await chromium.launch();
+        const fileName = generateFileName();
+        const imagePath = join(OUTPUT_DIR, fileName);
 
-    try {
-      const page = await browser.newPage({ viewport });
-      await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+        try {
+          const page = await browser.newPage({ viewport });
+          await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
-      if (selector) {
-        // Wait for selector and capture only that element
-        await page.waitForSelector(selector, { timeout: 10000 });
-        const element = await page.$(selector);
-        if (element) {
-          await element.screenshot({ path: imagePath });
-        } else {
-          throw new Error(
-            `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`,
-          );
-        }
-      } else {
-        // Capture full page
-        await page.screenshot({ path: imagePath, fullPage: true });
-      }
+          if (selector) {
+            await page.waitForSelector(selector, { timeout: 10000 });
+            const element = await page.$(selector);
+            if (element) {
+              await element.screenshot({ path: imagePath });
+            } else {
+              throw new Error(
+                `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`,
+              );
+            }
+          } else {
+            await page.screenshot({ path: imagePath, fullPage: true });
+          }
 
-      return {
-        imagePath,
-        url,
-        success: true,
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("SELECTOR_NOT_FOUND")) {
-          throw error;
+          return {
+            imagePath,
+            url,
+            success: true,
+          };
+        } catch (error) {
+          if (error instanceof Error) {
+            if (error.message.includes("SELECTOR_NOT_FOUND")) {
+              throw error;
+            }
+            if (error.message.includes("Timeout")) {
+              throw new Error(
+                "TIMEOUT: Page load or element selection exceeded timeout",
+              );
+            }
+            if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
+              throw new Error("INVALID_URL: URL could not be resolved");
+            }
+            throw new Error(`Failed to capture screenshot: ${error.message}`);
+          }
+          throw new Error("Failed to capture screenshot: Unknown error");
+        } finally {
+          await browser.close();
         }
-        if (error.message.includes("Timeout")) {
-          throw new Error(
-            "TIMEOUT: Page load or element selection exceeded timeout",
-          );
-        }
-        if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
-          throw new Error("INVALID_URL: URL could not be resolved");
-        }
-        throw new Error(`Failed to capture screenshot: ${error.message}`);
-      }
-      throw new Error("Failed to capture screenshot: Unknown error");
-    } finally {
-      await browser.close();
-    }
+      },
+      { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 5000, factor: 2 },
+    );
   },
 });
