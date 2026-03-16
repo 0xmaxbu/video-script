@@ -25,7 +25,9 @@ const scriptStep = createStep(scriptAgent, {
 const mapStep = createStep({
   id: "map-script-output",
   inputSchema: ScriptOutputSchema,
-  outputSchema: ScriptOutputSchema,
+  outputSchema: ScriptOutputSchema.extend({
+    _skipReview: z.boolean().optional(),
+  }),
   execute: async ({ inputData }) => {
     const mappedScenes = inputData.scenes.map((scene, index) => {
       const duration =
@@ -85,7 +87,9 @@ const humanReviewStep = createStep({
       return resumeData as z.infer<typeof ScriptOutputSchema>;
     }
 
-    if (inputData._skipReview) {
+    const skipReview =
+      inputData._skipReview ?? process.env.VIDEO_SCRIPT_SKIP_REVIEW === "true";
+    if (skipReview) {
       const { _skipReview, ...scriptData } = inputData;
       return scriptData as z.infer<typeof ScriptOutputSchema>;
     }

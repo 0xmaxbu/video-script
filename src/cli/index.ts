@@ -64,18 +64,84 @@ program
       }
       if (options.review === false) {
         console.log(chalk.gray("  Skip review: true"));
+        process.env.VIDEO_SCRIPT_SKIP_REVIEW = "true";
       }
       if (options.output) {
         console.log(chalk.gray(`  Output directory: ${options.output}`));
       }
 
-      const workflow = mastra.getWorkflow("videoGeneration");
+      const workflow = mastra.getWorkflow("video-generation-workflow");
 
       spinner.start("🚀 Starting video generation workflow...");
       const run = await workflow.createRun();
 
       spinner.text = "🎬 Executing workflow steps...";
       const workflowResult = await run.start({ inputData: input });
+
+      if (workflowResult.status === "suspended") {
+        spinner.info("⏸️  Workflow paused for review");
+
+        const scriptData = workflowResult.suspendPayload as {
+          title: string;
+          totalDuration: number;
+          scenes: Array<{
+            id: string;
+            type: string;
+            title: string;
+            narration: string;
+            duration: number;
+          }>;
+        };
+
+        console.log(chalk.blue("\n📝 Generated Script\n"));
+        console.log(chalk.bold(`  Title: ${scriptData.title}`));
+        console.log(
+          chalk.gray(
+            `  Total Duration: ${Math.round(scriptData.totalDuration)}s`,
+          ),
+        );
+        console.log(chalk.gray(`  Scenes: ${scriptData.scenes.length}`));
+
+        console.log(chalk.blue("\n📊 Scene Summary:\n"));
+        scriptData.scenes.forEach((scene, index) => {
+          const typeIcon: Record<string, string> = {
+            intro: "🎬",
+            feature: "📷",
+            code: "💻",
+            outro: "🎬",
+          };
+          const icon = typeIcon[scene.type] || "📄";
+          console.log(
+            `  ${icon} ${chalk.bold(`Scene ${index + 1}`)}: ${scene.title}`,
+          );
+          console.log(
+            chalk.gray(
+              `     Type: ${scene.type} | Duration: ${scene.duration}s`,
+            ),
+          );
+          console.log(
+            chalk.gray(
+              `     ${scene.narration.substring(0, 60)}${scene.narration.length > 60 ? "..." : ""}`,
+            ),
+          );
+        });
+
+        const runId = run.runId;
+        console.log(chalk.yellow("\n⏳ Awaiting Human Review\n"));
+        console.log(
+          chalk.gray("The workflow is paused. Review the script above."),
+        );
+        console.log(chalk.gray("To resume with approved script:"));
+        console.log(
+          chalk.cyan(
+            `  video-script resume ${runId} --file <edited-script.json>`,
+          ),
+        );
+        console.log(chalk.gray("\nOr resume without changes:"));
+        console.log(chalk.cyan(`  video-script resume ${runId}`));
+        console.log(chalk.gray(`\nRun ID: ${runId}`));
+        return;
+      }
 
       spinner.succeed("✅ Video generation completed!");
 
