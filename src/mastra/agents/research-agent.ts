@@ -44,7 +44,7 @@ export const researchAgent = new Agent({
 - 提取核心技术概念和实践建议
 - 为每个场景建议合适的截图主题
 - 保持信息的准确性和相关性`,
-  model: "openai/gpt-4-turbo",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     webFetch: webFetchTool,
   },

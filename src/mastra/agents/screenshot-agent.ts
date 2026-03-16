@@ -44,7 +44,7 @@ export const screenshotAgent = new Agent({
 - 超时错误：自动重试一次，失败则记录错误并继续处理其他场景
 - 语言不支持：尝试推断相近的语言，或使用通用的 plaintext 格式
 - 选择器不匹配：回退到全页面截图`,
-  model: "openai/gpt-4-turbo",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     playwrightScreenshot: playwrightScreenshotTool,
     codeHighlight: codeHighlightTool,

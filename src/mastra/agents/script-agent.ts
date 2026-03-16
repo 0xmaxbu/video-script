@@ -46,5 +46,5 @@ export const scriptAgent = new Agent({
     }
   ]
 }`,
-  model: "openai/gpt-4-turbo",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
 });
