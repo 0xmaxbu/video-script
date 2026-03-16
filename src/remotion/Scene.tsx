@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, Img } from "remotion";
 import { Scene as SceneType } from "../types";
 import { Subtitle } from "./Subtitle";
+import { CodeAnimation } from "./components/CodeAnimation";
 
 interface SceneProps {
   scene: SceneType;
@@ -80,35 +81,17 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
       <AbsoluteFill
         style={{
           ...containerStyle,
-          backgroundColor: "#282c34",
-          color: "#abb2bf",
-          alignItems: "flex-start",
-          textAlign: "left",
+          backgroundColor: "#1e1e1e",
+          padding: 0,
         }}
       >
-        <h1
-          style={{
-            ...titleStyle,
-            color: "white",
-            fontSize: 50,
-            width: "100%",
-            textAlign: "center",
-          }}
-        >
-          {title}
-        </h1>
-        <div
-          style={{
-            flex: 1,
-            width: "100%",
-            padding: 40,
-            overflow: "hidden",
-            fontSize: 24,
-            whiteSpace: "pre-wrap",
-            fontFamily: "monospace",
-          }}
-        >
-          {code?.code}
+        <div style={{ flex: 1, width: "100%" }}>
+          <CodeAnimation
+            code={code?.code || ""}
+            highlightLines={code?.highlightLines || []}
+            title={title}
+            showLineNumbers={true}
+          />
         </div>
         <Subtitle text={narration} />
       </AbsoluteFill>
