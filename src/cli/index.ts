@@ -8,6 +8,7 @@ import chalk from "chalk";
 import ora from "ora";
 import { promptForInput } from "./prompts.js";
 import { mastra } from "../mastra/index.js";
+import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import type { ResearchInput } from "../types/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,6 +38,7 @@ program
   .option("--output <dir>", "Output directory")
   .action(async (title, options) => {
     const spinner = ora();
+    gracefulShutdown.setSpinner(spinner);
 
     try {
       let input: ResearchInput;
@@ -74,6 +76,8 @@ program
 
       spinner.start("🚀 Starting video generation workflow...");
       const run = await workflow.createRun();
+      gracefulShutdown.setRunId(run.runId);
+      gracefulShutdown.setWorkflowStatus("running");
 
       spinner.text = "🎬 Executing workflow steps...";
       const workflowResult = await run.start({ inputData: input });
