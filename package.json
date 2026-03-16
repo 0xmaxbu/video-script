@@ -8,7 +8,9 @@
     "video-script": "./dist/cli/index.js"
   },
   "scripts": {
-    "dev": "tsx watch src/cli/index.ts",
+    "dev": "mastra dev -d src/mastra",
+    "dev:cli": "tsx watch src/cli/index.ts",
+    "studio": "mastra studio",
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
