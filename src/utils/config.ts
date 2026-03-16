@@ -2,28 +2,49 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { z } from "zod";
 
-export const VideoConfigSchema = z.object({
-  llm: z.object({
-    provider: z.enum(["openai", "anthropic"]).default("openai"),
-    model: z.string().default("gpt-4-turbo"),
-    apiKey: z.string().optional(),
-  }),
-  tts: z.object({
-    enabled: z.boolean().default(false),
-    provider: z.string().default("edge-tts"),
-    voice: z.string().default("zh-CN-XiaoxiaoNeural"),
-  }),
-  video: z.object({
-    defaultAspectRatio: z.string().default("16:9"),
-    fps: z.number().int().positive().default(30),
-    codec: z.string().default("h264"),
-  }),
-  screenshot: z.object({
-    browserPoolSize: z.number().int().positive().default(3),
-    viewport: z.object({
+const LlmConfigSchema = z.object({
+  provider: z.enum(["openai", "anthropic"]).default("openai"),
+  model: z.string().default("gpt-4-turbo"),
+  apiKey: z.string().optional(),
+});
+
+const TtsConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  provider: z.string().default("edge-tts"),
+  voice: z.string().default("zh-CN-XiaoxiaoNeural"),
+});
+
+const VideoSectionSchema = z.object({
+  defaultAspectRatio: z.string().default("16:9"),
+  fps: z.number().int().positive().default(30),
+  codec: z.string().default("h264"),
+});
+
+const ScreenshotConfigSchema = z.object({
+  browserPoolSize: z.number().int().positive().default(3),
+  viewport: z
+    .object({
       width: z.number().int().positive().default(1920),
       height: z.number().int().positive().default(1080),
-    }),
+    })
+    .default({ width: 1920, height: 1080 }),
+});
+
+export const VideoConfigSchema = z.object({
+  llm: LlmConfigSchema.default({ provider: "openai", model: "gpt-4-turbo" }),
+  tts: TtsConfigSchema.default({
+    enabled: false,
+    provider: "edge-tts",
+    voice: "zh-CN-XiaoxiaoNeural",
+  }),
+  video: VideoSectionSchema.default({
+    defaultAspectRatio: "16:9",
+    fps: 30,
+    codec: "h264",
+  }),
+  screenshot: ScreenshotConfigSchema.default({
+    browserPoolSize: 3,
+    viewport: { width: 1920, height: 1080 },
   }),
 });
 
