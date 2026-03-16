@@ -101,35 +101,39 @@ const humanReviewStep = createStep({
   },
 });
 
+const ScreenshotOutputSchema = z.object({
+  success: z.boolean(),
+  screenshotDir: z.string(),
+  resources: z.array(
+    z.object({
+      sceneId: z.string(),
+      imagePath: z.string().optional(),
+      highlightedHtml: z.string().optional(),
+    }),
+  ),
+});
+
 const screenshotStep = createStep(screenshotAgent, {
   structuredOutput: {
-    schema: z.object({
-      success: z.boolean(),
-      screenshotDir: z.string(),
-      resources: z.array(
-        z.object({
-          sceneId: z.string(),
-          imagePath: z.string().optional(),
-          highlightedHtml: z.string().optional(),
-        }),
-      ),
-    }),
+    schema: ScreenshotOutputSchema,
   },
+});
+
+const ComposeOutputSchema = z.object({
+  projectPath: z.string(),
+  videoPath: z.string().optional(),
+  videoConfig: z.object({
+    resolution: z.string(),
+    fps: z.number(),
+    duration: z.number(),
+  }),
+  readyForRender: z.boolean(),
+  warnings: z.array(z.string()).optional(),
 });
 
 const composeStep = createStep(composeAgent, {
   structuredOutput: {
-    schema: z.object({
-      projectPath: z.string(),
-      videoPath: z.string().optional(),
-      videoConfig: z.object({
-        resolution: z.string(),
-        fps: z.number(),
-        duration: z.number(),
-      }),
-      readyForRender: z.boolean(),
-      warnings: z.array(z.string()).optional(),
-    }),
+    schema: ComposeOutputSchema,
   },
 });
 
@@ -146,12 +150,65 @@ export const videoGenerationWorkflow = createWorkflow({
     }),
     warnings: z.array(z.string()).optional(),
   }),
-  steps: [
-    researchStep,
-    scriptStep,
-    mapStep,
-    humanReviewStep,
-    screenshotStep,
-    composeStep,
-  ],
-}).commit();
+})
+  .map(async ({ inputData }) => {
+    const linksText = inputData.links?.length
+      ? `\n\n参考链接:\n${inputData.links.map((l) => `- ${l}`).join("\n")}`
+      : "";
+    const docText = inputData.document
+      ? `\n\n参考文档:\n${inputData.document}`
+      : "";
+
+    return {
+      prompt: `请研究以下主题并生成视频脚本大纲:\n\n标题: ${inputData.title}${linksText}${docText}`,
+    };
+  })
+  .then(researchStep)
+  .map(async ({ inputData }) => {
+    const keyPointsText = inputData.keyPoints
+      .map((kp) => `- ${kp.title}: ${kp.description}`)
+      .join("\n");
+    const scenesText = inputData.scenes
+      .map((s) => `- ${s.sceneTitle} (${s.duration}s): ${s.description}`)
+      .join("\n");
+
+    return {
+      prompt: `基于以下研究结果，生成详细的视频脚本:\n\n标题: ${inputData.title}\n概述: ${inputData.overview}\n\n关键点:\n${keyPointsText}\n\n建议场景:\n${scenesText}`,
+    };
+  })
+  .then(scriptStep)
+  .then(mapStep)
+  .then(humanReviewStep)
+  .map(async ({ inputData }) => {
+    const scenesText = inputData.scenes
+      .map(
+        (s) =>
+          `- 场景 ${s.id}: ${s.title} (${s.duration}s)\n  类型: ${s.visualType}\n  内容: ${s.visualContent ?? "无"}`,
+      )
+      .join("\n");
+
+    return {
+      prompt: `为以下视频场景生成截图素材:\n\n标题: ${inputData.title}\n总时长: ${inputData.totalDuration}s\n\n场景列表:\n${scenesText}`,
+    };
+  })
+  .then(screenshotStep)
+  .map(async ({ inputData }) => {
+    const resourcesText = inputData.resources
+      .map(
+        (r) =>
+          `- 场景 ${r.sceneId}: ${r.imagePath ? `图片: ${r.imagePath}` : "代码高亮"} `,
+      )
+      .join("\n");
+
+    return {
+      prompt: `根据以下素材生成 Remotion 视频项目:\n\n截图目录: ${inputData.screenshotDir}\n资源列表:\n${resourcesText}`,
+    };
+  })
+  .then(composeStep)
+  .map(async ({ inputData }) => ({
+    projectPath: inputData.projectPath,
+    videoPath: inputData.videoPath,
+    videoConfig: inputData.videoConfig,
+    warnings: inputData.warnings,
+  }))
+  .commit();
