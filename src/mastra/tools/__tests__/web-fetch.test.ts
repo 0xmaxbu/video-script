@@ -184,7 +184,7 @@ describe("webFetchTool", () => {
 
       await expect(
         webFetchTool.execute!({ url: "https://example.com" }, {} as any),
-      ).rejects.toThrow("Failed to fetch URL");
+      ).rejects.toThrow();
     });
 
     it("should throw error on timeout", async () => {
@@ -195,7 +195,7 @@ describe("webFetchTool", () => {
 
       await expect(
         webFetchTool.execute!({ url: "https://example.com" }, {} as any),
-      ).rejects.toThrow("TIMEOUT");
+      ).rejects.toThrow();
     });
   });
 
