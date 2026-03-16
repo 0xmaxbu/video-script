@@ -9,6 +9,7 @@ import ora from "ora";
 import { promptForInput } from "./prompts.js";
 import { mastra } from "../mastra/index.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
+import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import type { ResearchInput } from "../types/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -260,10 +261,22 @@ program
 
 program
   .command("config")
-  .description("View configuration")
+  .description("View current configuration (sensitive values masked)")
   .action(() => {
-    console.log(chalk.blue("\n⚙️  Configuration\n"));
-    console.log(chalk.yellow("TODO: implement config command logic\n"));
+    try {
+      const config = loadConfig();
+      const masked = maskSensitiveConfig(config);
+      console.log(chalk.blue("\n⚙️  Current Configuration\n"));
+      console.log(JSON.stringify(masked, null, 2));
+      console.log();
+    } catch (error) {
+      console.error(
+        chalk.red(
+          `\n❌ Failed to load config: ${error instanceof Error ? error.message : String(error)}\n`,
+        ),
+      );
+      process.exit(1);
+    }
   });
 
 program.parse();
