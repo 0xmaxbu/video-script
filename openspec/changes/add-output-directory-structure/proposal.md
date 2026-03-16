@@ -1,27 +1,34 @@
 ## Why
 
-当前 Agent 的输出直接传递给下一个 Agent，没有持久化保存。当工作流中断或需要回溯时，无法找到之前的产出物。同时，产出的文件散落在临时目录，难以管理和追溯。引入结构化的输出目录，每个 Agent 的产出以固定文件名（JSON）保存，方便查找、审计和复用。
+当前自动 workflow 太过复杂，难以调试和维护。改为手动子命令模式，由人工推进每个阶段，更加灵活可控。同时引入结构化输出目录，每个阶段的产出以 JSON 文件形式持久化。**核心约束：动画编排必须服务于口播内容的节奏。**
 
 ## What Changes
 
-1. **新增目录生成逻辑**：在工作流启动时，根据当前日期和视频选题生成结构化输出目录，格式为 `{cwd}/output/年/月日-月日_选题slug/`。
-2. **CLI --output 参数**：支持用户指定自定义输出路径，完全覆盖默认路径。
-3. **新增文件读写工具**：为 Agent 新增 writeJsonFile 和 readJsonFile 工具（仅 JSON 格式）。
-4. **修改 Workflow 状态传递**：Agent 之间不再只传递内存对象，而是通过文件系统读写对应阶段的产出文件。
+1. **移除自动 Workflow**：替换为 4 个独立子命令
+2. **新增 CLI 子命令**：
+   - `research` - 研究阶段，生成 research.json
+   - `script` - 脚本阶段，生成 script.json（动画服务于口播）
+   - `screenshot` - 截图阶段，批量生成截图
+   - `compose` - 合成阶段，生成视频
+3. **结构化输出目录**：`{cwd}/output/年/周-月_日-月_日/选题slug/`
+4. **JSON 文件持久化**：每个阶段的产出以固定文件名保存
 
 ## Capabilities
 
 ### New Capabilities
 
-- **输出目录管理**：根据日期和选题自动生成结构化输出目录，支持月日范围计算
-- **文件读写工具**：writeJsonFile（写入 JSON）和 readJsonFile（读取 JSON），供 Agent 持久化产出
+- **research 子命令**：抓取网页内容，生成 research.json（含口播内容、重点知识、参考链接）
+- **script 子命令**：读取 research.json，分析页面，按口播节奏编排场景和动画，生成 script.json
+- **screenshot 子命令**：读取 script.json，按配置批量截图，系统自动生成文件名
+- **compose 子命令**：读取 script.json 和截图，生成视频（output.mp4）和字幕（output.srt）
 
 ### Modified Capabilities
 
-- （无）现有能力的需求未发生变化
+- **BREAKING** 移除原有的 `create` 自动 workflow 命令
 
 ## Impact
 
-- **代码影响**：`src/mastra/tools/` 新增文件读写工具；`src/mastra/workflows/` 修改工作流步骤传递逻辑
-- **依赖影响**：新增 `date-fns` 和 `slugify` 依赖
-- **系统影响**：输出目录结构变更，需要同步更新文档
+- **CLI 重构**：移除 `create` 命令，新增 `research`、`script`、`screenshot`、`compose`
+- **Workflow 移除**：删除 `video-generation-workflow.ts`
+- **Agent 重构**：每个 Agent 对应一个子命令
+- **类型更新**：新增 research.json 和 script.json 的类型定义

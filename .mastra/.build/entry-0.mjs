@@ -2,6 +2,8 @@ import { Mastra } from '@mastra/core';
 import { Agent } from '@mastra/core/agent';
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
+import ora from 'ora';
+import chalk from 'chalk';
 import { chromium } from 'playwright';
 import fs, { existsSync, mkdirSync } from 'fs';
 import path, { join } from 'path';
@@ -10,9 +12,197 @@ import { spawn } from 'child_process';
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 
 "use strict";
+class Logger {
+  spinner = null;
+  silent;
+  debugEnabled;
+  constructor(options = {}) {
+    this.silent = options.silent ?? false;
+    this.debugEnabled = options.debug ?? false;
+  }
+  start(text) {
+    if (this.silent) return;
+    this.spinner = ora(text).start();
+  }
+  update(text) {
+    if (this.silent) return;
+    if (this.spinner) {
+      this.spinner.text = text;
+    }
+  }
+  succeed(text) {
+    if (this.silent) return;
+    if (this.spinner) {
+      this.spinner.succeed(text);
+      this.spinner = null;
+    } else {
+      console.log(chalk.green("\u2713"), text ?? "");
+    }
+  }
+  fail(text) {
+    if (this.silent) return;
+    if (this.spinner) {
+      this.spinner.fail(text);
+      this.spinner = null;
+    } else {
+      console.log(chalk.red("\u2717"), text ?? "");
+    }
+  }
+  warn(text) {
+    if (this.silent) return;
+    if (this.spinner) {
+      this.spinner.warn(text);
+      this.spinner = null;
+    } else {
+      console.log(chalk.yellow("\u26A0"), text ?? "");
+    }
+  }
+  info(text) {
+    if (this.silent) return;
+    if (this.spinner) {
+      this.spinner.info(text);
+      this.spinner = null;
+    } else {
+      console.log(chalk.blue("\u2139"), text ?? "");
+    }
+  }
+  stop() {
+    if (this.spinner) {
+      this.spinner.stop();
+      this.spinner = null;
+    }
+  }
+  log(message, level = "info") {
+    if (this.silent) return;
+    const prefix = {
+      debug: chalk.gray("\u2699"),
+      info: chalk.blue("\u2139"),
+      warn: chalk.yellow("\u26A0"),
+      error: chalk.red("\u2717"),
+      success: chalk.green("\u2713")
+    };
+    console.log(prefix[level], message);
+  }
+  debug(message) {
+    if (!this.debugEnabled) return;
+    this.log(message, "debug");
+  }
+  error(message, error) {
+    if (this.silent) return;
+    this.log(message, "error");
+    if (error && this.debugEnabled) {
+      console.error(error);
+    }
+  }
+  step(stepName, text) {
+    if (this.silent) return;
+    this.update(`${chalk.cyan(`[${stepName}]`)} ${text}`);
+  }
+  progress(current, total, text) {
+    if (this.silent) return;
+    const percentage = Math.round(current / total * 100);
+    const bar = this.progressBar(percentage);
+    this.update(`${bar} ${text}`);
+  }
+  progressBar(percentage, width = 20) {
+    const filled = Math.round(percentage / 100 * width);
+    const empty = width - filled;
+    const bar = "\u2588".repeat(filled) + "\u2591".repeat(empty);
+    return chalk.cyan(`[${bar}] ${percentage}%`);
+  }
+  table(data) {
+    if (this.silent) return;
+    console.table(data);
+  }
+  newline() {
+    if (this.silent) return;
+    console.log();
+  }
+  getSpinner() {
+    return this.spinner;
+  }
+  setSilent(silent) {
+    this.silent = silent;
+  }
+  setDebug(debug) {
+    this.debugEnabled = debug;
+  }
+}
+const logger = new Logger();
+
+"use strict";
+const RETRYABLE_ERRORS = [
+  "ETIMEDOUT",
+  "ECONNRESET",
+  "ENOTFOUND",
+  "TIMEOUT",
+  "DNS",
+  "RATE_LIMIT"
+];
+const DEFAULT_RETRY_OPTIONS = {
+  maxRetries: 3,
+  initialDelayMs: 1e3,
+  maxDelayMs: 5e3,
+  factor: 2,
+  jitter: false
+};
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function isRetryableError(error) {
+  if (!error) return false;
+  const err = error;
+  const errorCode = err?.code;
+  if (errorCode && RETRYABLE_ERRORS.includes(errorCode)) {
+    return true;
+  }
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return RETRYABLE_ERRORS.some((e) => message.includes(e.toLowerCase())) || message.includes("timeout") || message.includes("rate limit");
+  }
+  return false;
+}
+function calculateDelay(retryCount, options) {
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
+  const delay = opts.initialDelayMs * Math.pow(opts.factor, retryCount);
+  const cappedDelay = Math.min(delay, opts.maxDelayMs);
+  if (opts.jitter) {
+    const jitterAmount = cappedDelay * 0.3 * Math.random();
+    return cappedDelay + jitterAmount;
+  }
+  return cappedDelay;
+}
+async function withRetry(fn, options = {}) {
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
+  let retryCount = 0;
+  let lastError = null;
+  while (retryCount <= opts.maxRetries) {
+    try {
+      const result = await fn();
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      retryCount++;
+      if (retryCount > opts.maxRetries) {
+        break;
+      }
+      if (!isRetryableError(error)) {
+        throw lastError;
+      }
+      const delay = calculateDelay(retryCount - 1, opts);
+      logger.debug(`Retry ${retryCount}/${opts.maxRetries} after ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+  throw lastError ?? new Error("Max retries exceeded");
+}
+
+"use strict";
+function convertTagsToMarkdown(html) {
+  return html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "\n# $1\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "\n## $1\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "\n### $1\n").replace(/<h4[^>]*>(.*?)<\/h4>/gi, "\n#### $1\n").replace(/<h5[^>]*>(.*?)<\/h5>/gi, "\n##### $1\n").replace(/<h6[^>]*>(.*?)<\/h6>/gi, "\n###### $1\n").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<(strong|b)[^>]*>(.*?)<\/\1>/gi, "**$2**").replace(/<(em|i)[^>]*>(.*?)<\/\1>/gi, "*$2*").replace(/<code[^>]*>(.*?)<\/code>/gi, "`$1`").replace(/<pre[^>]*>(.*?)<\/pre>/gis, "\n```\n$1\n```\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1").replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gis, "\n> $1\n").replace(/<br\s*\/?>/gi, "\n").replace(/<p[^>]*>(.*?)<\/p>/gis, "\n$1\n").replace(/<\/p>/gi, "\n").replace(/<\/div>/gi, "\n").replace(/<[^>]*>/g, "");
+}
 function htmlToMarkdown(html) {
   const removeScriptsAndStyles = (content) => content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
-  const convertTagsToMarkdown = (content) => content.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n").replace(/<h4[^>]*>(.*?)<\/h4>/gi, "#### $1\n").replace(/<h5[^>]*>(.*?)<\/h5>/gi, "##### $1\n").replace(/<h6[^>]*>(.*?)<\/h6>/gi, "###### $1\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<b[^>]*>(.*?)<\/b>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<i[^>]*>(.*?)<\/i>/gi, "*$1*").replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<\/div>/gi, "\n").replace(/<\/li>/gi, "\n").replace(/<[^>]*>/g, "");
   const decodeHtmlEntities = (content) => content.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
   const normalizeWhitespace = (content) => content.replace(/\n\n+/g, "\n\n").replace(/[ \t]+/g, " ").trim();
   return normalizeWhitespace(
@@ -42,52 +232,39 @@ const webFetchTool = createTool({
     url: z.string().describe("Final URL after redirects")
   }),
   execute: async ({ url }) => {
-    const controller = new AbortController();
-    const TIMEOUT_MS = 3e4;
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    const retryOptions = process.env.NODE_ENV === "test" ? { maxRetries: 0 } : { maxRetries: 3, initialDelayMs: 1e3, maxDelayMs: 5e3, factor: 2 };
+    return withRetry(async () => {
+      const controller = new AbortController();
+      const TIMEOUT_MS = 3e4;
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      try {
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        });
+        if (response.status === 404) {
+          throw new Error("PAGE_NOT_FOUND");
         }
-      });
-      if (response.status === 404) {
-        throw new Error("PAGE_NOT_FOUND");
-      }
-      if (response.status >= 500) {
-        throw new Error("SERVER_ERROR");
-      }
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const html = await response.text();
-      const title = extractTitle(html);
-      const content = htmlToMarkdown(html);
-      return {
-        content,
-        title,
-        url: response.url
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "PAGE_NOT_FOUND") {
-          throw new Error(
-            "PAGE_NOT_FOUND: The requested page was not found (404)"
-          );
+        if (response.status >= 500) {
+          throw new Error("SERVER_ERROR");
         }
-        if (error.message === "SERVER_ERROR") {
-          throw new Error("SERVER_ERROR: The server returned a 5xx error");
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        if (error.name === "AbortError") {
-          throw new Error("TIMEOUT: Request exceeded 30 second timeout");
-        }
-        throw new Error(`Failed to fetch URL: ${error.message}`);
+        const html = await response.text();
+        const title = extractTitle(html);
+        const content = htmlToMarkdown(html);
+        return {
+          content,
+          title,
+          url: response.url
+        };
+      } finally {
+        clearTimeout(timeoutId);
       }
-      throw new Error("Failed to fetch URL: Unknown error");
-    } finally {
-      clearTimeout(timeoutId);
-    }
+    }, retryOptions);
   }
 });
 
@@ -133,8 +310,16 @@ const researchAgent = new Agent({
 \u5173\u952E\u8981\u6C42\uFF1A
 - \u4F7F\u7528 webFetch \u5DE5\u5177\u83B7\u53D6\u7F51\u9875\u5185\u5BB9
 - \u63D0\u53D6\u6838\u5FC3\u6280\u672F\u6982\u5FF5\u548C\u5B9E\u8DF5\u5EFA\u8BAE
+- \u8BC6\u522B\u5E76\u63D0\u53D6\u4EE3\u7801\u793A\u4F8B\uFF08\u5305\u62EC\u8BED\u8A00\u3001\u7528\u9014\u3001\u5173\u952E\u884C\uFF09
 - \u4E3A\u6BCF\u4E2A\u573A\u666F\u5EFA\u8BAE\u5408\u9002\u7684\u622A\u56FE\u4E3B\u9898
-- \u4FDD\u6301\u4FE1\u606F\u7684\u51C6\u786E\u6027\u548C\u76F8\u5173\u6027`,
+- \u4FDD\u6301\u4FE1\u606F\u7684\u51C6\u786E\u6027\u548C\u76F8\u5173\u6027
+
+\u4EE3\u7801\u793A\u4F8B\u8BC6\u522B\u89C4\u5219\uFF1A
+- \u8BC6\u522B\u4EE3\u7801\u5757\uFF08\u4F7F\u7528\u4E09\u4E2A\u53CD\u5F15\u53F7\u5305\u88F9\u6216\u7F29\u8FDB\u683C\u5F0F\uFF09
+- \u8BB0\u5F55\u4EE3\u7801\u8BED\u8A00\uFF08typescript, python, javascript\u7B49\uFF09
+- \u63D0\u53D6\u4EE3\u7801\u7528\u9014\u8BF4\u660E
+- \u6807\u6CE8\u5173\u952E\u4EE3\u7801\u884C\uFF08\u5982\u9AD8\u4EAE\u884C\u3001\u6CE8\u91CA\u884C\uFF09
+- \u5C06\u4EE3\u7801\u793A\u4F8B\u5173\u8054\u5230\u76F8\u5173\u6280\u672F\u6982\u5FF5`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     webFetch: webFetchTool
@@ -222,50 +407,55 @@ const playwrightScreenshotTool = createTool({
     selector,
     viewport = { width: 1920, height: 1080 }
   }) => {
-    ensureOutputDir();
-    const browser = await chromium.launch();
-    const fileName = generateFileName();
-    const imagePath = join(OUTPUT_DIR, fileName);
-    try {
-      const page = await browser.newPage({ viewport });
-      await page.goto(url, { waitUntil: "networkidle", timeout: 3e4 });
-      if (selector) {
-        await page.waitForSelector(selector, { timeout: 1e4 });
-        const element = await page.$(selector);
-        if (element) {
-          await element.screenshot({ path: imagePath });
-        } else {
-          throw new Error(
-            `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`
-          );
+    return withRetry(
+      async () => {
+        ensureOutputDir();
+        const browser = await chromium.launch();
+        const fileName = generateFileName();
+        const imagePath = join(OUTPUT_DIR, fileName);
+        try {
+          const page = await browser.newPage({ viewport });
+          await page.goto(url, { waitUntil: "networkidle", timeout: 3e4 });
+          if (selector) {
+            await page.waitForSelector(selector, { timeout: 1e4 });
+            const element = await page.$(selector);
+            if (element) {
+              await element.screenshot({ path: imagePath });
+            } else {
+              throw new Error(
+                `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`
+              );
+            }
+          } else {
+            await page.screenshot({ path: imagePath, fullPage: true });
+          }
+          return {
+            imagePath,
+            url,
+            success: true
+          };
+        } catch (error) {
+          if (error instanceof Error) {
+            if (error.message.includes("SELECTOR_NOT_FOUND")) {
+              throw error;
+            }
+            if (error.message.includes("Timeout")) {
+              throw new Error(
+                "TIMEOUT: Page load or element selection exceeded timeout"
+              );
+            }
+            if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
+              throw new Error("INVALID_URL: URL could not be resolved");
+            }
+            throw new Error(`Failed to capture screenshot: ${error.message}`);
+          }
+          throw new Error("Failed to capture screenshot: Unknown error");
+        } finally {
+          await browser.close();
         }
-      } else {
-        await page.screenshot({ path: imagePath, fullPage: true });
-      }
-      return {
-        imagePath,
-        url,
-        success: true
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("SELECTOR_NOT_FOUND")) {
-          throw error;
-        }
-        if (error.message.includes("Timeout")) {
-          throw new Error(
-            "TIMEOUT: Page load or element selection exceeded timeout"
-          );
-        }
-        if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
-          throw new Error("INVALID_URL: URL could not be resolved");
-        }
-        throw new Error(`Failed to capture screenshot: ${error.message}`);
-      }
-      throw new Error("Failed to capture screenshot: Unknown error");
-    } finally {
-      await browser.close();
-    }
+      },
+      { maxRetries: 3, initialDelayMs: 1e3, maxDelayMs: 5e3, factor: 2 }
+    );
   }
 });
 
@@ -669,34 +859,36 @@ const humanReviewStep = createStep({
     return inputData;
   }
 });
+const ScreenshotOutputSchema = z.object({
+  success: z.boolean(),
+  screenshotDir: z.string(),
+  resources: z.array(
+    z.object({
+      sceneId: z.string(),
+      imagePath: z.string().optional(),
+      highlightedHtml: z.string().optional()
+    })
+  )
+});
 const screenshotStep = createStep(screenshotAgent, {
   structuredOutput: {
-    schema: z.object({
-      success: z.boolean(),
-      screenshotDir: z.string(),
-      resources: z.array(
-        z.object({
-          sceneId: z.string(),
-          imagePath: z.string().optional(),
-          highlightedHtml: z.string().optional()
-        })
-      )
-    })
+    schema: ScreenshotOutputSchema
   }
+});
+const ComposeOutputSchema = z.object({
+  projectPath: z.string(),
+  videoPath: z.string().optional(),
+  videoConfig: z.object({
+    resolution: z.string(),
+    fps: z.number(),
+    duration: z.number()
+  }),
+  readyForRender: z.boolean(),
+  warnings: z.array(z.string()).optional()
 });
 const composeStep = createStep(composeAgent, {
   structuredOutput: {
-    schema: z.object({
-      projectPath: z.string(),
-      videoPath: z.string().optional(),
-      videoConfig: z.object({
-        resolution: z.string(),
-        fps: z.number(),
-        duration: z.number()
-      }),
-      readyForRender: z.boolean(),
-      warnings: z.array(z.string()).optional()
-    })
+    schema: ComposeOutputSchema
   }
 });
 const videoGenerationWorkflow = createWorkflow({
@@ -711,16 +903,68 @@ const videoGenerationWorkflow = createWorkflow({
       duration: z.number()
     }),
     warnings: z.array(z.string()).optional()
-  }),
-  steps: [
-    researchStep,
-    scriptStep,
-    mapStep,
-    humanReviewStep,
-    screenshotStep,
-    composeStep
-  ]
-}).commit();
+  })
+}).map(async ({ inputData }) => {
+  const linksText = inputData.links?.length ? `
+
+\u53C2\u8003\u94FE\u63A5:
+${inputData.links.map((l) => `- ${l}`).join("\n")}` : "";
+  const docText = inputData.document ? `
+
+\u53C2\u8003\u6587\u6863:
+${inputData.document}` : "";
+  return {
+    prompt: `\u8BF7\u7814\u7A76\u4EE5\u4E0B\u4E3B\u9898\u5E76\u751F\u6210\u89C6\u9891\u811A\u672C\u5927\u7EB2:
+
+\u6807\u9898: ${inputData.title}${linksText}${docText}`
+  };
+}).then(researchStep).map(async ({ inputData }) => {
+  const keyPointsText = inputData.keyPoints.map((kp) => `- ${kp.title}: ${kp.description}`).join("\n");
+  const scenesText = inputData.scenes.map((s) => `- ${s.sceneTitle} (${s.duration}s): ${s.description}`).join("\n");
+  return {
+    prompt: `\u57FA\u4E8E\u4EE5\u4E0B\u7814\u7A76\u7ED3\u679C\uFF0C\u751F\u6210\u8BE6\u7EC6\u7684\u89C6\u9891\u811A\u672C:
+
+\u6807\u9898: ${inputData.title}
+\u6982\u8FF0: ${inputData.overview}
+
+\u5173\u952E\u70B9:
+${keyPointsText}
+
+\u5EFA\u8BAE\u573A\u666F:
+${scenesText}`
+  };
+}).then(scriptStep).then(mapStep).then(humanReviewStep).map(async ({ inputData }) => {
+  const scenesText = inputData.scenes.map(
+    (s) => `- \u573A\u666F ${s.id}: ${s.title} (${s.duration}s)
+  \u7C7B\u578B: ${s.visualType}
+  \u5185\u5BB9: ${s.visualContent ?? "\u65E0"}`
+  ).join("\n");
+  return {
+    prompt: `\u4E3A\u4EE5\u4E0B\u89C6\u9891\u573A\u666F\u751F\u6210\u622A\u56FE\u7D20\u6750:
+
+\u6807\u9898: ${inputData.title}
+\u603B\u65F6\u957F: ${inputData.totalDuration}s
+
+\u573A\u666F\u5217\u8868:
+${scenesText}`
+  };
+}).then(screenshotStep).map(async ({ inputData }) => {
+  const resourcesText = inputData.resources.map(
+    (r) => `- \u573A\u666F ${r.sceneId}: ${r.imagePath ? `\u56FE\u7247: ${r.imagePath}` : "\u4EE3\u7801\u9AD8\u4EAE"} `
+  ).join("\n");
+  return {
+    prompt: `\u6839\u636E\u4EE5\u4E0B\u7D20\u6750\u751F\u6210 Remotion \u89C6\u9891\u9879\u76EE:
+
+\u622A\u56FE\u76EE\u5F55: ${inputData.screenshotDir}
+\u8D44\u6E90\u5217\u8868:
+${resourcesText}`
+  };
+}).then(composeStep).map(async ({ inputData }) => ({
+  projectPath: inputData.projectPath,
+  videoPath: inputData.videoPath,
+  videoConfig: inputData.videoConfig,
+  warnings: inputData.warnings
+})).commit();
 
 "use strict";
 
@@ -741,6 +985,4 @@ const mastra = new Mastra({
   }
 });
 
-"use strict";
-
-export { mastra };
+export { codeHighlightTool, composeAgent, mastra, playwrightScreenshotTool, remotionRenderTool, researchAgent, screenshotAgent, scriptAgent, videoGenerationWorkflow, webFetchTool };

@@ -1,22 +1,28 @@
 import { scoreTraces, scoreTracesWorkflow } from '@mastra/core/evals/scoreTraces';
+import { Mastra } from '@mastra/core';
+import { Agent, MessageList, isSupportedLanguageModel, tryGenerateWithJsonFallback, tryStreamWithJsonFallback } from '@mastra/core/agent';
+import { webFetchTool } from './tools/8bc8b48c-e26c-4ec5-92e3-4dc1df7734c2.mjs';
+import { playwrightScreenshotTool } from './tools/6cc136c1-ba1e-449f-8b97-4a039460c101.mjs';
+import { codeHighlightTool } from './tools/9fa49f1e-7d11-4f1f-b0b5-d6c00461cc52.mjs';
+import { remotionRenderTool } from './tools/ec8b8b5f-7f84-4658-9b5b-839972058ba0.mjs';
+import { createWorkflow, createStep } from '@mastra/core/workflows';
+import z$1, { z } from 'zod';
 import { mkdtemp, rm, readFile, writeFile, mkdir, copyFile, readdir, stat } from 'fs/promises';
 import * as https from 'https';
-import path, { join, resolve as resolve$2, dirname, extname, basename, isAbsolute, relative } from 'path';
+import { join, resolve as resolve$2, dirname, extname, basename, isAbsolute, relative } from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { Http2ServerRequest } from 'http2';
 import { Readable, Writable } from 'stream';
 import crypto$1 from 'crypto';
-import fs, { existsSync, mkdirSync, readFileSync, createReadStream, statSync } from 'fs';
+import { readFileSync, existsSync, createReadStream, statSync } from 'fs';
 import { versions } from 'process';
-import { createTool, isVercelTool, isProviderDefinedTool, Tool } from '@mastra/core/tools';
-import z$1, { z } from 'zod';
+import { isVercelTool, isProviderDefinedTool, createTool, Tool } from '@mastra/core/tools';
 import { toStandardSchema as toStandardSchema$1, isStandardSchemaWithJSON as isStandardSchemaWithJSON$1 } from '@mastra/core/schema';
 import { zodToJsonSchema as zodToJsonSchema$2 } from '@mastra/core/utils/zod-to-json';
 import z3, { ZodFirstPartyTypeKind } from 'zod/v3';
 import { createRequire } from 'module';
 import { LocalSkillSource } from '@mastra/core/workspace';
-import { Agent, MessageList, isSupportedLanguageModel, tryGenerateWithJsonFallback, tryStreamWithJsonFallback } from '@mastra/core/agent';
 import { isProcessorWorkflow } from '@mastra/core/processors';
 import { MastraError, ErrorDomain, ErrorCategory } from '@mastra/core/error';
 import { coreFeatures } from '@mastra/core/features';
@@ -30,97 +36,17 @@ import { TransformStream as TransformStream$1, ReadableStream as ReadableStream$
 import * as z4 from 'zod/v4';
 import { z as z$2 } from 'zod/v4';
 import { MastraMemory, removeWorkingMemoryTags, extractWorkingMemoryContent } from '@mastra/core/memory';
-import { spawn as spawn$1, exec as exec$1, execFile as execFile$1 } from 'child_process';
+import { exec as exec$1, execFile as execFile$1, spawn as spawn$1 } from 'child_process';
 import util, { promisify } from 'util';
 import { tmpdir } from 'os';
-import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { MastraServerBase } from '@mastra/core/server';
 import { Buffer as Buffer$1 } from 'buffer';
 import { tools } from './tools.mjs';
-import { Mastra } from '@mastra/core';
-import { chromium } from 'playwright';
-import { codeToHtml } from 'shiki';
-
-function htmlToMarkdown(html) {
-  const removeScriptsAndStyles = (content) => content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
-  const convertTagsToMarkdown = (content) => content.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n").replace(/<h4[^>]*>(.*?)<\/h4>/gi, "#### $1\n").replace(/<h5[^>]*>(.*?)<\/h5>/gi, "##### $1\n").replace(/<h6[^>]*>(.*?)<\/h6>/gi, "###### $1\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<b[^>]*>(.*?)<\/b>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<i[^>]*>(.*?)<\/i>/gi, "*$1*").replace(/<a[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n").replace(/<\/div>/gi, "\n").replace(/<\/li>/gi, "\n").replace(/<[^>]*>/g, "");
-  const decodeHtmlEntities = (content) => content.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-  const normalizeWhitespace = (content) => content.replace(/\n\n+/g, "\n\n").replace(/[ \t]+/g, " ").trim();
-  return normalizeWhitespace(
-    decodeHtmlEntities(convertTagsToMarkdown(removeScriptsAndStyles(html)))
-  );
-}
-function extractTitle(html) {
-  const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
-  if (titleMatch && titleMatch[1]) {
-    return titleMatch[1].trim();
-  }
-  const h1Match = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
-  if (h1Match && h1Match[1]) {
-    return h1Match[1].replace(/<[^>]*>/g, "").trim();
-  }
-  return "Untitled";
-}
-const webFetchTool = createTool({
-  id: "web-fetch",
-  description: "Fetch and extract content from a web page, converting HTML to Markdown format",
-  inputSchema: z.object({
-    url: z.string().url("Invalid URL format")
-  }),
-  outputSchema: z.object({
-    content: z.string().describe("Page content in Markdown format"),
-    title: z.string().describe("Page title"),
-    url: z.string().describe("Final URL after redirects")
-  }),
-  execute: async ({ url }) => {
-    const controller = new AbortController();
-    const TIMEOUT_MS = 3e4;
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-      });
-      if (response.status === 404) {
-        throw new Error("PAGE_NOT_FOUND");
-      }
-      if (response.status >= 500) {
-        throw new Error("SERVER_ERROR");
-      }
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const html = await response.text();
-      const title = extractTitle(html);
-      const content = htmlToMarkdown(html);
-      return {
-        content,
-        title,
-        url: response.url
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "PAGE_NOT_FOUND") {
-          throw new Error(
-            "PAGE_NOT_FOUND: The requested page was not found (404)"
-          );
-        }
-        if (error.message === "SERVER_ERROR") {
-          throw new Error("SERVER_ERROR: The server returned a 5xx error");
-        }
-        if (error.name === "AbortError") {
-          throw new Error("TIMEOUT: Request exceeded 30 second timeout");
-        }
-        throw new Error(`Failed to fetch URL: ${error.message}`);
-      }
-      throw new Error("Failed to fetch URL: Unknown error");
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-});
+import './retry.mjs';
+import 'ora';
+import 'chalk';
+import 'playwright';
+import 'shiki';
 
 const researchAgent = new Agent({
   id: "research-agent",
@@ -163,8 +89,16 @@ const researchAgent = new Agent({
 \u5173\u952E\u8981\u6C42\uFF1A
 - \u4F7F\u7528 webFetch \u5DE5\u5177\u83B7\u53D6\u7F51\u9875\u5185\u5BB9
 - \u63D0\u53D6\u6838\u5FC3\u6280\u672F\u6982\u5FF5\u548C\u5B9E\u8DF5\u5EFA\u8BAE
+- \u8BC6\u522B\u5E76\u63D0\u53D6\u4EE3\u7801\u793A\u4F8B\uFF08\u5305\u62EC\u8BED\u8A00\u3001\u7528\u9014\u3001\u5173\u952E\u884C\uFF09
 - \u4E3A\u6BCF\u4E2A\u573A\u666F\u5EFA\u8BAE\u5408\u9002\u7684\u622A\u56FE\u4E3B\u9898
-- \u4FDD\u6301\u4FE1\u606F\u7684\u51C6\u786E\u6027\u548C\u76F8\u5173\u6027`,
+- \u4FDD\u6301\u4FE1\u606F\u7684\u51C6\u786E\u6027\u548C\u76F8\u5173\u6027
+
+\u4EE3\u7801\u793A\u4F8B\u8BC6\u522B\u89C4\u5219\uFF1A
+- \u8BC6\u522B\u4EE3\u7801\u5757\uFF08\u4F7F\u7528\u4E09\u4E2A\u53CD\u5F15\u53F7\u5305\u88F9\u6216\u7F29\u8FDB\u683C\u5F0F\uFF09
+- \u8BB0\u5F55\u4EE3\u7801\u8BED\u8A00\uFF08typescript, python, javascript\u7B49\uFF09
+- \u63D0\u53D6\u4EE3\u7801\u7528\u9014\u8BF4\u660E
+- \u6807\u6CE8\u5173\u952E\u4EE3\u7801\u884C\uFF08\u5982\u9AD8\u4EAE\u884C\u3001\u6CE8\u91CA\u884C\uFF09
+- \u5C06\u4EE3\u7801\u793A\u4F8B\u5173\u8054\u5230\u76F8\u5173\u6280\u672F\u6982\u5FF5`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     webFetch: webFetchTool
@@ -220,123 +154,6 @@ const scriptAgent = new Agent({
   model: "minimax-cn-coding-plan/MiniMax-M2.5"
 });
 
-const OUTPUT_DIR = "./output/screenshots";
-function ensureOutputDir() {
-  if (!existsSync(OUTPUT_DIR)) {
-    mkdirSync(OUTPUT_DIR, { recursive: true });
-  }
-}
-function generateFileName() {
-  return `screenshot-${Date.now()}.png`;
-}
-const playwrightScreenshotTool = createTool({
-  id: "playwright-screenshot",
-  description: "Capture a screenshot of a webpage using Playwright",
-  inputSchema: z.object({
-    url: z.string().url("Invalid URL format"),
-    selector: z.string().optional().describe("CSS selector to capture a specific element"),
-    viewport: z.object({
-      width: z.number().int().positive(),
-      height: z.number().int().positive()
-    }).optional().describe("Viewport size (defaults to 1920x1080)")
-  }),
-  outputSchema: z.object({
-    imagePath: z.string().describe("Path to the saved PNG screenshot"),
-    url: z.string().describe("The URL that was captured"),
-    success: z.boolean().describe("Whether the screenshot was successful")
-  }),
-  execute: async ({
-    url,
-    selector,
-    viewport = { width: 1920, height: 1080 }
-  }) => {
-    ensureOutputDir();
-    const browser = await chromium.launch();
-    const fileName = generateFileName();
-    const imagePath = join(OUTPUT_DIR, fileName);
-    try {
-      const page = await browser.newPage({ viewport });
-      await page.goto(url, { waitUntil: "networkidle", timeout: 3e4 });
-      if (selector) {
-        await page.waitForSelector(selector, { timeout: 1e4 });
-        const element = await page.$(selector);
-        if (element) {
-          await element.screenshot({ path: imagePath });
-        } else {
-          throw new Error(
-            `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`
-          );
-        }
-      } else {
-        await page.screenshot({ path: imagePath, fullPage: true });
-      }
-      return {
-        imagePath,
-        url,
-        success: true
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("SELECTOR_NOT_FOUND")) {
-          throw error;
-        }
-        if (error.message.includes("Timeout")) {
-          throw new Error(
-            "TIMEOUT: Page load or element selection exceeded timeout"
-          );
-        }
-        if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
-          throw new Error("INVALID_URL: URL could not be resolved");
-        }
-        throw new Error(`Failed to capture screenshot: ${error.message}`);
-      }
-      throw new Error("Failed to capture screenshot: Unknown error");
-    } finally {
-      await browser.close();
-    }
-  }
-});
-
-const codeHighlightTool = createTool({
-  id: "code-highlight",
-  description: "Highlight source code using Shiki with support for multiple languages",
-  inputSchema: z.object({
-    code: z.string().min(1).describe("The source code to highlight"),
-    language: z.string().min(1).describe(
-      "Programming language (javascript, typescript, python, go, rust, etc.)"
-    ),
-    highlightLines: z.array(z.number().int().positive()).optional().describe("Line numbers to highlight (1-indexed)"),
-    generateScreenshot: z.boolean().optional().default(false).describe("Whether to generate a screenshot (not implemented in MVP)")
-  }),
-  outputSchema: z.object({
-    html: z.string().describe("Highlighted code in HTML format"),
-    imagePath: z.nullable(z.string()).describe("Screenshot path (null in MVP)")
-  }),
-  execute: async ({ code, language, generateScreenshot }) => {
-    try {
-      const html = await codeToHtml(code, {
-        lang: language,
-        theme: "github-dark"
-      });
-      const imagePath = generateScreenshot ? null : null;
-      return {
-        html,
-        imagePath
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes("unknown language")) {
-          throw new Error(
-            `UNSUPPORTED_LANGUAGE: Language "${language}" is not supported by Shiki`
-          );
-        }
-        throw new Error(`Failed to highlight code: ${error.message}`);
-      }
-      throw new Error("Failed to highlight code: Unknown error");
-    }
-  }
-});
-
 const screenshotAgent = new Agent({
   id: "screenshot-agent",
   name: "Screenshot Agent",
@@ -383,106 +200,6 @@ const screenshotAgent = new Agent({
   tools: {
     playwrightScreenshot: playwrightScreenshotTool,
     codeHighlight: codeHighlightTool
-  }
-});
-
-const remotionRenderTool = createTool({
-  id: "remotion-render",
-  description: "\u6E32\u67D3 Remotion \u9879\u76EE\u4E3A\u89C6\u9891\u6587\u4EF6",
-  inputSchema: z.object({
-    projectPath: z.string().describe("Remotion \u9879\u76EE\u8DEF\u5F84"),
-    outputPath: z.string().describe("\u8F93\u51FA\u89C6\u9891\u8DEF\u5F84"),
-    format: z.enum(["mp4", "webm"]).optional().describe("\u89C6\u9891\u683C\u5F0F (\u9ED8\u8BA4: mp4)"),
-    fps: z.number().optional().describe("\u5E27\u7387 (\u9ED8\u8BA4: 30)")
-  }),
-  outputSchema: z.object({
-    videoPath: z.string().describe("\u751F\u6210\u7684\u89C6\u9891\u6587\u4EF6\u8DEF\u5F84"),
-    duration: z.number().describe("\u89C6\u9891\u65F6\u957F\uFF08\u79D2\uFF09"),
-    success: z.boolean().describe("\u6E32\u67D3\u662F\u5426\u6210\u529F"),
-    error: z.string().optional().describe("\u9519\u8BEF\u4FE1\u606F")
-  }),
-  execute: async ({ projectPath, outputPath, format = "mp4", fps = 30 }) => {
-    return new Promise((resolve) => {
-      try {
-        if (!fs.existsSync(projectPath)) {
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `\u9879\u76EE\u8DEF\u5F84\u4E0D\u5B58\u5728: ${projectPath}`
-          });
-        }
-        const outputDir = path.dirname(outputPath);
-        if (!fs.existsSync(outputDir)) {
-          fs.mkdirSync(outputDir, { recursive: true });
-        }
-        const args = [
-          "remotion",
-          "render",
-          projectPath,
-          outputPath,
-          "--codec",
-          "h264",
-          "--fps",
-          fps.toString()
-        ];
-        if (format === "webm") {
-          args.push("--webm");
-        }
-        const renderProcess = spawn$1("npx", args, {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: process.cwd()
-        });
-        let stdout = "";
-        let stderr = "";
-        renderProcess.stdout?.on("data", (data) => {
-          stdout += data.toString();
-        });
-        renderProcess.stderr?.on("data", (data) => {
-          stderr += data.toString();
-        });
-        renderProcess.on("close", (code) => {
-          if (code === 0) {
-            if (fs.existsSync(outputPath)) {
-              const durationSeconds = fps * 60 / fps;
-              return resolve({
-                videoPath: outputPath,
-                duration: durationSeconds,
-                success: true
-              });
-            }
-            return resolve({
-              videoPath: "",
-              duration: 0,
-              success: false,
-              error: "\u6E32\u67D3\u5B8C\u6210\u4F46\u8F93\u51FA\u6587\u4EF6\u4E0D\u5B58\u5728"
-            });
-          }
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `\u6E32\u67D3\u5931\u8D25 (Exit code: ${code}): ${stderr || stdout}`
-          });
-        });
-        renderProcess.on("error", (error) => {
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `\u8FDB\u7A0B\u9519\u8BEF: ${error.message}`
-          });
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "\u672A\u77E5\u9519\u8BEF";
-        return resolve({
-          videoPath: "",
-          duration: 0,
-          success: false,
-          error: `\u5F02\u5E38\u9519\u8BEF: ${errorMessage}`
-        });
-      }
-    });
   }
 });
 
