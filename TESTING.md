@@ -61,7 +61,7 @@ npm run dev
 npm run dev -- create "视频标题"
 
 # 带链接
-npm run dev -- create "视频标题" --links "https://example.com"
+npm run dev -- create "Mastra 框架" --links "https://mastra.ai/docs"
 
 # 带文档
 npm run dev -- create "视频标题" --doc ./notes.md
