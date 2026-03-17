@@ -52,7 +52,10 @@ export const scriptAgent = new Agent({
       "order": 2,
       "segmentOrder": 1,
       "type": "text",
-      "content": "这是场景二的文本内容"
+      "content": "这是场景二的文本内容",
+      "effects": [
+        { "type": "textFadeIn", "direction": "up", "stagger": 0.1 }
+      ]
     }
   ],
   "transitions": [
@@ -63,6 +66,11 @@ export const scriptAgent = new Agent({
       "duration": 0.5
     }
   ]
-}`,
+}
+
+重要规则：
+- screenshot 和 effects 字段：如果该场景不需要，不要输出该字段（完全省略，不要输出 null 或空对象）
+- transitions 字段是可选的，可以不输出
+- 所有字段必须严格遵循上述 JSON 格式`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
 });

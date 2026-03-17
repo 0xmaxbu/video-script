@@ -1,0 +1,280 @@
+{
+  "title": "TypeScript Generics 完全指南",
+  "scenes": [
+    {
+      "order": 1,
+      "segmentOrder": 1,
+      "type": "url",
+      "content": "https://www.typescriptlang.org/docs/handbook/2/generics.html",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 14,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "sceneFade",
+          "duration": 0.5
+        },
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.1
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "segmentOrder": 1,
+      "type": "text",
+      "content": "泛型函数基础\n\nidentity 函数是泛型最基础的示例。使用类型变量 Type 来捕获用户提供的类型，并在返回类型中使用相同类型。与使用 any 不同，泛型不会丢失类型信息。支持两种调用方式：显式指定类型参数（如 identity<string>）和使用类型推断。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "segmentOrder": 2,
+      "type": "text",
+      "content": "泛型类型变量的工作方式\n\n当使用泛型时，编译器会强制要求正确处理所有泛型类型的参数。例如，不能假设泛型类型参数具有特定成员（如 .length）。可以通过将参数声明为数组类型（如 Type[]）来访问数组方法，因为数组必定有 .length 属性。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "segmentOrder": 3,
+      "type": "text",
+      "content": "泛型类型与泛型接口\n\n泛型函数的类型与普通函数类似，类型参数列表放在最前面。可以使用对象字面量类型的调用签名来定义泛型类型，然后将其提取为泛型接口。也可以将类型参数移到接口级别，使所有成员都能访问该类型参数。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "segmentOrder": 4,
+      "type": "text",
+      "content": "泛型类\n\n泛型类在类名后使用尖括号（<>）声明类型参数列表。与接口类似，将类型参数放在类本身上可以确保类的所有属性都使用相同的类型。注意：泛型类只能在其实例端泛型化，静态成员不能使用类的类型参数。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "segmentOrder": 5,
+      "type": "text",
+      "content": "泛型约束（Generic Constraints）\n\n当需要限制泛型类型必须具有某些特性时，可以使用 extends 关键字定义约束。例如，限制类型必须具有 .length 属性。这样编译器就能确保传入的类型满足要求，而可以在函数体内安全地使用这些属性。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "segmentOrder": 6,
+      "type": "text",
+      "content": "在泛型约束中使用类型参数\n\n可以使用一个类型参数对另一个类型参数进行约束。例如，获取对象属性时，约束 key 必须是 obj 的键之一，确保不会访问不存在的属性。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "segmentOrder": 7,
+      "type": "text",
+      "content": "在泛型中使用类类型\n\n使用泛型创建工厂函数时，需要通过构造函数来引用类类型。可以使用 { new(): Type } 语法来描述构造函数类型。更高级的用法是通过 prototype 属性来推断和约束构造函数与实例类型之间的关系。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "segmentOrder": 8,
+      "type": "text",
+      "content": "泛型参数默认值\n\n可以为泛型类型参数声明默认值，使其成为可选参数。默认类型必须满足类型参数的约束（如果存在）。指定类型参数时只需指定必需参数，未指定的将使用默认值。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "segmentOrder": 9,
+      "type": "text",
+      "content": "方差注解（Variance Annotations）\n\n方差注解是高级特性，用于解决特定问题。协变（covariance）和逆变（contravariance）描述了两个泛型类型之间的关系。使用 in 和 out 关键字可以显式指定类型参数的方差。通常 TypeScript 会自动推断方差，只有极少数情况下需要手动指定。",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 16,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.2
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "segmentOrder": 9,
+      "type": "text",
+      "content": "总结\n\n今天我们学习了 TypeScript 泛型的核心概念：\n\n• 泛型函数基础与类型推断\n• 泛型类型变量的工作方式\n• 泛型接口与泛型类\n• 使用 extends 进行约束\n• 类型参数间的约束\n• 工厂函数中的类类型\n• 默认类型参数\n• 方差注解\n\n感谢观看！",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 18,
+        "fontFamily": "Fira Code"
+      },
+      "effects": [
+        {
+          "type": "textFadeIn",
+          "direction": "up",
+          "stagger": 0.15
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": 1,
+      "to": 2,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 5,
+      "to": 6,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 7,
+      "to": 8,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 8,
+      "to": 9,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 9,
+      "to": 10,
+      "type": "sceneFade",
+      "duration": 0.3
+    },
+    {
+      "from": 10,
+      "to": 11,
+      "type": "sceneFade",
+      "duration": 0.3
+    }
+  ]
+}
