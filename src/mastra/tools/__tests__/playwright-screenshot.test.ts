@@ -40,11 +40,11 @@ describe("playwrightScreenshotTool", () => {
       )) as { imagePath: string; url: string };
 
       expect(result.url).toBe("https://example.com");
-      expect(result.imagePath).toContain("screenshot-");
+      expect(result.imagePath).toContain("scene-");
       expect(mockBrowser.newPage).toHaveBeenCalled();
       expect(mockPage.goto).toHaveBeenCalledWith("https://example.com", {
         waitUntil: "networkidle",
-        timeout: 30000,
+        timeout: 60000,
       });
       expect(mockPage.screenshot).toHaveBeenCalled();
       expect(mockBrowser.close).toHaveBeenCalled();
