@@ -1,1 +1,1 @@
-export { videoGenerationWorkflow } from "./video-generation-workflow.js";
+// Workflows removed - using manual subcommands instead

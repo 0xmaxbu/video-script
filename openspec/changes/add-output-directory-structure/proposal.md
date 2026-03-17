@@ -10,14 +10,14 @@
    - `script` - 脚本阶段，生成 script.json（动画服务于口播）
    - `screenshot` - 截图阶段，批量生成截图
    - `compose` - 合成阶段，生成视频
-3. **结构化输出目录**：`{cwd}/output/年/周-月_日-月_日/选题slug/`
+3. **结构化输出目录**：`{基准路径}/{年}/{周-月_日-月_日}_{选题slug}/`
 4. **JSON 文件持久化**：每个阶段的产出以固定文件名保存
 
 ## Capabilities
 
 ### New Capabilities
 
-- **research 子命令**：抓取网页内容，生成 research.json（含口播内容、重点知识、参考链接）
+- **research 子命令**：抓取网页内容，生成 research.json（含口播内容、关键技术点 JSON、参考链接）
 - **script 子命令**：读取 research.json，分析页面，按口播节奏编排场景和动画，生成 script.json
 - **screenshot 子命令**：读取 script.json，按配置批量截图，系统自动生成文件名
 - **compose 子命令**：读取 script.json 和截图，生成视频（output.mp4）和字幕（output.srt）

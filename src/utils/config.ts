@@ -20,6 +20,14 @@ const VideoSectionSchema = z.object({
   codec: z.string().default("h264"),
 });
 
+const ResearchConfigSchema = z.object({
+  maxSegments: z.number().int().positive().default(20),
+});
+
+const ScriptConfigSchema = z.object({
+  maxScenes: z.number().int().positive().default(30),
+});
+
 const ScreenshotConfigSchema = z.object({
   browserPoolSize: z.number().int().positive().default(3),
   viewport: z
@@ -28,6 +36,8 @@ const ScreenshotConfigSchema = z.object({
       height: z.number().int().positive().default(1080),
     })
     .default({ width: 1920, height: 1080 }),
+  timeout: z.number().int().positive().default(30000),
+  retryCount: z.number().int().positive().default(3),
 });
 
 export const VideoConfigSchema = z.object({
@@ -42,9 +52,13 @@ export const VideoConfigSchema = z.object({
     fps: 30,
     codec: "h264",
   }),
+  research: ResearchConfigSchema.default({ maxSegments: 20 }),
+  script: ScriptConfigSchema.default({ maxScenes: 30 }),
   screenshot: ScreenshotConfigSchema.default({
     browserPoolSize: 3,
     viewport: { width: 1920, height: 1080 },
+    timeout: 30000,
+    retryCount: 3,
   }),
 });
 

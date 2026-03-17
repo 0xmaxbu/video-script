@@ -45,11 +45,17 @@
 - [ ] 6.2 删除 `review.ts`（不再需要）
 - [ ] 6.3 清理相关导入和引用
 
-## 7. 测试与文档
+## 7. SRT 字幕生成
 
-- [ ] 7.1 为新类型定义编写单元测试
-- [ ] 7.2 为 output-directory 工具编写单元测试
-- [ ] 7.3 运行完整测试：`npm test`
-- [ ] 7.4 更新 TESTING.md 文档
-- [ ] 7.5 更新 README.md
-- [ ] 7.6 手动测试完整流程：research → script → screenshot → compose
+- [ ] 7.1 实现 SRT 字幕生成器（读取 script.json 的 narration）
+- [ ] 7.2 实现时间轴同步（scene duration → SRT time codes）
+- [ ] 7.3 添加单元测试
+
+## 8. 测试与文档
+
+- [ ] 8.1 为新类型定义编写单元测试
+- [ ] 8.2 为 output-directory 工具编写单元测试
+- [ ] 8.3 运行完整测试：`npm test`
+- [ ] 8.4 更新 TESTING.md 文档
+- [ ] 8.5 更新 README.md
+- [ ] 8.6 手动测试完整流程：research → script → screenshot → compose
