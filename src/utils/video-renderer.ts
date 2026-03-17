@@ -165,7 +165,7 @@ export async function renderVideo(
         const args = [
           "remotion",
           "render",
-          projectResult.projectPath,
+          projectResult.mainComponentPath,
           videoOutputPath,
           "--codec",
           "h264",

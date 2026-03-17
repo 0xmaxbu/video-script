@@ -131,7 +131,7 @@ export async function generateRemotionProject(
     );
 
     // Generate src/index.ts (entry point)
-    const indexContent = `import { registerRoot } from "@remotion/cli/player";
+    const indexContent = `import { registerRoot } from "@remotion/cli";
 import { RemotionRoot } from "./Root";
 
 registerRoot(RemotionRoot);
