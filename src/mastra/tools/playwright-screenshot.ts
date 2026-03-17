@@ -5,18 +5,6 @@ import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { withRetry } from "../../utils/retry.js";
 
-const OUTPUT_DIR = "./output/screenshots";
-
-function ensureOutputDir(): void {
-  if (!existsSync(OUTPUT_DIR)) {
-    mkdirSync(OUTPUT_DIR, { recursive: true });
-  }
-}
-
-function generateFileName(): string {
-  return `screenshot-${Date.now()}.png`;
-}
-
 export const playwrightScreenshotTool = createTool({
   id: "playwright-screenshot",
   description: "Capture a screenshot of a webpage using Playwright",
@@ -33,6 +21,16 @@ export const playwrightScreenshotTool = createTool({
       })
       .optional()
       .describe("Viewport size (defaults to 1920x1080)"),
+    outputDir: z
+      .string()
+      .optional()
+      .describe(
+        "Output directory for screenshots (defaults to ./output/screenshots)",
+      ),
+    filename: z
+      .string()
+      .optional()
+      .describe("Output filename (e.g., scene-001.png)"),
   }),
   outputSchema: z.object({
     imagePath: z.string().describe("Path to the saved PNG screenshot"),
@@ -43,17 +41,21 @@ export const playwrightScreenshotTool = createTool({
     url,
     selector,
     viewport = { width: 1920, height: 1080 },
+    outputDir = "./output/screenshots",
+    filename,
   }) => {
     return withRetry(
       async () => {
-        ensureOutputDir();
+        if (!existsSync(outputDir)) {
+          mkdirSync(outputDir, { recursive: true });
+        }
         const browser = await chromium.launch();
-        const fileName = generateFileName();
-        const imagePath = join(OUTPUT_DIR, fileName);
+        const fileName = filename || `scene-${Date.now()}.png`;
+        const imagePath = join(outputDir, fileName);
 
         try {
           const page = await browser.newPage({ viewport });
-          await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+          await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
 
           if (selector) {
             await page.waitForSelector(selector, { timeout: 10000 });

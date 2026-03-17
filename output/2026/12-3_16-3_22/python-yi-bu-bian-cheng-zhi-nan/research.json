@@ -1,0 +1,125 @@
+{
+  "title": "Python 异步编程指南",
+  "segments": [
+    {
+      "order": 1,
+      "sentence": "协程是可以暂停和恢复执行的对象，使用 async def 定义。协程通过 await 关键字让出控制权给事件循环，使其他协程得以执行。协程函数调用返回协程对象，需通过 asyncio.run() 或 await 执行。",
+      "keyContent": "{\"concept\":\"协程（Coroutine）\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "sentence": "async def 用于定义协程函数，await 用于暂停协程执行并等待另一个协程完成。await 只能在 async def 函数内部使用，它将控制权交还给事件循环，允许其他任务运行。",
+      "keyContent": "{\"concept\":\"async/await 语法\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "sentence": "事件循环是 asyncio 的核心，负责调度和执行协程。它监控协程状态，在 I/O 操作完成时唤醒等待的协程。asyncio.run() 是启动事件循环的推荐方式。",
+      "keyContent": "{\"concept\":\"事件循环（Event Loop）\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "sentence": "gather() 用于并发运行多个协程并收集结果，create_task() 用于将协程包装为任务并调度执行。as_completed() 则按完成顺序返回任务结果。",
+      "keyContent": "{\"concept\":\"asyncio.gather() 和 create_task()\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "sentence": "协程可以链式调用，一个协程 await 另一个协程并将结果传递给下一个。这种模式适合分步骤的数据处理流程，如先获取用户信息再获取用户帖子。",
+      "keyContent": "{\"concept\":\"协程链式调用\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "sentence": "生产者-消费者模式中，生产者向队列添加数据，消费者从队列取出处理。队列解耦了生产者和消费者，支持多个消费者并发处理任务。",
+      "keyContent": "{\"concept\":\"异步队列（asyncio.Queue）\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "sentence": "async with 用于异步上下文管理器（如异步 HTTP 请求），确保资源正确释放。async for 用于异步迭代器，支持在迭代过程中让出控制权给事件循环。",
+      "keyContent": "{\"concept\":\"async with 和 async for\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "sentence": "asyncio 适用于 I/O 密集型任务：网络请求（HTTP、WebSocket）、数据库操作、文件读写、API 服务器构建。不适用于 CPU 密集型任务（应使用 multiprocessing）。",
+      "keyContent": "{\"concept\":\"适用场景\"}",
+      "links": [
+        {
+          "url": "https://docs.python.org/3/library/asyncio.html",
+          "key": "asyncio — Asynchronous I/O — Python 3.14.3 documentation"
+        },
+        {
+          "url": "https://realpython.com/async-io-python/",
+          "key": "Python's asyncio: A Hands-On Walkthrough – Real Python"
+        }
+      ]
+    }
+  ]
+}
