@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
-import { ScriptOutput } from "../types/script";
+import { ScriptOutput } from "../types/script.js";
 
 // Input validation schema - matches new ScriptOutputSchema
 const GenerateProjectInputSchema = z.object({

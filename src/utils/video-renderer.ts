@@ -1,11 +1,11 @@
 import { extname, join } from "path";
 import { z } from "zod";
-import { ScriptOutput, SceneScript } from "../types/script";
+import { ScriptOutput, SceneScript } from "../types/script.js";
 import {
   generateRemotionProject,
   type GenerateProjectInput,
-} from "./remotion-project-generator";
-import { cleanupRemotionTempDir } from "./cleanup";
+} from "./remotion-project-generator.js";
+import { cleanupRemotionTempDir } from "./cleanup.js";
 
 /**
  * Calculate total duration from scenes

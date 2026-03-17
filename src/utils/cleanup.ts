@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { z } from "zod";
 import path from "path";
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 
 export const CleanupOptionsSchema = z.object({
   remotionProjects: z.boolean().default(true),
