@@ -1,5 +1,7 @@
-import pinyin from "pinyin";
+import * as pinyinLib from "pinyin";
 import path from "path";
+
+const pinyinInstance = new pinyinLib.Pinyin();
 
 function getWeekNumber(date: Date): number {
   const d = new Date(
@@ -35,8 +37,8 @@ function getWeekRange(date: Date): {
 }
 
 export async function slugify(text: string): Promise<string> {
-  const py = pinyin(text, { style: pinyin.STYLE_NORMAL });
-  const words = py.map((p) => p.join("")).join(" ");
+  const py = pinyinInstance.pinyin(text, { style: 0 });
+  const words = py.map((p: string[]) => p.join("")).join(" ");
   return words
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
