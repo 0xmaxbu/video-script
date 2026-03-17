@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import "dotenv/config";
+
 import { Command } from "commander";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
@@ -21,10 +23,7 @@ import {
   ResearchOutputSchema,
   type ResearchOutput,
 } from "../types/research.js";
-import {
-  ScriptOutputSchema,
-  type ScriptOutput,
-} from "../types/script.js";
+import { ScriptOutputSchema, type ScriptOutput } from "../types/script.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,7 +43,10 @@ program
   .description("Generate research.json from title, links, and document")
   .option("--links <urls>", "Reference links (comma-separated)")
   .option("--doc <file>", "Reference document file path")
-  .option("--output <dir>", "Output directory (optional, auto-generated if not specified)")
+  .option(
+    "--output <dir>",
+    "Output directory (optional, auto-generated if not specified)",
+  )
   .action(async (title, options) => {
     const spinner = ora();
     gracefulShutdown.setSpinner(spinner);
@@ -125,10 +127,7 @@ program
           segments:
             parsed.segments ||
             parsed.keyPoints?.map(
-              (
-                kp: { title: string; description: string },
-                index: number,
-              ) => ({
+              (kp: { title: string; description: string }, index: number) => ({
                 order: index + 1,
                 sentence: kp.description || kp.title,
                 keyContent: JSON.stringify({ concept: kp.title }),
@@ -147,7 +146,9 @@ program
         spinner.fail("Failed to parse research output");
         throw new Error(
           "Failed to parse research output: " +
-            (parseError instanceof Error ? parseError.message : String(parseError)),
+            (parseError instanceof Error
+              ? parseError.message
+              : String(parseError)),
         );
       }
 
@@ -174,7 +175,9 @@ program
 
       if (researchOutput.segments.length > 3) {
         console.log(
-          chalk.gray("  ... and " + (researchOutput.segments.length - 3) + " more"),
+          chalk.gray(
+            "  ... and " + (researchOutput.segments.length - 3) + " more",
+          ),
         );
       }
 
@@ -206,7 +209,9 @@ program
 
       if (!existsSync(researchPath)) {
         throw new Error(
-          "research.json not found in " + dir + ". Run 'video-script research' first.",
+          "research.json not found in " +
+            dir +
+            ". Run 'video-script research' first.",
         );
       }
 
@@ -250,7 +255,9 @@ program
         spinner.fail("Failed to parse script output");
         throw new Error(
           "Failed to parse script output: " +
-            (parseError instanceof Error ? parseError.message : String(parseError)),
+            (parseError instanceof Error
+              ? parseError.message
+              : String(parseError)),
         );
       }
 
@@ -314,7 +321,9 @@ program
 
       if (!existsSync(scriptPath)) {
         throw new Error(
-          "script.json not found in " + dir + ". Run 'video-script script' first.",
+          "script.json not found in " +
+            dir +
+            ". Run 'video-script script' first.",
         );
       }
 
@@ -404,7 +413,9 @@ program
       screenshotResult.screenshots.slice(0, 5).forEach((s) => {
         const icon = s.success ? "✓" : "✗";
         const color = s.success ? chalk.green : chalk.red;
-        console.log(color("  " + icon + " Scene " + s.sceneOrder + ": " + s.filename));
+        console.log(
+          color("  " + icon + " Scene " + s.sceneOrder + ": " + s.filename),
+        );
       });
 
       if (screenshotResult.screenshots.length > 5) {
@@ -433,7 +444,9 @@ program
 
 program
   .command("compose <dir>")
-  .description("Generate final video and subtitles from script.json and screenshots")
+  .description(
+    "Generate final video and subtitles from script.json and screenshots",
+  )
   .action(async (dir) => {
     const spinner = ora();
     gracefulShutdown.setSpinner(spinner);
@@ -444,13 +457,17 @@ program
 
       if (!existsSync(scriptPath)) {
         throw new Error(
-          "script.json not found in " + dir + ". Run 'video-script script' first.",
+          "script.json not found in " +
+            dir +
+            ". Run 'video-script script' first.",
         );
       }
 
       if (!existsSync(screenshotsDir)) {
         throw new Error(
-          "screenshots directory not found in " + dir + ". Run 'video-script screenshot' first.",
+          "screenshots directory not found in " +
+            dir +
+            ". Run 'video-script screenshot' first.",
         );
       }
 

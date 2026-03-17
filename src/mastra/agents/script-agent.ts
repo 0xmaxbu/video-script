@@ -33,16 +33,34 @@ export const scriptAgent = new Agent({
 输出 JSON 格式：
 {
   "title": "视频标题",
-  "totalDuration": 300,
   "scenes": [
     {
-      "id": 1,
-      "title": "场景标题",
-      "startTime": 0,
-      "endTime": 20,
-      "narration": "旁白文本，口语化表达",
-      "visualType": "screenshot|code|diagram|animation|text",
-      "visualContent": "URL 或代码片段（如需要）"
+      "order": 1,
+      "segmentOrder": 1,
+      "type": "url",
+      "content": "https://example.com/page",
+      "screenshot": {
+        "background": "#1E1E1E",
+        "width": 1920,
+        "fontSize": 14
+      },
+      "effects": [
+        { "type": "sceneFade", "duration": 0.5 }
+      ]
+    },
+    {
+      "order": 2,
+      "segmentOrder": 1,
+      "type": "text",
+      "content": "这是场景二的文本内容"
+    }
+  ],
+  "transitions": [
+    {
+      "from": 1,
+      "to": 2,
+      "type": "sceneFade",
+      "duration": 0.5
     }
   ]
 }`,
