@@ -17,7 +17,7 @@ import {
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
-import { renderVideo, generateSrt } from "../utils/index.js";
+import { spawnRenderer } from "../utils/index.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -489,6 +489,8 @@ program
         }
       });
 
+      const srtPath = join(dir, "output.srt");
+
       spinner.start("🎬 Rendering video...");
 
       const onProgress = (progress: number) => {
@@ -507,35 +509,32 @@ program
         }
       };
 
-      const videoResult = await renderVideo({
-        script,
-        screenshotResources,
-        outputDir: dir,
-        videoFileName: "output.mp4",
-        onProgress,
-      });
+      const rendererScript = {
+        title: script.title,
+        totalDuration: script.scenes.length * 10,
+        scenes: script.scenes.map((scene) => ({
+          id: String(scene.order),
+          type: "feature" as const,
+          title: scene.content.substring(0, 50),
+          narration: scene.content,
+          duration: 10,
+        })),
+      };
+
+      const videoResult = await spawnRenderer(
+        {
+          script: rendererScript,
+          screenshotResources,
+          outputDir: dir,
+          videoFileName: "output.mp4",
+          srtOutputPath: srtPath,
+        },
+        { onProgress },
+      );
 
       if (!videoResult.success) {
-        throw new Error(videoResult.error || "Video rendering failed");
+        throw new Error(videoResult.error ?? "Video rendering failed");
       }
-
-      spinner.text = "🎬 Generating subtitles...";
-
-      const srtPath = join(dir, "output.srt");
-      await generateSrt({
-        script: {
-          title: script.title,
-          totalDuration: videoResult.duration,
-          scenes: script.scenes.map((scene) => ({
-            id: String(scene.order),
-            type: "feature" as const,
-            title: scene.content.substring(0, 50),
-            narration: scene.content,
-            duration: 10,
-          })),
-        },
-        outputPath: srtPath,
-      });
 
       spinner.succeed("✅ Video composed!");
 
@@ -544,7 +543,7 @@ program
       console.log(chalk.blue("📝 Subtitles:"), srtPath);
       console.log(
         chalk.blue("⏱️  Duration:"),
-        Math.round(videoResult.duration) + "s",
+        Math.round(videoResult.duration ?? 0) + "s",
       );
       console.log(chalk.blue("🎬 Scenes:"), script.scenes.length);
 
