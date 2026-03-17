@@ -1,40 +1,39 @@
 import { extname, join } from "path";
 import { z } from "zod";
-import { ScriptOutput, SceneScript } from "./types.js";
+import { ScriptOutput, Scene } from "./types.js";
 import {
   generateRemotionProject,
   type GenerateProjectInput,
 } from "./remotion-project-generator.js";
 import { cleanupRemotionTempDir } from "./cleanup.js";
 
-export function calculateTotalDuration(scenes: SceneScript[]): number {
-  return scenes.length * 10;
+export function calculateTotalDuration(scenes: Scene[]): number {
+  return scenes.reduce((sum, scene) => sum + scene.duration, 0);
 }
 
 export const RenderVideoInputSchema = z.object({
   script: z.object({
     title: z.string(),
+    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        order: z.number().int().positive(),
-        segmentOrder: z.number().int().positive(),
-        type: z.enum(["url", "text"]),
-        content: z.string(),
-        screenshot: z
+        id: z.string(),
+        type: z.enum(["intro", "feature", "code", "outro"]),
+        title: z.string(),
+        narration: z.string(),
+        duration: z.number().positive(),
+        startTime: z.number().optional(),
+        endTime: z.number().optional(),
+        visualContent: z.string().optional(),
+        code: z
           .object({
-            background: z.string().default("#1E1E1E"),
-            maxLines: z.number().int().positive().optional(),
-            width: z.number().int().positive().default(1920),
-            fontSize: z.number().int().positive().default(14),
-            fontFamily: z.string().default("Fira Code"),
-            padding: z.number().int().optional(),
-            theme: z.string().optional(),
+            language: z.string(),
+            code: z.string(),
+            highlightLines: z.array(z.number().int().positive()).optional(),
           })
           .optional(),
-        effects: z.array(z.any()).optional(),
       }),
     ),
-    transitions: z.array(z.any()).optional(),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputDir: z.string().min(1),
