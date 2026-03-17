@@ -13,11 +13,11 @@ import {
   researchAgent,
   scriptAgent,
   screenshotAgent,
-  composeAgent,
 } from "../mastra/agents/index.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
+import { renderVideo, generateSrt } from "../utils/index.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -480,88 +480,73 @@ program
         JSON.parse(scriptContent),
       );
 
-      const config = loadConfig();
-
-      spinner.start("🎬 Running compose agent...");
-
-      const result = await composeAgent.generate([
-        {
-          role: "user",
-          content:
-            "Compose a video from the following script and screenshots.\n\nScript:\n" +
-            JSON.stringify(script, null, 2) +
-            "\n\nScreenshots directory: " +
-            screenshotsDir +
-            "\nOutput directory: " +
-            dir +
-            "\n\nVideo config:\n- FPS: " +
-            (config.video?.fps || 30) +
-            "\n- Codec: " +
-            (config.video?.codec || "h264") +
-            "\n- Aspect ratio: " +
-            (config.video?.defaultAspectRatio || "16:9") +
-            '\n\nGenerate:\n1. output.mp4 - The final video file\n2. output.srt - Subtitles file\n\nReturn a JSON object with the output paths:\n{\n  "videoPath": "' +
-            join(dir, "output.mp4") +
-            '",\n  "srtPath": "' +
-            join(dir, "output.srt") +
-            '",\n  "duration": 300,\n  "scenes": ' +
-            script.scenes.length +
-            "\n}",
-        },
-      ]);
-
-      spinner.text = "🎬 Processing compose results...";
-
-      interface ComposeResult {
-        videoPath: string;
-        srtPath: string;
-        duration?: number;
-        scenes?: number;
-      }
-
-      let composeResult: ComposeResult;
-      try {
-        const textContent =
-          typeof result.text === "string"
-            ? result.text
-            : JSON.stringify(result.text);
-
-        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          composeResult = {
-            videoPath: join(dir, "output.mp4"),
-            srtPath: join(dir, "output.srt"),
-            duration: script.scenes.length * 30,
-            scenes: script.scenes.length,
-          };
-        } else {
-          composeResult = JSON.parse(jsonMatch[0]);
+      const screenshotResources: Record<string, string> = {};
+      script.scenes.forEach((scene, index) => {
+        const filename = `scene-${String(index + 1).padStart(3, "0")}.png`;
+        const filepath = join(screenshotsDir, filename);
+        if (existsSync(filepath)) {
+          screenshotResources[String(scene.order)] = filepath;
         }
-      } catch {
-        composeResult = {
-          videoPath: join(dir, "output.mp4"),
-          srtPath: join(dir, "output.srt"),
-          duration: script.scenes.length * 30,
-          scenes: script.scenes.length,
-        };
+      });
+
+      spinner.start("🎬 Rendering video...");
+
+      const onProgress = (progress: number) => {
+        if (progress === 10) {
+          spinner.text = "🎬 Generating Remotion project...";
+        } else if (progress === 30) {
+          spinner.text = "🎬 Preparing video output...";
+        } else if (progress === 50) {
+          spinner.text = "🎬 Rendering video frames...";
+        } else if (progress === 80) {
+          spinner.text = "🎬 Finalizing video...";
+        } else if (progress === 90) {
+          spinner.text = "🎬 Cleaning up...";
+        } else if (progress === 100) {
+          spinner.text = "🎬 Complete!";
+        }
+      };
+
+      const videoResult = await renderVideo({
+        script,
+        screenshotResources,
+        outputDir: dir,
+        videoFileName: "output.mp4",
+        onProgress,
+      });
+
+      if (!videoResult.success) {
+        throw new Error(videoResult.error || "Video rendering failed");
       }
+
+      spinner.text = "🎬 Generating subtitles...";
+
+      const srtPath = join(dir, "output.srt");
+      await generateSrt({
+        script: {
+          title: script.title,
+          totalDuration: videoResult.duration,
+          scenes: script.scenes.map((scene) => ({
+            id: String(scene.order),
+            type: "feature" as const,
+            title: scene.content.substring(0, 50),
+            narration: scene.content,
+            duration: 10,
+          })),
+        },
+        outputPath: srtPath,
+      });
 
       spinner.succeed("✅ Video composed!");
 
       console.log(chalk.green("\n🎉 Composition Complete!\n"));
-      console.log(chalk.blue("📁 Video:"), composeResult.videoPath);
-      console.log(chalk.blue("📝 Subtitles:"), composeResult.srtPath);
-
-      if (composeResult.duration) {
-        console.log(
-          chalk.blue("⏱️  Duration:"),
-          Math.round(composeResult.duration) + "s",
-        );
-      }
-
-      if (composeResult.scenes) {
-        console.log(chalk.blue("🎬 Scenes:"), composeResult.scenes);
-      }
+      console.log(chalk.blue("📁 Video:"), videoResult.videoPath);
+      console.log(chalk.blue("📝 Subtitles:"), srtPath);
+      console.log(
+        chalk.blue("⏱️  Duration:"),
+        Math.round(videoResult.duration) + "s",
+      );
+      console.log(chalk.blue("🎬 Scenes:"), script.scenes.length);
 
       console.log(chalk.green("\n✨ Your video is ready!"));
     } catch (error) {

@@ -1,6 +1,6 @@
 import { extname, join } from "path";
 import { z } from "zod";
-import { ScriptOutput } from "../types";
+import { ScriptOutput, SceneScript } from "../types/script";
 import {
   generateRemotionProject,
   type GenerateProjectInput,
@@ -8,21 +8,40 @@ import {
 import { cleanupRemotionTempDir } from "./cleanup";
 
 /**
- * Input schema for video rendering
+ * Calculate total duration from scenes
+ * Default: 10 seconds per scene
+ */
+export function calculateTotalDuration(scenes: SceneScript[]): number {
+  return scenes.length * 10;
+}
+
+/**
+ * Input schema for video rendering - matches new ScriptOutputSchema format
  */
 export const RenderVideoInputSchema = z.object({
   script: z.object({
     title: z.string(),
-    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        id: z.string(),
-        type: z.enum(["intro", "feature", "code", "outro"]),
-        title: z.string(),
-        narration: z.string(),
-        duration: z.number().positive(),
+        order: z.number().int().positive(),
+        segmentOrder: z.number().int().positive(),
+        type: z.enum(["url", "text"]),
+        content: z.string(),
+        screenshot: z
+          .object({
+            background: z.string().default("#1E1E1E"),
+            maxLines: z.number().int().positive().optional(),
+            width: z.number().int().positive().default(1920),
+            fontSize: z.number().int().positive().default(14),
+            fontFamily: z.string().default("Fira Code"),
+            padding: z.number().int().optional(),
+            theme: z.string().optional(),
+          })
+          .optional(),
+        effects: z.array(z.any()).optional(),
       }),
     ),
+    transitions: z.array(z.any()).optional(),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputDir: z.string().min(1),
@@ -178,7 +197,7 @@ export async function renderVideo(
           if (code === 0 && existsSync(videoOutputPath)) {
             return resolve({
               videoPath: videoOutputPath,
-              duration: script.totalDuration,
+              duration: calculateTotalDuration(script.scenes),
               success: true,
             });
           }
@@ -241,7 +260,7 @@ export async function renderVideo(
     // Return success result
     const result: RenderVideoOutput = {
       videoPath: renderResult.videoPath,
-      duration: script.totalDuration,
+      duration: calculateTotalDuration(script.scenes),
       fps: projectResult.videoConfig.fps,
       resolution: projectResult.videoConfig.resolution,
       success: true,

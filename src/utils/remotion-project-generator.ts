@@ -1,22 +1,33 @@
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
-import { ScriptOutput } from "../types";
+import { ScriptOutput } from "../types/script";
 
-// Input validation schema
+// Input validation schema - matches new ScriptOutputSchema
 const GenerateProjectInputSchema = z.object({
   script: z.object({
     title: z.string(),
-    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        id: z.string(),
-        type: z.enum(["intro", "feature", "code", "outro"]),
-        title: z.string(),
-        narration: z.string(),
-        duration: z.number().positive(),
+        order: z.number().int().positive(),
+        segmentOrder: z.number().int().positive(),
+        type: z.enum(["url", "text"]),
+        content: z.string(),
+        screenshot: z
+          .object({
+            background: z.string().default("#1E1E1E"),
+            maxLines: z.number().int().positive().optional(),
+            width: z.number().int().positive().default(1920),
+            fontSize: z.number().int().positive().default(14),
+            fontFamily: z.string().default("Fira Code"),
+            padding: z.number().int().optional(),
+            theme: z.string().optional(),
+          })
+          .optional(),
+        effects: z.array(z.any()).optional(),
       }),
     ),
+    transitions: z.array(z.any()).optional(),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputPath: z.string().min(1),
@@ -137,16 +148,17 @@ import { VideoComposition } from "./Composition";
 const compositionSchema = z.object({
   script: z.object({
     title: z.string(),
-    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        id: z.string(),
-        type: z.enum(["intro", "feature", "code", "outro"]),
-        title: z.string(),
-        narration: z.string(),
-        duration: z.number().positive(),
+        order: z.number().int().positive(),
+        segmentOrder: z.number().int().positive(),
+        type: z.enum(["url", "text"]),
+        content: z.string(),
+        screenshot: z.any().optional(),
+        effects: z.array(z.any()).optional(),
       })
     ),
+    transitions: z.array(z.any()).optional(),
   }),
   images: z.record(z.string(), z.string()).optional(),
 });
@@ -154,13 +166,14 @@ const compositionSchema = z.object({
 export const RemotionRoot: React.FC = () => {
   const script = ${JSON.stringify(script)};
   const images = ${JSON.stringify(screenshotResources)};
+  const totalDuration = script.scenes.length * 30; // Calculate from scenes
 
   return (
     <>
       <Composition
         id="Video"
         component={VideoComposition as any}
-        durationInFrames={Math.ceil(script.totalDuration * 30)}
+        durationInFrames={Math.ceil(totalDuration * 30)}
         fps={30}
         width={1920}
         height={1080}
@@ -402,7 +415,7 @@ npm run build
 
 ## Video Duration
 
-Total duration: ${script.totalDuration} seconds
+Total duration: ${script.scenes.length * 30} seconds
 FPS: 30
 Resolution: 1920x1080 (16:9)
 `;
@@ -410,6 +423,7 @@ Resolution: 1920x1080 (16:9)
     await writeFile(join(projectPath, "README.md"), readme);
 
     // Return success result
+    const totalDuration = script.scenes.length * 30;
     const result: GenerateProjectOutput = {
       projectPath,
       mainComponentPath: join(srcPath, "index.ts"),
@@ -417,7 +431,7 @@ Resolution: 1920x1080 (16:9)
       videoConfig: {
         resolution: "1920x1080",
         fps: 30,
-        duration: script.totalDuration,
+        duration: totalDuration,
       },
       success: true,
     };
