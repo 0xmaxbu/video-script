@@ -34,3 +34,9 @@ export {
   isRetryableError,
   getUserFriendlyMessage,
 } from "./errors";
+export {
+  spawnRenderer,
+  type RenderProcessInput,
+  type RenderProcessOutput,
+  type RenderProcessOptions,
+} from "./process-manager";
