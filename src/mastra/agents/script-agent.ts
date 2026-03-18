@@ -17,17 +17,32 @@ export const scriptAgent = new Agent({
    - 融入适当的解释和例子，增强可理解性
 
 3. 规划时间轴
-   - 为每个场景指定开始和结束时间（秒数）
-   - 根据内容复杂度分配时长：简介 10-15秒、主要内容 30-60秒、总结 10-15秒
+   - 为每个场景指定时长（秒数）
+   - 根据场景类型分配时长：
+     * intro（开场介绍）：10-15秒
+     * feature（主题讲解）：20-60秒
+     * code（代码演示）：30-90秒
+     * outro（结尾总结）：10-15秒
    - 确保整体视频时长在 3-10 分钟（180-600秒）
 
-4. 确定视觉元素类型（关键要求）
-   - type: "url" - 需要网页截图的场景，content 必须是有效的 URL
-   - type: "text" - 纯文本展示场景
-   - **至少 50% 的场景必须是 url 类型**，因为视频需要视觉元素
-   - 使用研究阶段收集的 URL 作为 content
+4. 确定场景类型（关键要求）
+   - type: "intro" - 开场介绍场景
+   - type: "feature" - 主题讲解场景
+   - type: "code" - 代码演示场景
+   - type: "outro" - 结尾总结场景
+   - 每个场景必须有清晰的 type，选择最合适的类型
 
-5. 保证质量
+5. 为场景添加视觉层（visualLayers）
+   - 每个视觉层描述该场景的一个视觉元素
+   - visualLayers 数组从下到上依次叠加
+   - 每个视觉层包含：
+     * id: 层的唯一标识（如 "layer-1"）
+     * type: "screenshot" | "text" | "code" - 层的类型
+     * position: { x, y, width, height, zIndex } - 位置和尺寸
+     * content: 内容（URL for screenshot, 文本内容 for text, 代码 for code）
+     * animation: { enter, enterDelay, exit } - 入场和退场动画
+
+6. 保证质量
    - 整体叙事流畅、吸引听众
    - 信息密度适中，避免信息过载
    - 确保科学性和准确性
@@ -35,63 +50,72 @@ export const scriptAgent = new Agent({
 输出 JSON 格式：
 {
   "title": "视频标题",
+  "totalDuration": 180,
   "scenes": [
     {
-      "order": 1,
-      "segmentOrder": 1,
-      "type": "url",
-      "content": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html",
-      "screenshot": {
-        "background": "#1E1E1E",
-        "width": 1920,
-        "fontSize": 14,
-        "fontFamily": "Fira Code"
-      },
-      "effects": [
-        { "type": "sceneFade", "duration": 0.5 }
+      "id": "scene-1",
+      "type": "intro",
+      "title": "开场介绍",
+      "narration": "欢迎观看本视频，今天我们将介绍...",
+      "duration": 12,
+      "visualLayers": [
+        {
+          "id": "layer-1",
+          "type": "text",
+          "position": { "x": "center", "y": "center", "width": "auto", "height": "auto", "zIndex": 0 },
+          "content": "视频标题",
+          "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+        }
       ]
     },
     {
-      "order": 2,
-      "segmentOrder": 1,
-      "type": "text",
-      "content": "这是场景二的文本内容",
-      "effects": [
-        { "type": "textFadeIn", "direction": "up", "stagger": 0.1 }
+      "id": "scene-2",
+      "type": "feature",
+      "title": "TypeScript 类型基础",
+      "narration": "TypeScript 是 JavaScript 的类型化超集...",
+      "duration": 45,
+      "visualLayers": [
+        {
+          "id": "layer-1",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
+          "content": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html",
+          "animation": { "enter": "slideUp", "enterDelay": 0, "exit": "slideOut" }
+        }
       ]
     },
     {
-      "order": 3,
-      "segmentOrder": 2,
-      "type": "url",
-      "content": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
-      "effects": [
-        { "type": "sceneSlide", "direction": "right", "duration": 0.3 }
+      "id": "scene-3",
+      "type": "code",
+      "title": "示例代码",
+      "narration": "让我们看一个具体的例子...",
+      "duration": 60,
+      "visualLayers": [
+        {
+          "id": "layer-1",
+          "type": "code",
+          "position": { "x": "center", "y": "center", "width": "full", "height": "auto", "zIndex": 0 },
+          "content": "const greeting: string = 'Hello, TypeScript!';",
+          "animation": { "enter": "typewriter", "enterDelay": 0, "exit": "fadeOut" }
+        }
       ]
-    }
-  ],
-  "transitions": [
-    {
-      "from": 1,
-      "to": 2,
-      "type": "sceneFade",
-      "duration": 0.5
     },
     {
-      "from": 2,
-      "to": 3,
-      "type": "sceneSlide",
-      "direction": "left",
-      "duration": 0.5
+      "id": "scene-4",
+      "type": "outro",
+      "title": "总结",
+      "narration": "本视频介绍了 TypeScript 的基本类型系统...",
+      "duration": 15,
+      "visualLayers": []
     }
   ]
 }
 
 重要规则：
-- **至少 50% 场景必须是 type: "url"**，这是视频的核心视觉内容
-- screenshot 和 effects 字段：如果该场景不需要，不要输出该字段（完全省略，不要输出 null 或空对象）
-- transitions 字段是可选的，但建议添加场景过渡效果
-- transitions 的 type 必须是：sceneFade、sceneSlide 或 sceneZoom 之一
+- **每个场景必须包含必填字段**：id, type, title, narration, duration
+- type 必须是：intro、feature、code、outro 之一
+- duration 必须根据场景类型在合理范围内
+- visualLayers 是可选的，但如果提供则必须包含完整的 layer 对象
 - 所有字段必须严格遵循上述 JSON 格式`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
 });
