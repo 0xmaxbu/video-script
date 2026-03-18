@@ -17,7 +17,7 @@ import {
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
-import { spawnRenderer } from "../utils/index.js";
+import { spawnRenderer, type RenderProcessInput } from "../utils/index.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -270,17 +270,24 @@ program
       console.log(chalk.bold("  Title: " + scriptOutput.title));
       console.log(chalk.gray("  Scenes: " + scriptOutput.scenes.length));
 
-      scriptOutput.scenes.slice(0, 3).forEach((scene) => {
-        const typeIcon = scene.type === "url" ? "🌐" : "📄";
+      scriptOutput.scenes.slice(0, 3).forEach((scene, index) => {
+        const typeIcon =
+          scene.type === "intro"
+            ? "🚀"
+            : scene.type === "feature"
+              ? "✨"
+              : scene.type === "code"
+                ? "💻"
+                : "👋";
         console.log(
           chalk.gray(
             "  " +
               typeIcon +
               " Scene " +
-              scene.order +
+              (scene.id || String(index + 1)) +
               ": " +
-              scene.content.substring(0, 50) +
-              (scene.content.length > 50 ? "..." : ""),
+              (scene.title || scene.narration).substring(0, 50) +
+              ((scene.title || scene.narration).length > 50 ? "..." : ""),
           ),
         );
       });
@@ -375,8 +382,8 @@ program
         const jsonMatch = textContent.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
           screenshotResult = {
-            screenshots: script.scenes.map((scene, index) => ({
-              sceneOrder: scene.order,
+            screenshots: script.scenes.map((_scene, index) => ({
+              sceneOrder: index + 1,
               filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
               success: true,
             })),
@@ -386,8 +393,8 @@ program
         }
       } catch {
         screenshotResult = {
-          screenshots: script.scenes.map((scene, index) => ({
-            sceneOrder: scene.order,
+          screenshots: script.scenes.map((_scene, index) => ({
+            sceneOrder: index + 1,
             filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
             success: true,
           })),
@@ -485,7 +492,7 @@ program
         const filename = `scene-${String(index + 1).padStart(3, "0")}.png`;
         const filepath = join(screenshotsDir, filename);
         if (existsSync(filepath)) {
-          screenshotResources[String(scene.order)] = filepath;
+          screenshotResources[scene.id || String(index + 1)] = filepath;
         }
       });
 
@@ -511,19 +518,23 @@ program
 
       const rendererScript = {
         title: script.title,
-        totalDuration: script.scenes.length * 10,
-        scenes: script.scenes.map((scene) => ({
-          id: String(scene.order),
-          type: "feature" as const,
-          title: scene.content.substring(0, 50),
-          narration: scene.content,
-          duration: 10,
+        totalDuration: script.scenes.reduce(
+          (sum, s) => sum + (s.duration || 10),
+          0,
+        ),
+        scenes: script.scenes.map((scene, index) => ({
+          id: scene.id || String(index + 1),
+          type: scene.type,
+          title: scene.title,
+          narration: scene.narration,
+          duration: scene.duration || 10,
+          ...(scene.visualLayers && { visualLayers: scene.visualLayers }),
         })),
       };
 
       const videoResult = await spawnRenderer(
         {
-          script: rendererScript,
+          script: rendererScript as RenderProcessInput["script"],
           screenshotResources,
           outputDir: dir,
           videoFileName: "output.mp4",

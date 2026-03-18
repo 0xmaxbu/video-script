@@ -16,12 +16,32 @@ export interface RenderProcessInput {
       duration: number;
       startTime?: number;
       endTime?: number;
-      visualContent?: string;
-      code?: {
-        language: string;
-        code: string;
-        highlightLines?: number[];
-      };
+      visualLayers?: Array<{
+        id: string;
+        type: "screenshot" | "code" | "text" | "diagram" | "image";
+        position: {
+          x: number | "left" | "center" | "right";
+          y: number | "top" | "center" | "bottom";
+          width: number | "auto" | "full";
+          height: number | "auto" | "full";
+          zIndex: number;
+        };
+        content: string;
+        animation: {
+          enter:
+            | "fadeIn"
+            | "slideLeft"
+            | "slideRight"
+            | "slideUp"
+            | "slideDown"
+            | "zoomIn"
+            | "typewriter"
+            | "none";
+          enterDelay: number;
+          exit: "fadeOut" | "slideOut" | "zoomOut" | "none";
+          exitAt: number | undefined;
+        };
+      }>;
     }>;
   };
   screenshotResources: Record<string, string>;

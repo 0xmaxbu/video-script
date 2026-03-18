@@ -97,8 +97,6 @@ export const VisualLayerSchema = z.object({
   position: PositionSchema,
   content: z.string(),
   animation: AnimationConfigSchema,
-  screenshot: ScreenshotSpecSchema.optional(),
-  code: CodeSpecSchema.optional(),
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
