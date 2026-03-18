@@ -93,21 +93,62 @@ export const TransitionSchema = z.object({
 
 export type Transition = z.infer<typeof TransitionSchema>;
 
-export const SceneScriptSchema = z.object({
-  order: z.number().int().positive(),
-  segmentOrder: z.number().int().positive(),
-  type: z.enum(["url", "text"]),
-  content: z.string(),
-  screenshot: ScreenshotConfigSchema.optional(),
-  effects: z.array(EffectSchema).optional(),
+// New unified scene types
+export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
+export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
+
+export const PositionSchema = z.object({
+  x: z.union([z.number(), z.enum(["left", "center", "right"])]),
+  y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
+  width: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  height: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  zIndex: z.number().default(0),
 });
 
+export const AnimationConfigSchema = z.object({
+  enter: z.enum([
+    "fadeIn",
+    "slideLeft",
+    "slideRight",
+    "slideUp",
+    "slideDown",
+    "zoomIn",
+    "typewriter",
+    "none",
+  ]),
+  enterDelay: z.number().default(0),
+  exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
+  exitAt: z.number().optional(),
+});
+
+export const VisualLayerSchema = z.object({
+  id: z.string(),
+  type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
+  position: PositionSchema,
+  content: z.string(),
+  animation: AnimationConfigSchema,
+});
+export type VisualLayer = z.infer<typeof VisualLayerSchema>;
+
+export const SceneScriptSchema = z.object({
+  id: z.string(),
+  type: SceneNarrativeType,
+  title: z.string(),
+  narration: z.string(),
+  duration: z.number().positive(),
+  visualLayers: z.array(VisualLayerSchema).optional(),
+});
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
+
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "none"]),
+  duration: z.number().min(0),
+});
+export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
 export const ScriptOutputSchema = z.object({
   title: z.string(),
-  scenes: z.array(SceneScriptSchema).min(1).max(30),
-  transitions: z.array(TransitionSchema).optional(),
+  totalDuration: z.number().positive(),
+  scenes: z.array(SceneScriptSchema),
 });
-
 export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;

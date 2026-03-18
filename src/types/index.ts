@@ -56,11 +56,55 @@ export const CodeSpecSchema = z.object({
 
 export type CodeSpec = z.infer<typeof CodeSpecSchema>;
 
-export const VisualTypeEnum = z.enum(["screenshot", "code", "text", "diagram"]);
+export const VisualTypeEnum = z.enum([
+  "screenshot",
+  "code",
+  "text",
+  "diagram",
+  "image",
+]);
+
+export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
+export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
+
+export const PositionSchema = z.object({
+  x: z.union([z.number(), z.enum(["left", "center", "right"])]),
+  y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
+  width: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  height: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  zIndex: z.number().default(0),
+});
+
+export const AnimationConfigSchema = z.object({
+  enter: z.enum([
+    "fadeIn",
+    "slideLeft",
+    "slideRight",
+    "slideUp",
+    "slideDown",
+    "zoomIn",
+    "typewriter",
+    "none",
+  ]),
+  enterDelay: z.number().default(0),
+  exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
+  exitAt: z.number().optional(),
+});
+
+export const VisualLayerSchema = z.object({
+  id: z.string(),
+  type: VisualTypeEnum,
+  position: PositionSchema,
+  content: z.string(),
+  animation: AnimationConfigSchema,
+  screenshot: ScreenshotSpecSchema.optional(),
+  code: CodeSpecSchema.optional(),
+});
+export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
 export const SceneSchema = z.object({
   id: z.string(),
-  type: z.enum(["intro", "feature", "code", "outro"]),
+  type: SceneNarrativeType,
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
@@ -81,6 +125,12 @@ export const ScriptOutputSchema = z.object({
 });
 
 export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;
+
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "none"]),
+  duration: z.number().min(0),
+});
+export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
 export const VideoConfigSchema = z.object({
   aspectRatio: z.enum(["16:9", "9:16"]),

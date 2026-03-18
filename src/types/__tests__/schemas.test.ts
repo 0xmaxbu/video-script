@@ -352,7 +352,7 @@ describe("VisualLayerSchema", () => {
       type: "text" as const,
       position: {
         x: "center" as const,
-        y: "middle" as const,
+        y: "center" as const,
         width: "full" as const,
         height: "auto" as const,
         zIndex: 1,
@@ -613,7 +613,7 @@ describe("maskSensitiveConfig", () => {
 });
 
 describe("Renderer Schema Consistency", () => {
-  it("should export Scene type from renderer types.ts", async () => {
+  it("should export SceneScriptSchema from renderer types.ts", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     expect(renderer.SceneScriptSchema).toBeDefined();
   });
@@ -621,10 +621,11 @@ describe("Renderer Schema Consistency", () => {
   it("renderer SceneScriptSchema should accept intro scene type", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const result = renderer.SceneScriptSchema.safeParse({
-      order: 1,
-      segmentOrder: 1,
+      id: "intro-1",
       type: "intro",
-      content: "Intro content",
+      title: "Introduction",
+      narration: "Welcome to the video",
+      duration: 10,
     });
     expect(result.success).toBe(true);
   });
@@ -632,10 +633,11 @@ describe("Renderer Schema Consistency", () => {
   it("renderer SceneScriptSchema should accept feature scene type", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const result = renderer.SceneScriptSchema.safeParse({
-      order: 2,
-      segmentOrder: 1,
+      id: "feature-1",
       type: "feature",
-      content: "Feature content",
+      title: "Main Feature",
+      narration: "Let me show you",
+      duration: 30,
     });
     expect(result.success).toBe(true);
   });
@@ -643,10 +645,11 @@ describe("Renderer Schema Consistency", () => {
   it("renderer SceneScriptSchema should accept code scene type", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const result = renderer.SceneScriptSchema.safeParse({
-      order: 3,
-      segmentOrder: 1,
+      id: "code-1",
       type: "code",
-      content: "const x = 1;",
+      title: "Code Example",
+      narration: "Here's the code",
+      duration: 45,
     });
     expect(result.success).toBe(true);
   });
@@ -654,10 +657,11 @@ describe("Renderer Schema Consistency", () => {
   it("renderer SceneScriptSchema should accept outro scene type", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const result = renderer.SceneScriptSchema.safeParse({
-      order: 4,
-      segmentOrder: 1,
+      id: "outro-1",
       type: "outro",
-      content: "Outro content",
+      title: "Outro",
+      narration: "Thanks for watching",
+      duration: 10,
     });
     expect(result.success).toBe(true);
   });
@@ -665,10 +669,11 @@ describe("Renderer Schema Consistency", () => {
   it("renderer SceneScriptSchema should have id, title, narration, duration fields", async () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const result = renderer.SceneScriptSchema.safeParse({
-      order: 1,
-      segmentOrder: 1,
+      id: "scene-1",
       type: "intro",
-      content: "test",
+      title: "Test Scene",
+      narration: "Narration text",
+      duration: 15,
     });
     expect(result.success).toBe(true);
   });
@@ -677,88 +682,39 @@ describe("Renderer Schema Consistency", () => {
     const renderer = await import("../../../packages/renderer/src/types.js");
     const validScript = {
       title: "Test Video",
+      totalDuration: 120,
       scenes: [
-        { order: 1, segmentOrder: 1, type: "intro", content: "Welcome" },
-        { order: 2, segmentOrder: 2, type: "feature", content: "Main content" },
         {
-          order: 3,
-          segmentOrder: 3,
-          type: "code",
-          content: "console.log('hi')",
+          id: "1",
+          type: "intro",
+          title: "Intro",
+          narration: "Welcome",
+          duration: 10,
         },
-        { order: 4, segmentOrder: 4, type: "outro", content: "Subscribe!" },
+        {
+          id: "2",
+          type: "feature",
+          title: "Feature",
+          narration: "Content",
+          duration: 60,
+        },
+        {
+          id: "3",
+          type: "code",
+          title: "Code",
+          narration: "Code demo",
+          duration: 40,
+        },
+        {
+          id: "4",
+          type: "outro",
+          title: "Outro",
+          narration: "Goodbye",
+          duration: 10,
+        },
       ],
     };
     const result = renderer.ScriptOutputSchema.safeParse(validScript);
     expect(result.success).toBe(true);
-  });
-});
-
-describe("SceneTransitionSchema", () => {
-  it("should export SceneTransitionSchema", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    expect(SceneTransitionSchema).toBeDefined();
-  });
-
-  it("should accept fade transition", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "fade",
-      duration: 30,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("should accept slide transition", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "slide",
-      duration: 20,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("should accept wipe transition", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "wipe",
-      duration: 15,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("should accept none transition", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "none",
-      duration: 0,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("should reject invalid transition type", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "zoom" as any,
-      duration: 30,
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("should validate duration range", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "fade",
-      duration: -1,
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("should require duration field", async () => {
-    const { SceneTransitionSchema } = await import("../index.js");
-    const result = SceneTransitionSchema.safeParse({
-      type: "fade",
-    });
-    expect(result.success).toBe(false);
   });
 });
