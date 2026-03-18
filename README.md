@@ -291,6 +291,8 @@ Screenshot Agent (capture images)
   ↓
 Compose Agent (create composition)
   ↓
+video-script-render (subprocess)   ← isolated renderer process
+  ↓ (JSON input file + stdout JSON result)
 Remotion Render (generate MP4)
   ↓
 SRT Generator (create subtitles)
@@ -298,18 +300,35 @@ SRT Generator (create subtitles)
 Output (MP4 + SRT)
 ```
 
+The `compose` command spawns `video-script-render` as a **separate subprocess**. This two-process model keeps the main CLI (Mastra + zod v4) completely isolated from the renderer (Remotion + zod v3), avoiding version conflicts and ensuring Node.js v24 compatibility.
+
+### Renderer Package
+
+The standalone renderer lives in `packages/renderer` and is published as `@video-script/renderer`.
+
+| Component                                 | Description                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| `video-script-render`                     | Standalone CLI that accepts a JSON input file and writes progress/result to stdout |
+| `packages/renderer/src/video-renderer.ts` | Core Remotion rendering logic                                                      |
+| `packages/renderer/src/remotion/`         | React/Remotion composition components                                              |
+| `packages/renderer/src/srt-generator.ts`  | SRT subtitle generator                                                             |
+| `src/utils/process-manager.ts`            | Main project side — spawns `video-script-render` and streams progress              |
+
+**Why isolated?** Remotion requires zod v3 while Mastra requires zod v4. Sharing a single `node_modules` causes runtime type errors. Running the renderer as a subprocess sidesteps the conflict entirely and also resolves Node.js v24 native module compatibility issues in Remotion's bundler.
+
 ### Technology Stack
 
-| Layer             | Technology              | Version  |
-| ----------------- | ----------------------- | -------- |
-| Runtime           | Node.js + TypeScript    | TS 5.4+  |
-| CLI               | Commander.js + Inquirer | Latest   |
-| Agent Framework   | Mastra                  | ^1.13.2  |
-| LLM               | OpenAI/Anthropic        | -        |
-| Screenshot        | Playwright              | ^1.58.2  |
-| Code Highlight    | Shiki                   | ^4.0.2   |
-| Video Composition | Remotion                | ^4.0.435 |
-| Testing           | Vitest                  | ^4.1.0   |
+| Layer             | Technology                     | Version  |
+| ----------------- | ------------------------------ | -------- |
+| Runtime           | Node.js + TypeScript           | TS 5.4+  |
+| CLI               | Commander.js + Inquirer        | Latest   |
+| Agent Framework   | Mastra                         | ^1.13.2  |
+| LLM               | OpenAI/Anthropic               | -        |
+| Screenshot        | Playwright                     | ^1.58.2  |
+| Code Highlight    | Shiki                          | ^4.0.2   |
+| Video Composition | Remotion (isolated subprocess) | ^4.0.435 |
+| Renderer Package  | @video-script/renderer         | local    |
+| Testing           | Vitest                         | ^4.1.0   |
 
 ## Error Handling
 
