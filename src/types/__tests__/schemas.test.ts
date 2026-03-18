@@ -693,3 +693,72 @@ describe("Renderer Schema Consistency", () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe("SceneTransitionSchema", () => {
+  it("should export SceneTransitionSchema", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    expect(SceneTransitionSchema).toBeDefined();
+  });
+
+  it("should accept fade transition", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "fade",
+      duration: 30,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept slide transition", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "slide",
+      duration: 20,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept wipe transition", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "wipe",
+      duration: 15,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept none transition", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "none",
+      duration: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should reject invalid transition type", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "zoom" as any,
+      duration: 30,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should validate duration range", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "fade",
+      duration: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should require duration field", async () => {
+    const { SceneTransitionSchema } = await import("../index.js");
+    const result = SceneTransitionSchema.safeParse({
+      type: "fade",
+    });
+    expect(result.success).toBe(false);
+  });
+});
