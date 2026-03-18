@@ -611,3 +611,85 @@ describe("maskSensitiveConfig", () => {
     expect(llm.model).toBe(config.llm.model);
   });
 });
+
+describe("Renderer Schema Consistency", () => {
+  it("should export Scene type from renderer types.ts", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    expect(renderer.SceneScriptSchema).toBeDefined();
+  });
+
+  it("renderer SceneScriptSchema should accept intro scene type", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      order: 1,
+      segmentOrder: 1,
+      type: "intro",
+      content: "Intro content",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should accept feature scene type", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      order: 2,
+      segmentOrder: 1,
+      type: "feature",
+      content: "Feature content",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should accept code scene type", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      order: 3,
+      segmentOrder: 1,
+      type: "code",
+      content: "const x = 1;",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should accept outro scene type", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      order: 4,
+      segmentOrder: 1,
+      type: "outro",
+      content: "Outro content",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should have id, title, narration, duration fields", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      order: 1,
+      segmentOrder: 1,
+      type: "intro",
+      content: "test",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer ScriptOutputSchema should accept valid script with new scene types", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const validScript = {
+      title: "Test Video",
+      scenes: [
+        { order: 1, segmentOrder: 1, type: "intro", content: "Welcome" },
+        { order: 2, segmentOrder: 2, type: "feature", content: "Main content" },
+        {
+          order: 3,
+          segmentOrder: 3,
+          type: "code",
+          content: "console.log('hi')",
+        },
+        { order: 4, segmentOrder: 4, type: "outro", content: "Subscribe!" },
+      ],
+    };
+    const result = renderer.ScriptOutputSchema.safeParse(validScript);
+    expect(result.success).toBe(true);
+  });
+});
