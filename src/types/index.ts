@@ -68,10 +68,10 @@ export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
 export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
 
 export const PositionSchema = z.object({
-  x: z.union([z.number(), z.enum(["left", "center", "right"])]),
-  y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
-  width: z.union([z.number(), z.literal("auto"), z.literal("full")]),
-  height: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  x: z.union([z.number().min(0), z.enum(["left", "center", "right"])]),
+  y: z.union([z.number().min(0), z.enum(["top", "center", "bottom"])]),
+  width: z.union([z.number().min(0), z.literal("auto"), z.literal("full")]),
+  height: z.union([z.number().min(0), z.literal("auto"), z.literal("full")]),
   zIndex: z.number().default(0),
 });
 
@@ -155,3 +155,11 @@ export const ComposeAgentInputSchema = z.object({
 });
 
 export type ComposeAgentInput = z.infer<typeof ComposeAgentInputSchema>;
+
+export function validateScriptOutput(input: unknown) {
+  return ScriptOutputSchema.safeParse(input);
+}
+
+export function validateVisualLayer(input: unknown) {
+  return VisualLayerSchema.safeParse(input);
+}

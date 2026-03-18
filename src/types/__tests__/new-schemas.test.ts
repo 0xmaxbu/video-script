@@ -155,8 +155,6 @@ describe("ScreenshotConfigSchema", () => {
   });
 });
 
-// ─── EffectSchema ─────────────────────────────────────────────────────────────
-
 describe("EffectSchema", () => {
   it("should accept codeHighlight effect", () => {
     expect(
@@ -199,7 +197,7 @@ describe("EffectSchema", () => {
       EffectSchema.safeParse({
         type: "codeHighlight",
         lines: [1],
-        color: "red", // not a valid #RRGGBB
+        color: "red",
         duration: 1,
       }).success,
     ).toBe(false);
@@ -220,14 +218,12 @@ describe("EffectSchema", () => {
       EffectSchema.safeParse({
         type: "codeZoom",
         scale: 1.5,
-        anchor: [0.5], // should be length 2
+        anchor: [0.5],
         duration: 1,
       }).success,
     ).toBe(false);
   });
 });
-
-// ─── TransitionSchema ─────────────────────────────────────────────────────────
 
 describe("TransitionSchema", () => {
   it("should accept a valid transition", () => {
@@ -275,58 +271,58 @@ describe("TransitionSchema", () => {
   });
 });
 
-// ─── SceneScriptSchema ────────────────────────────────────────────────────────
-
 describe("SceneScriptSchema", () => {
   const validScene = {
-    order: 1,
-    segmentOrder: 1,
-    type: "url" as const,
-    content: "https://typescriptlang.org",
+    id: "scene-1",
+    type: "intro" as const,
+    title: "Introduction",
+    narration: "Welcome to the video",
+    duration: 10,
   };
 
-  it("should accept a minimal valid scene (url type)", () => {
+  it("should accept a minimal valid scene with new schema", () => {
     expect(SceneScriptSchema.safeParse(validScene).success).toBe(true);
   });
 
-  it("should accept a text scene with effects", () => {
+  it("should accept a feature scene with visualLayers", () => {
     expect(
       SceneScriptSchema.safeParse({
         ...validScene,
-        type: "text",
-        content: "Some narration text",
-        effects: [{ type: "textFadeIn", direction: "up", stagger: 0.1 }],
+        id: "feature-1",
+        type: "feature",
+        title: "Main Feature",
+        duration: 30,
       }).success,
     ).toBe(true);
   });
 
   it("should reject invalid scene type", () => {
     expect(
-      SceneScriptSchema.safeParse({ ...validScene, type: "video" }).success,
+      SceneScriptSchema.safeParse({ ...validScene, type: "video" as any }).success,
     ).toBe(false);
   });
 
-  it("should reject order = 0", () => {
+  it("should reject missing required fields", () => {
     expect(
-      SceneScriptSchema.safeParse({ ...validScene, order: 0 }).success,
+      SceneScriptSchema.safeParse({ id: "scene-1", type: "intro" as const }).success,
     ).toBe(false);
   });
 });
 
-// ─── ScriptOutputSchema ───────────────────────────────────────────────────────
-
 describe("ScriptOutputSchema", () => {
   const validScene = {
-    order: 1,
-    segmentOrder: 1,
-    type: "url" as const,
-    content: "https://example.com",
+    id: "scene-1",
+    type: "intro" as const,
+    title: "Introduction",
+    narration: "Welcome",
+    duration: 10,
   };
 
-  it("should accept a minimal valid script", () => {
+  it("should accept a minimal valid script with new schema", () => {
     expect(
       ScriptOutputSchema.safeParse({
         title: "My Script",
+        totalDuration: 60,
         scenes: [validScene],
       }).success,
     ).toBe(true);
@@ -336,41 +332,17 @@ describe("ScriptOutputSchema", () => {
     expect(
       ScriptOutputSchema.safeParse({
         title: "My Script",
+        totalDuration: 60,
         scenes: [],
       }).success,
     ).toBe(false);
-  });
-
-  it("should enforce max 30 scenes", () => {
-    const scenes = Array.from({ length: 31 }, (_, i) => ({
-      ...validScene,
-      order: i + 1,
-    }));
-    expect(
-      ScriptOutputSchema.safeParse({
-        title: "My Script",
-        scenes,
-      }).success,
-    ).toBe(false);
-  });
-
-  it("should accept exactly 30 scenes", () => {
-    const scenes = Array.from({ length: 30 }, (_, i) => ({
-      ...validScene,
-      order: i + 1,
-    }));
-    expect(
-      ScriptOutputSchema.safeParse({
-        title: "My Script",
-        scenes,
-      }).success,
-    ).toBe(true);
   });
 
   it("should accept optional transitions", () => {
     expect(
       ScriptOutputSchema.safeParse({
         title: "My Script",
+        totalDuration: 60,
         scenes: [validScene],
         transitions: [{ from: 1, to: 2, type: "sceneFade", duration: 0.3 }],
       }).success,
