@@ -17,7 +17,7 @@ import {
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
-import { spawnRenderer, type RenderProcessInput } from "../utils/index.js";
+import { spawnRenderer } from "../utils/index.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -516,25 +516,23 @@ program
         }
       };
 
-      const rendererScript = {
-        title: script.title,
-        totalDuration: script.scenes.reduce(
-          (sum, s) => sum + (s.duration || 10),
-          0,
-        ),
-        scenes: script.scenes.map((scene, index) => ({
-          id: scene.id || String(index + 1),
-          type: scene.type,
-          title: scene.title,
-          narration: scene.narration,
-          duration: scene.duration || 10,
-          ...(scene.visualLayers && { visualLayers: scene.visualLayers }),
-        })),
-      };
-
       const videoResult = await spawnRenderer(
         {
-          script: rendererScript as RenderProcessInput["script"],
+          script: {
+            title: script.title,
+            totalDuration: script.scenes.reduce(
+              (sum, s) => sum + s.duration,
+              0,
+            ),
+            scenes: script.scenes.map((scene, index) => ({
+              id: scene.id || String(index + 1),
+              type: scene.type,
+              title: scene.title,
+              narration: scene.narration,
+              duration: scene.duration,
+              ...(scene.visualLayers && { visualLayers: scene.visualLayers }),
+            })),
+          } as any,
           screenshotResources,
           outputDir: dir,
           videoFileName: "output.mp4",

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
-import { ScreenshotSpecSchema, CodeSpecSchema } from "./index.js";
-export { ScreenshotSpecSchema, CodeSpecSchema };
+import {
+  ScreenshotSpecSchema,
+  CodeSpecSchema,
+  VisualLayerSchema,
+} from "./index.js";
+export { ScreenshotSpecSchema, CodeSpecSchema, VisualLayerSchema };
 
 export const ScreenshotConfigSchema = z.object({
   background: z.string().default("#1E1E1E"),
@@ -14,7 +18,10 @@ export type ScreenshotConfig = z.infer<typeof ScreenshotConfigSchema>;
 export const EffectSchema = z.object({
   type: z.enum(["codeHighlight", "textFadeIn", "sceneFade", "codeZoom"]),
   lines: z.array(z.number().int().positive()).optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
   duration: z.number().positive().optional(),
   direction: z.enum(["up", "down", "left", "right"]).optional(),
   stagger: z.number().positive().optional(),
@@ -37,7 +44,7 @@ export const SceneScriptSchema = z.object({
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
-  visualLayers: z.array(z.unknown()).optional(),
+  visualLayers: z.array(VisualLayerSchema).optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 
