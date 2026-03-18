@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "fs/promises";
 import { spawn } from "child_process";
-import { join } from "path";
+import { join, resolve } from "path";
 import { z } from "zod";
 import { ScriptOutput } from "./types.js";
 
@@ -88,7 +88,7 @@ export async function generateRemotionProject(
     const validated = GenerateProjectInputSchema.parse(input);
     const { script, screenshotResources, outputPath } = validated;
 
-    const projectPath = outputPath;
+    const projectPath = resolve(outputPath);
     const srcPath = join(projectPath, "src");
     const scenesPath = join(srcPath, "scenes");
     const publicPath = join(projectPath, "public");
@@ -109,8 +109,10 @@ export async function generateRemotionProject(
       },
       dependencies: {
         react: "^19.2.4",
-        "@remotion/cli": "^4.0.435",
-        "@remotion/renderer": "^4.0.435",
+        "@remotion/bundler": "4.0.436",
+        "@remotion/cli": "4.0.436",
+        "@remotion/renderer": "4.0.436",
+        "@remotion/studio": "4.0.436",
       },
       devDependencies: {
         "@types/node": "^25.5.0",
@@ -172,6 +174,30 @@ export async function generateRemotionProject(
     await writeFile(
       join(projectPath, "tsconfig.json"),
       JSON.stringify(tsConfig, null, 2),
+    );
+
+    // Create remotion.config.ts to fix webpack alias issue with @remotion/studio
+    const remotionConfigContent = `const path = require("path");
+const { Config } = require("@remotion/cli/config");
+
+Config.overrideWebpackConfig((currentConfiguration) => {
+  const studioPath = path.join(__dirname, "node_modules", "@remotion", "studio", "dist", "renderEntry.js");
+  return {
+    ...currentConfiguration,
+    resolve: {
+      ...currentConfiguration.resolve,
+      alias: {
+        ...currentConfiguration.resolve?.alias,
+        "@remotion/studio/renderEntry": studioPath,
+      },
+    },
+  };
+});
+`;
+
+    await writeFile(
+      join(projectPath, "remotion.config.ts"),
+      remotionConfigContent,
     );
 
     const indexContent = `import { registerRoot } from "@remotion/cli";

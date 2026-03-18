@@ -115,14 +115,16 @@ export async function renderVideo(
         });
       }
 
-      const remotionBin = join(
-        process.cwd(),
+      const remotionScript = join(
+        projectResult.projectPath,
         "node_modules",
-        ".bin",
-        "remotion",
+        "@remotion",
+        "cli",
+        "remotion-cli.js",
       );
 
       const args = [
+        remotionScript,
         "render",
         "src/index.ts",
         "Video",
@@ -134,13 +136,9 @@ export async function renderVideo(
         "--quiet",
       ];
 
-      const renderProcess = spawn(remotionBin, args, {
+      const renderProcess = spawn(process.execPath, args, {
         stdio: ["pipe", "pipe", "pipe"],
         cwd: projectResult.projectPath,
-        env: {
-          ...process.env,
-          NODE_PATH: join(process.cwd(), "node_modules"),
-        },
       });
 
       let stderr = "";
