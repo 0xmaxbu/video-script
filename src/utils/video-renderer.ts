@@ -7,12 +7,8 @@ import {
 } from "./remotion-project-generator.js";
 import { cleanupRemotionTempDir } from "./cleanup.js";
 
-/**
- * Calculate total duration from scenes
- * Default: 10 seconds per scene
- */
 export function calculateTotalDuration(scenes: SceneScript[]): number {
-  return scenes.length * 10;
+  return scenes.reduce((sum, s) => sum + s.duration, 0);
 }
 
 /**
