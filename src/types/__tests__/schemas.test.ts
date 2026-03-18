@@ -488,6 +488,75 @@ describe("validateScriptOutput", () => {
   });
 });
 
+describe("validateVisualLayer", () => {
+  it("should export validateVisualLayer function", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    expect(validateVisualLayer).toBeDefined();
+    expect(typeof validateVisualLayer).toBe("function");
+  });
+
+  it("should return success for valid visual layer", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    const validLayer = {
+      id: "layer-1",
+      type: "screenshot" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "https://example.com/img.png",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    const result = validateVisualLayer(validLayer);
+    expect(result.success).toBe(true);
+  });
+
+  it("should return failure when required field is missing", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    const layerWithoutId = {
+      type: "text" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "text content",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    const result = validateVisualLayer(layerWithoutId);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return failure for invalid layer type", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    const layerWithInvalidType = {
+      id: "layer-1",
+      type: "video" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "content",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    const result = validateVisualLayer(layerWithInvalidType);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return failure for invalid position values", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    const layerWithInvalidPosition = {
+      id: "layer-1",
+      type: "code" as const,
+      position: { x: -100 as any, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "const x = 1;",
+      animation: { enter: "slideLeft", enterDelay: 0, exit: "slideOut" },
+    };
+    const result = validateVisualLayer(layerWithInvalidPosition);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return detailed error for failures", async () => {
+    const { validateVisualLayer } = await import("../index.js");
+    const invalidLayer = { id: "1" };
+    const result = validateVisualLayer(invalidLayer);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeDefined();
+    }
+  });
+});
+
 describe("VideoConfigSchema (utils/config)", () => {
   it("should apply defaults for empty input", async () => {
     const { VideoConfigSchema: UtilsSchema } =
