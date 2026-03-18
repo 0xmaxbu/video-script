@@ -57,7 +57,11 @@ export async function spawnRenderer(
 
   await writeFile(inputFile, JSON.stringify(input), "utf-8");
 
-  const args = ["video-script-render", "render", "--input", inputFile];
+  const rendererPath = join(
+    process.cwd(),
+    "packages/renderer/bin/video-script-render.js",
+  );
+  const args = ["render", "--input", inputFile];
   if (input.srtOutputPath) {
     args.push("--srt", input.srtOutputPath);
   }
@@ -66,8 +70,12 @@ export async function spawnRenderer(
     let stdout = "";
     let timedOut = false;
 
-    const child = spawn("npx", args, {
+    const child = spawn("node", [rendererPath, ...args], {
       stdio: ["pipe", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        NODE_PATH: join(process.cwd(), "packages/renderer/node_modules"),
+      },
     });
 
     const timer = setTimeout(() => {
