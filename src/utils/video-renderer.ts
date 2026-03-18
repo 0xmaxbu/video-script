@@ -17,24 +17,15 @@ export function calculateTotalDuration(scenes: SceneScript[]): number {
 export const RenderVideoInputSchema = z.object({
   script: z.object({
     title: z.string(),
+    totalDuration: z.number().positive().optional(),
     scenes: z.array(
       z.object({
-        order: z.number().int().positive(),
-        segmentOrder: z.number().int().positive(),
-        type: z.enum(["url", "text"]),
-        content: z.string(),
-        screenshot: z
-          .object({
-            background: z.string().default("#1E1E1E"),
-            maxLines: z.number().int().positive().optional(),
-            width: z.number().int().positive().default(1920),
-            fontSize: z.number().int().positive().default(14),
-            fontFamily: z.string().default("Fira Code"),
-            padding: z.number().int().optional(),
-            theme: z.string().optional(),
-          })
-          .optional(),
-        effects: z.array(z.any()).optional(),
+        id: z.string(),
+        type: z.enum(["intro", "feature", "code", "outro"]),
+        title: z.string(),
+        narration: z.string(),
+        duration: z.number().positive(),
+        visualLayers: z.array(z.any()).optional(),
       }),
     ),
     transitions: z.array(z.any()).optional(),

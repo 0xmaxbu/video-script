@@ -13,8 +13,8 @@ export {
 } from "./srt-generator.js";
 export type { GenerateSrtInput, GenerateSrtOutput } from "./srt-generator.js";
 
-export { SceneSchema, ScriptOutputSchema } from "./types.js";
-export type { Scene, ScriptOutput, CodeSpec } from "./types.js";
+export { SceneScriptSchema, ScriptOutputSchema } from "./types.js";
+export type { SceneScript, ScriptOutput } from "./types.js";
 
 export { generateRemotionProject } from "./remotion-project-generator.js";
 export type {

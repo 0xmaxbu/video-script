@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "fs/promises";
+import { spawn } from "child_process";
 import { join } from "path";
 import { z } from "zod";
 import { ScriptOutput } from "./types.js";
@@ -6,24 +7,53 @@ import { ScriptOutput } from "./types.js";
 const GenerateProjectInputSchema = z.object({
   script: z.object({
     title: z.string(),
+    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        order: z.number().int().positive(),
-        segmentOrder: z.number().int().positive(),
-        type: z.enum(["url", "text"]),
-        content: z.string(),
-        screenshot: z
-          .object({
-            background: z.string().default("#1E1E1E"),
-            maxLines: z.number().int().positive().optional(),
-            width: z.number().int().positive().default(1920),
-            fontSize: z.number().int().positive().default(14),
-            fontFamily: z.string().default("Fira Code"),
-            padding: z.number().int().optional(),
-            theme: z.string().optional(),
-          })
+        id: z.string(),
+        type: z.enum(["intro", "feature", "code", "outro"]),
+        title: z.string(),
+        narration: z.string(),
+        duration: z.number().positive(),
+        visualLayers: z
+          .array(
+            z.object({
+              id: z.string(),
+              type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
+              position: z.object({
+                x: z.union([z.number(), z.enum(["left", "center", "right"])]),
+                y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
+                width: z.union([
+                  z.number(),
+                  z.literal("auto"),
+                  z.literal("full"),
+                ]),
+                height: z.union([
+                  z.number(),
+                  z.literal("auto"),
+                  z.literal("full"),
+                ]),
+                zIndex: z.number().default(0),
+              }),
+              content: z.string(),
+              animation: z.object({
+                enter: z.enum([
+                  "fadeIn",
+                  "slideLeft",
+                  "slideRight",
+                  "slideUp",
+                  "slideDown",
+                  "zoomIn",
+                  "typewriter",
+                  "none",
+                ]),
+                enterDelay: z.number().default(0),
+                exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
+                exitAt: z.number().optional(),
+              }),
+            }),
+          )
           .optional(),
-        effects: z.array(z.any()).optional(),
       }),
     ),
     transitions: z.array(z.any()).optional(),
@@ -96,6 +126,28 @@ export async function generateRemotionProject(
       JSON.stringify(packageJson, null, 2),
     );
 
+    // Install dependencies so remotion binary is available
+    await new Promise<void>((resolve, reject) => {
+      const npm = spawn("npm", ["install", "--ignore-scripts"], {
+        cwd: projectPath,
+        stdio: "pipe",
+      });
+      let stderr = "";
+      npm.stderr?.on("data", (data: Buffer) => {
+        stderr += data.toString();
+      });
+      npm.on("close", (code: number | null) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`npm install failed: ${stderr}`));
+        }
+      });
+      npm.on("error", (err) => {
+        reject(err);
+      });
+    });
+
     const tsConfig = {
       compilerOptions: {
         target: "ES2022",
@@ -138,14 +190,15 @@ import { VideoComposition } from "./Composition";
 const compositionSchema = z.object({
   script: z.object({
     title: z.string(),
+    totalDuration: z.number().positive(),
     scenes: z.array(
       z.object({
-        order: z.number().int().positive(),
-        segmentOrder: z.number().int().positive(),
-        type: z.enum(["url", "text"]),
-        content: z.string(),
-        screenshot: z.any().optional(),
-        effects: z.array(z.any()).optional(),
+        id: z.string(),
+        type: z.enum(["intro", "feature", "code", "outro"]),
+        title: z.string(),
+        narration: z.string(),
+        duration: z.number().positive(),
+        visualLayers: z.array(z.any()).optional(),
       })
     ),
     transitions: z.array(z.any()).optional(),

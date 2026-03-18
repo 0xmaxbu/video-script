@@ -229,9 +229,9 @@ program
         {
           role: "user",
           content:
-            "Generate a video script based on this research data. The script should include scenes with proper timing, visual types, and narration.\n\nResearch data:\n" +
+            "根据以下研究数据生成视频脚本。\n\n研究数据:\n" +
             JSON.stringify(research, null, 2) +
-            '\n\nOutput format (JSON):\n{\n  "title": "Video title",\n  "scenes": [\n    {\n      "order": 1,\n      "segmentOrder": 1,\n      "type": "url" | "text",\n      "content": "URL or text content",\n      "screenshot": { "background": "#1E1E1E", "width": 1920, ... },\n      "effects": [{ "type": "textFadeIn", "direction": "up", "stagger": 0.1 }]\n    }\n  ],\n  "transitions": [{ "from": 1, "to": 2, "type": "sceneFade", "duration": 0.3 }]\n}\n\nRequirements:\n- Each scene must have segmentOrder linking back to research segments\n- Use "url" type for web page scenes, "text" for narration scenes\n- Include appropriate effects for each scene\n- Generate transitions between consecutive scenes',
+            '\n\n输出格式 (JSON):\n{\n  "title": "视频标题",\n  "totalDuration": 180,\n  "scenes": [\n    {\n      "id": "scene-1",\n      "type": "intro|feature|code|outro",\n      "title": "场景标题",\n      "narration": "旁白文本",\n      "duration": 12\n    }\n  ]\n}\n\n要求:\n- 每个场景必须有: id, type, title, narration, duration\n- type 必须是: intro, feature, code, outro 之一\n- intro 和 outro: 10-15秒\n- feature: 20-60秒\n- code: 30-90秒\n- totalDuration 是所有场景 duration 之和\n- 不要包含 visualLayers 字段',
         },
       ]);
 

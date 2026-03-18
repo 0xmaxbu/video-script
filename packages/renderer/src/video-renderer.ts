@@ -1,13 +1,15 @@
 import { extname, join } from "path";
 import { z } from "zod";
-import { ScriptOutput, Scene } from "./types.js";
+import { ScriptOutput, SceneScriptSchema } from "./types.js";
 import {
   generateRemotionProject,
   type GenerateProjectInput,
 } from "./remotion-project-generator.js";
 import { cleanupRemotionTempDir } from "./cleanup.js";
 
-export function calculateTotalDuration(scenes: Scene[]): number {
+export function calculateTotalDuration(
+  scenes: z.infer<typeof SceneScriptSchema>[],
+): number {
   return scenes.reduce((sum, scene) => sum + scene.duration, 0);
 }
 
@@ -15,25 +17,7 @@ export const RenderVideoInputSchema = z.object({
   script: z.object({
     title: z.string(),
     totalDuration: z.number().positive(),
-    scenes: z.array(
-      z.object({
-        id: z.string(),
-        type: z.enum(["intro", "feature", "code", "outro"]),
-        title: z.string(),
-        narration: z.string(),
-        duration: z.number().positive(),
-        startTime: z.number().optional(),
-        endTime: z.number().optional(),
-        visualContent: z.string().optional(),
-        code: z
-          .object({
-            language: z.string(),
-            code: z.string(),
-            highlightLines: z.array(z.number().int().positive()).optional(),
-          })
-          .optional(),
-      }),
-    ),
+    scenes: z.array(SceneScriptSchema),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputDir: z.string().min(1),
@@ -152,7 +136,7 @@ export async function renderVideo(
 
         const renderProcess = spawn("npx", args, {
           stdio: ["pipe", "pipe", "pipe"],
-          cwd: process.cwd(),
+          cwd: projectResult.projectPath,
         });
 
         let stdout = "";

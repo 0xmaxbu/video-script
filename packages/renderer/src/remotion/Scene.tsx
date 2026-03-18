@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Img } from "remotion";
-import { Scene as SceneType } from "../types.js";
+import { SceneScript as SceneType } from "../types.js";
 import { Subtitle } from "./Subtitle.js";
 import { CodeAnimation } from "./components/CodeAnimation.js";
 
@@ -10,7 +10,9 @@ interface SceneProps {
 }
 
 export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
-  const { type, title, narration, code } = scene;
+  const { type, title, narration, visualLayers } = scene;
+  const codeLayer = visualLayers?.find((l) => l.type === "code");
+  const codeContent = codeLayer?.content || "";
 
   const containerStyle: React.CSSProperties = {
     backgroundColor: "white",
@@ -87,8 +89,8 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
       >
         <div style={{ flex: 1, width: "100%" }}>
           <CodeAnimation
-            code={code?.code || ""}
-            highlightLines={code?.highlightLines || []}
+            code={codeContent}
+            highlightLines={[]}
             title={title}
             showLineNumbers={true}
           />
