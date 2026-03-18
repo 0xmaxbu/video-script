@@ -79,6 +79,63 @@ describe("ResearchOutputSchema", () => {
   });
 });
 
+describe("SceneNarrativeType", () => {
+  it("should export SceneNarrativeType enum with four values", async () => {
+    const { SceneNarrativeType } = await import("../index.js");
+    // SceneNarrativeType should be a Zod enum with values: intro, feature, code, outro
+    expect(SceneNarrativeType).toBeDefined();
+    expect(SceneNarrativeType.options).toEqual([
+      "intro",
+      "feature",
+      "code",
+      "outro",
+    ]);
+  });
+
+  it("should accept all four valid scene narrative types", async () => {
+    const { SceneNarrativeType } = await import("../index.js");
+    for (const type of ["intro", "feature", "code", "outro"] as const) {
+      expect(SceneNarrativeType.safeParse(type).success).toBe(true);
+    }
+  });
+
+  it("should reject invalid scene narrative types", async () => {
+    const { SceneNarrativeType } = await import("../index.js");
+    // Invalid types that should be rejected
+    for (const invalidType of ["url", "text", "video", "invalid", ""]) {
+      expect(SceneNarrativeType.safeParse(invalidType).success).toBe(false);
+    }
+  });
+
+  it("should enable correct type narrowing with switch statements", async () => {
+    const { SceneNarrativeType } = await import("../index.js");
+    // Simulate type narrowing behavior
+    const validateAndGetDuration = (type: string): number | null => {
+      const result = SceneNarrativeType.safeParse(type);
+      if (!result.success) return null;
+      // Type narrowing should work: result.data should be "intro" | "feature" | "code" | "outro"
+      switch (result.data) {
+        case "intro":
+          return 10; // 10-15s for intro
+        case "feature":
+          return 30; // 20-60s for feature
+        case "code":
+          return 45; // 30-90s for code
+        case "outro":
+          return 10; // 10-15s for outro
+        default:
+          return null; // Should never reach here with valid type
+      }
+    };
+
+    expect(validateAndGetDuration("intro")).toBe(10);
+    expect(validateAndGetDuration("feature")).toBe(30);
+    expect(validateAndGetDuration("code")).toBe(45);
+    expect(validateAndGetDuration("outro")).toBe(10);
+    expect(validateAndGetDuration("invalid")).toBe(null);
+  });
+});
+
 describe("VisualTypeEnum", () => {
   it("should accept all valid visual types", () => {
     for (const type of ["screenshot", "code", "text", "diagram"]) {
@@ -218,6 +275,216 @@ describe("ScriptOutputSchema", () => {
         totalDuration: -1,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("VisualLayerSchema", () => {
+  it("should export VisualLayerSchema", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    expect(VisualLayerSchema).toBeDefined();
+  });
+
+  it("should accept valid visual layer with all required fields", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const validLayer = {
+      id: "layer-1",
+      type: "screenshot" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "https://example.com/screenshot.png",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    expect(VisualLayerSchema.safeParse(validLayer).success).toBe(true);
+  });
+
+  it("should accept all valid layer types", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    for (const type of [
+      "screenshot",
+      "code",
+      "text",
+      "diagram",
+      "image",
+    ] as const) {
+      const layer = {
+        id: "layer-1",
+        type,
+        position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+        content: "test content",
+        animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+      };
+      expect(VisualLayerSchema.safeParse(layer).success).toBe(true);
+    }
+  });
+
+  it("should reject invalid layer type", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const invalidLayer = {
+      id: "layer-1",
+      type: "video" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "test",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    expect(VisualLayerSchema.safeParse(invalidLayer).success).toBe(false);
+  });
+
+  it("should require id field", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const layerWithoutId = {
+      type: "text" as const,
+      position: {
+        x: 0,
+        y: 0,
+        width: "auto" as const,
+        height: "auto" as const,
+        zIndex: 0,
+      },
+      content: "test",
+      animation: { enter: "slideLeft", enterDelay: 0, exit: "slideOut" },
+    };
+    expect(VisualLayerSchema.safeParse(layerWithoutId).success).toBe(false);
+  });
+
+  it("should accept position with named values", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const layer = {
+      id: "layer-1",
+      type: "text" as const,
+      position: {
+        x: "center" as const,
+        y: "middle" as const,
+        width: "full" as const,
+        height: "auto" as const,
+        zIndex: 1,
+      },
+      content: "Centered text",
+      animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+    };
+    expect(VisualLayerSchema.safeParse(layer).success).toBe(true);
+  });
+
+  it("should validate animation config", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const layerWithAnimation = {
+      id: "layer-1",
+      type: "code" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "const x = 1;",
+      animation: {
+        enter: "slideUp",
+        enterDelay: 10,
+        exit: "zoomOut",
+        exitAt: 300,
+      },
+    };
+    expect(VisualLayerSchema.safeParse(layerWithAnimation).success).toBe(true);
+  });
+
+  it("should reject invalid animation enter type", async () => {
+    const { VisualLayerSchema } = await import("../index.js");
+    const layer = {
+      id: "layer-1",
+      type: "text" as const,
+      position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+      content: "test",
+      animation: { enter: "spinAround", enterDelay: 0, exit: "fadeOut" },
+    };
+    expect(VisualLayerSchema.safeParse(layer).success).toBe(false);
+  });
+});
+
+describe("validateScriptOutput", () => {
+  it("should export validateScriptOutput function", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    expect(validateScriptOutput).toBeDefined();
+    expect(typeof validateScriptOutput).toBe("function");
+  });
+
+  it("should return success for valid complete script", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    const validScript = {
+      title: "Test Video",
+      totalDuration: 120,
+      scenes: [
+        {
+          id: "1",
+          type: "intro",
+          title: "Intro",
+          narration: "Welcome",
+          duration: 10,
+        },
+        {
+          id: "2",
+          type: "feature",
+          title: "Feature",
+          narration: "Content",
+          duration: 60,
+        },
+        {
+          id: "3",
+          type: "outro",
+          title: "Outro",
+          narration: "Goodbye",
+          duration: 10,
+        },
+      ],
+    };
+    const result = validateScriptOutput(validScript);
+    expect(result.success).toBe(true);
+  });
+
+  it("should return failure when scenes array is missing", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    const scriptWithoutScenes = {
+      title: "Test Video",
+      totalDuration: 120,
+    };
+    const result = validateScriptOutput(scriptWithoutScenes);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return failure when scene has invalid type", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    const scriptWithInvalidType = {
+      title: "Test Video",
+      totalDuration: 120,
+      scenes: [
+        {
+          id: "1",
+          type: "video" as any,
+          title: "Bad",
+          narration: "Content",
+          duration: 10,
+        },
+      ],
+    };
+    const result = validateScriptOutput(scriptWithInvalidType);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return failure when scene is missing duration", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    const scriptWithMissingDuration = {
+      title: "Test Video",
+      totalDuration: 120,
+      scenes: [
+        { id: "1", type: "intro", title: "Intro", narration: "Welcome" },
+      ],
+    };
+    const result = validateScriptOutput(scriptWithMissingDuration);
+    expect(result.success).toBe(false);
+  });
+
+  it("should return detailed error information for failures", async () => {
+    const { validateScriptOutput } = await import("../index.js");
+    const invalidScript = {
+      title: "Test",
+    };
+    const result = validateScriptOutput(invalidScript);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBeDefined();
+    }
   });
 });
 
