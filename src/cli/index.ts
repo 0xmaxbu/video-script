@@ -489,10 +489,11 @@ program
 
       const screenshotResources: Record<string, string> = {};
       script.scenes.forEach((scene, index) => {
-        const filename = `scene-${String(index + 1).padStart(3, "0")}.png`;
+        const sceneKey = scene.id || String(index + 1);
+        const filename = `scene-${sceneKey}.png`;
         const filepath = join(screenshotsDir, filename);
         if (existsSync(filepath)) {
-          screenshotResources[scene.id || String(index + 1)] = filepath;
+          screenshotResources[sceneKey] = filepath;
         }
       });
 
@@ -524,15 +525,17 @@ program
               (sum, s) => sum + s.duration,
               0,
             ),
-            scenes: script.scenes.map((scene, index) => ({
-              id: scene.id || String(index + 1),
+            scenes: script.scenes.map((scene) => ({
+              id: scene.id,
               type: scene.type,
               title: scene.title,
               narration: scene.narration,
               duration: scene.duration,
-              ...(scene.visualLayers && { visualLayers: scene.visualLayers }),
+              ...(scene.visualLayers !== undefined && {
+                visualLayers: scene.visualLayers,
+              }),
             })),
-          } as any,
+          },
           screenshotResources,
           outputDir: dir,
           videoFileName: "output.mp4",

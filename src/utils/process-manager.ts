@@ -39,7 +39,7 @@ export interface RenderProcessInput {
             | "none";
           enterDelay: number;
           exit: "fadeOut" | "slideOut" | "zoomOut" | "none";
-          exitAt: number | undefined;
+          exitAt?: number | undefined;
         };
       }>;
     }>;
