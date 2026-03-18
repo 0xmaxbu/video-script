@@ -1,4 +1,5 @@
-import { extname, join } from "path";
+import { join } from "path";
+import { spawn } from "child_process";
 import { z } from "zod";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
 import {
@@ -89,12 +90,15 @@ export async function renderVideo(
     onProgress?.(30);
 
     const videoOutputPath = join(outputDir, videoFileName);
-
-    onProgress?.(50);
-
-    const { spawn } = await import("child_process");
     const { existsSync, mkdirSync } = await import("fs");
     const { dirname } = await import("path");
+
+    const outputDirPath = dirname(videoOutputPath);
+    if (!existsSync(outputDirPath)) {
+      mkdirSync(outputDirPath, { recursive: true });
+    }
+
+    onProgress?.(40);
 
     const renderResult = await new Promise<{
       videoPath: string;
@@ -102,90 +106,74 @@ export async function renderVideo(
       success: boolean;
       error?: string;
     }>((resolve) => {
-      try {
-        if (!existsSync(projectResult.projectPath)) {
+      if (!existsSync(projectResult.projectPath)) {
+        return resolve({
+          videoPath: "",
+          duration: 0,
+          success: false,
+          error: `Project path not found: ${projectResult.projectPath}`,
+        });
+      }
+
+      const remotionBin = join(
+        process.cwd(),
+        "node_modules",
+        ".bin",
+        "remotion",
+      );
+
+      const args = [
+        "render",
+        "src/index.ts",
+        "Video",
+        videoOutputPath,
+        "--codec",
+        "h264",
+        "--fps",
+        projectResult.videoConfig.fps.toString(),
+        "--quiet",
+      ];
+
+      const renderProcess = spawn(remotionBin, args, {
+        stdio: ["pipe", "pipe", "pipe"],
+        cwd: projectResult.projectPath,
+        env: {
+          ...process.env,
+          NODE_PATH: join(process.cwd(), "node_modules"),
+        },
+      });
+
+      let stderr = "";
+
+      renderProcess.stderr?.on("data", (data: Buffer) => {
+        stderr += data.toString();
+      });
+
+      renderProcess.on("close", (code: number) => {
+        if (code === 0 && existsSync(videoOutputPath)) {
           return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Project path not found: ${projectResult.projectPath}`,
+            videoPath: videoOutputPath,
+            duration: calculateTotalDuration(script.scenes),
+            success: true,
           });
         }
-
-        const outputDirPath = dirname(videoOutputPath);
-        if (!existsSync(outputDirPath)) {
-          mkdirSync(outputDirPath, { recursive: true });
-        }
-
-        const format =
-          extname(videoFileName).toLowerCase() === ".webm" ? "webm" : "mp4";
-        const args = [
-          "remotion",
-          "render",
-          projectResult.mainComponentPath,
-          videoOutputPath,
-          "--codec",
-          "h264",
-          "--fps",
-          projectResult.videoConfig.fps.toString(),
-        ];
-
-        if (format === "webm") {
-          args.push("--webm");
-        }
-
-        const renderProcess = spawn("npx", args, {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: projectResult.projectPath,
-        });
-
-        let stdout = "";
-        let stderr = "";
-
-        renderProcess.stdout?.on("data", (data: Buffer) => {
-          stdout += data.toString();
-        });
-
-        renderProcess.stderr?.on("data", (data: Buffer) => {
-          stderr += data.toString();
-        });
-
-        renderProcess.on("close", (code: number) => {
-          if (code === 0 && existsSync(videoOutputPath)) {
-            return resolve({
-              videoPath: videoOutputPath,
-              duration: calculateTotalDuration(script.scenes),
-              success: true,
-            });
-          }
-
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Rendering failed (Exit code: ${code}): ${stderr || stdout}`,
-          });
-        });
-
-        renderProcess.on("error", (error: Error) => {
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Process error: ${error.message}`,
-          });
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
 
         return resolve({
           videoPath: "",
           duration: 0,
           success: false,
-          error: `Render exception: ${errorMessage}`,
+          error: `Rendering failed (Exit code: ${code}): ${stderr}`,
         });
-      }
+      });
+
+      renderProcess.on("error", (error: Error) => {
+        return resolve({
+          videoPath: "",
+          duration: 0,
+          success: false,
+          error: `Process error: ${error.message}`,
+        });
+      });
     });
 
     onProgress?.(80);

@@ -23,10 +23,11 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.436",
-    "@remotion/cli": "^4.0.436",
+    "@remotion/bundler": "^4.0.429",
+    "@remotion/cli": "^4.0.429",
     "@remotion/renderer": "^4.0.436",
-    "@remotion/studio": "^4.0.436",
+    "@remotion/studio": "^4.0.429",
+    "@remotion/studio-server": "^4.0.429",
     "commander": "^14.0.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -38,7 +39,6 @@
     "@types/react-dom": "^19.2.3",
     "typescript": "^5.9.3"
   },
-  "peerDependencies": {},
   "files": [
     "dist",
     "bin"
