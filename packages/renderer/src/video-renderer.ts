@@ -9,6 +9,91 @@ import {
 } from "./remotion-project-generator.js";
 import { generateOutputDirectory } from "./output-directory.js";
 
+interface RenderResult {
+  videoPath: string;
+  duration: number;
+  success: boolean;
+  error?: string;
+}
+
+async function spawnRenderProcess(
+  projectPath: string,
+  videoOutputPath: string,
+  fps: number,
+  scenes: z.infer<typeof SceneScriptSchema>[],
+): Promise<RenderResult> {
+  const { existsSync } = await import("fs");
+
+  if (!existsSync(projectPath)) {
+    return {
+      videoPath: "",
+      duration: 0,
+      success: false,
+      error: `Project path not found: ${projectPath}`,
+    };
+  }
+
+  const remotionScript = join(
+    projectPath,
+    "node_modules",
+    "@remotion",
+    "cli",
+    "remotion-cli.js",
+  );
+
+  const args = [
+    remotionScript,
+    "render",
+    "src/index.tsx",
+    "Video",
+    videoOutputPath,
+    "--codec",
+    "h264",
+    "--fps",
+    fps.toString(),
+    "--quiet",
+  ];
+
+  const renderProcess = spawn(process.execPath, args, {
+    stdio: ["pipe", "pipe", "pipe"],
+    cwd: projectPath,
+  });
+
+  let stderrParts: string[] = [];
+
+  renderProcess.stderr?.on("data", (data: Buffer) => {
+    stderrParts.push(data.toString());
+  });
+
+  return new Promise((resolve) => {
+    renderProcess.on("close", (code: number) => {
+      if (code === 0 && existsSync(videoOutputPath)) {
+        return resolve({
+          videoPath: videoOutputPath,
+          duration: calculateTotalDuration(scenes),
+          success: true,
+        });
+      }
+
+      return resolve({
+        videoPath: "",
+        duration: 0,
+        success: false,
+        error: `Rendering failed (Exit code: ${code}): ${stderrParts.join("")}`,
+      });
+    });
+
+    renderProcess.on("error", (error: Error) => {
+      return resolve({
+        videoPath: "",
+        duration: 0,
+        success: false,
+        error: `Process error: ${error.message}`,
+      });
+    });
+  });
+}
+
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
 ): number {
@@ -107,79 +192,12 @@ export async function renderVideo(
 
     onProgress?.(40);
 
-    const renderResult = await new Promise<{
-      videoPath: string;
-      duration: number;
-      success: boolean;
-      error?: string;
-    }>((resolve) => {
-      if (!existsSync(projectResult.projectPath)) {
-        return resolve({
-          videoPath: "",
-          duration: 0,
-          success: false,
-          error: `Project path not found: ${projectResult.projectPath}`,
-        });
-      }
-
-      const remotionScript = join(
-        projectResult.projectPath,
-        "node_modules",
-        "@remotion",
-        "cli",
-        "remotion-cli.js",
-      );
-
-      const args = [
-        remotionScript,
-        "render",
-        "src/index.tsx",
-        "Video",
-        videoOutputPath,
-        "--codec",
-        "h264",
-        "--fps",
-        projectResult.videoConfig.fps.toString(),
-        "--quiet",
-      ];
-
-      const renderProcess = spawn(process.execPath, args, {
-        stdio: ["pipe", "pipe", "pipe"],
-        cwd: projectResult.projectPath,
-      });
-
-      let stderr = "";
-
-      renderProcess.stderr?.on("data", (data: Buffer) => {
-        stderr += data.toString();
-      });
-
-      renderProcess.on("close", (code: number) => {
-        if (code === 0 && existsSync(videoOutputPath)) {
-          return resolve({
-            videoPath: videoOutputPath,
-            duration: calculateTotalDuration(script.scenes),
-            success: true,
-          });
-        }
-
-        return resolve({
-          videoPath: "",
-          duration: 0,
-          success: false,
-          error: `Rendering failed (Exit code: ${code}): ${stderr}`,
-        });
-      });
-
-      renderProcess.on("error", (error: Error) => {
-        return resolve({
-          videoPath: "",
-          duration: 0,
-          success: false,
-          error: `Process error: ${error.message}`,
-        });
-      });
-    });
+    const renderResult = await spawnRenderProcess(
+      projectResult.projectPath,
+      videoOutputPath,
+      projectResult.videoConfig.fps,
+      script.scenes,
+    );
 
     onProgress?.(80);
 
