@@ -262,12 +262,64 @@ program
               ? result.text
               : JSON.stringify(result.text);
 
-          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-          if (!jsonMatch) {
-            throw new Error("No JSON found in agent response");
+          // Split by markdown code fences and try each block
+          const jsonBlocks = textContent.split(/```json\s*/).slice(1);
+
+          let parsed: unknown;
+          let bestScore = 0;
+
+          for (const block of jsonBlocks) {
+            const jsonStr = block.split("```")[0].trim();
+            if (!jsonStr) continue;
+
+            try {
+              const candidate = JSON.parse(jsonStr);
+              // Score by how complete the structure is
+              const score =
+                (candidate.scenes?.length || 0) * 100 +
+                (candidate.title ? 10 : 0) +
+                (candidate.totalDuration ? 5 : 0);
+              if (score > bestScore) {
+                bestScore = score;
+                parsed = candidate;
+              }
+            } catch {
+              // Try to fix truncated JSON by finding balanced braces
+              let braceCount = 0;
+              let endIdx = 0;
+              for (let i = 0; i < jsonStr.length; i++) {
+                if (jsonStr[i] === "{") braceCount++;
+                else if (jsonStr[i] === "}") {
+                  braceCount--;
+                  if (braceCount === 0) {
+                    endIdx = i + 1;
+                    break;
+                  }
+                }
+              }
+              if (endIdx > 0) {
+                try {
+                  const fixed = jsonStr.substring(0, endIdx);
+                  const candidate = JSON.parse(fixed);
+                  const score =
+                    (candidate.scenes?.length || 0) * 100 +
+                    (candidate.title ? 10 : 0) +
+                    (candidate.totalDuration ? 5 : 0);
+                  if (score > bestScore) {
+                    bestScore = score;
+                    parsed = candidate;
+                  }
+                } catch {
+                  // Still can't parse, skip
+                }
+              }
+            }
           }
 
-          const parsed = JSON.parse(jsonMatch[0]);
+          if (!parsed) {
+            throw new Error("No valid JSON found in agent response");
+          }
+
           scriptOutput = ScriptOutputSchema.parse(parsed);
           break;
         } catch (error) {
