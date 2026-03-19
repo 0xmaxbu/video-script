@@ -1,7 +1,11 @@
 import { readFile } from "fs/promises";
+import { homedir } from "os";
+import { join } from "path";
 import { Command } from "commander";
 import { renderVideo, RenderVideoInputSchema } from "./index.js";
 import { generateSrt } from "./srt-generator.js";
+
+const DEFAULT_OUTPUT_DIR = join(homedir(), "simple-videos");
 
 const program = new Command();
 
@@ -26,7 +30,7 @@ program
       const result = await renderVideo({
         script: input.script,
         screenshotResources: input.screenshotResources,
-        outputDir: input.outputDir,
+        outputDir: input.outputDir || DEFAULT_OUTPUT_DIR,
         ...(input.videoFileName !== undefined && {
           videoFileName: input.videoFileName,
         }),

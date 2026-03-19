@@ -1,4 +1,5 @@
 import { join } from "path";
+import { homedir } from "os";
 import { spawn } from "child_process";
 import { z } from "zod";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
@@ -20,7 +21,7 @@ export const RenderVideoInputSchema = z.object({
     scenes: z.array(SceneScriptSchema),
   }),
   screenshotResources: z.record(z.string(), z.string()),
-  outputDir: z.string().min(1),
+  outputDir: z.string().optional(),
   videoFileName: z.string().optional(),
   onProgress: z.function().optional(),
 });
@@ -28,7 +29,7 @@ export const RenderVideoInputSchema = z.object({
 export interface RenderVideoInput {
   script: ScriptOutput;
   screenshotResources: Record<string, string>;
-  outputDir: string;
+  outputDir?: string;
   videoFileName?: string;
   onProgress?: (progress: number) => void;
 }
@@ -60,7 +61,7 @@ export async function renderVideo(
     const {
       script,
       screenshotResources,
-      outputDir,
+      outputDir = join(homedir(), "simple-videos"),
       videoFileName = `${script.title.toLowerCase().replace(/\s+/g, "-")}.mp4`,
       onProgress,
     } = input;
