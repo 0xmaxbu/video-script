@@ -107,18 +107,14 @@ export const SceneTransitionSchema = z.object({
 });
 export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
+// NEW unified SceneSchema with visualLayers (aligns with script.ts and renderer/types.ts)
 export const SceneSchema = z.object({
   id: z.string(),
   type: SceneNarrativeType,
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
-  startTime: z.number().optional(),
-  endTime: z.number().optional(),
-  visualType: VisualTypeEnum.optional(),
-  visualContent: z.string().optional(),
-  screenshot: ScreenshotSpecSchema.optional(),
-  code: CodeSpecSchema.optional(),
+  visualLayers: z.array(VisualLayerSchema).optional(),
   transition: SceneTransitionSchema.optional(),
 });
 

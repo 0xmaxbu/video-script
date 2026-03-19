@@ -6,11 +6,11 @@ import { CodeAnimation } from "./components/CodeAnimation";
 
 interface SceneProps {
   scene: SceneType;
-  imagePath: string | undefined;
+  imagePaths?: Record<string, string> | undefined;
 }
 
-export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
-  const { type, title, narration, code } = scene;
+export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
+  const { type, title, narration, visualLayers } = scene;
 
   const containerStyle: React.CSSProperties = {
     backgroundColor: "white",
@@ -31,6 +31,11 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
     zIndex: 1,
   };
 
+  const codeLayer = visualLayers?.find((l) => l.type === "code");
+  const screenshotLayer = visualLayers?.find((l) => l.type === "screenshot");
+  const screenshotKey = screenshotLayer ? `${scene.id}-${screenshotLayer.id}` : undefined;
+  const screenshotPath = screenshotKey ? imagePaths?.[screenshotKey] : undefined;
+
   if (type === "intro" || type === "outro") {
     return (
       <AbsoluteFill
@@ -50,7 +55,7 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
     return (
       <AbsoluteFill style={containerStyle}>
         <h1 style={{ ...titleStyle, fontSize: 60 }}>{title}</h1>
-        {imagePath && (
+        {screenshotPath && (
           <div
             style={{
               flex: 1,
@@ -62,7 +67,7 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
             }}
           >
             <Img
-              src={imagePath}
+              src={screenshotPath}
               style={{
                 maxWidth: "100%",
                 maxHeight: "100%",
@@ -87,8 +92,8 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePath }) => {
       >
         <div style={{ flex: 1, width: "100%" }}>
           <CodeAnimation
-            code={code?.code || ""}
-            highlightLines={code?.highlightLines || []}
+            code={codeLayer?.content || ""}
+            highlightLines={[]}
             title={title}
             showLineNumbers={true}
           />
