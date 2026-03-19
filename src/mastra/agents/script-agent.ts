@@ -32,15 +32,11 @@ export const scriptAgent = new Agent({
    - type: "outro" - 结尾总结场景
    - 每个场景必须有清晰的 type，选择最合适的类型
 
-5. 为场景添加视觉层（visualLayers）
-   - 每个视觉层描述该场景的一个视觉元素
-   - visualLayers 数组从下到上依次叠加
-   - 每个视觉层包含：
-     * id: 层的唯一标识（如 "layer-1"）
-     * type: "screenshot" | "text" | "code" - 层的类型
-     * position: { x, y, width, height, zIndex } - 位置和尺寸
-     * content: 内容（URL for screenshot, 文本内容 for text, 代码 for code）
-     * animation: { enter, enterDelay, exit } - 入场和退场动画
+5. 为场景添加视觉层（visualLayers）【必须】
+   - 每个 scene 必须包含 visualLayers 数组，不能为空
+   - 每个场景至少要有 1-3 个 visualLayer
+   - screenshot 类型的 content 使用相关的 URL（GitHub、官网、文档等）
+   - 如果没有合适的 URL，使用 text 类型并提供关键词
 
 6. 保证质量
    - 整体叙事流畅、吸引听众
@@ -61,33 +57,40 @@ export const scriptAgent = new Agent({
       "visualLayers": [
         {
           "id": "layer-1",
-          "type": "text",
-          "position": { "x": "center", "y": "center", "width": "auto", "height": "auto", "zIndex": 0 },
-          "content": "视频标题",
-          "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+          "type": "screenshot",
+          "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
+          "content": "https://github.com/unslothai/unsloth",
+          "animation": { "enter": "slideUp", "enterDelay": 0, "exit": "slideOut" }
         }
       ]
     },
     {
       "id": "scene-2",
       "type": "feature",
-      "title": "TypeScript 类型基础",
-      "narration": "TypeScript 是 JavaScript 的类型化超集...",
+      "title": "主题讲解",
+      "narration": "这个功能的特点是...",
       "duration": 45,
       "visualLayers": [
         {
           "id": "layer-1",
           "type": "screenshot",
           "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
-          "content": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html",
-          "animation": { "enter": "slideUp", "enterDelay": 0, "exit": "slideOut" }
+          "content": "https://unsloth.ai/",
+          "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+        },
+        {
+          "id": "layer-2",
+          "type": "text",
+          "position": { "x": "center", "y": "bottom", "width": "auto", "height": "auto", "zIndex": 1 },
+          "content": "关键要点：xxx",
+          "animation": { "enter": "slideUp", "enterDelay": 1, "exit": "fadeOut" }
         }
       ]
     },
     {
       "id": "scene-3",
       "type": "code",
-      "title": "示例代码",
+      "title": "代码示例",
       "narration": "让我们看一个具体的例子...",
       "duration": 60,
       "visualLayers": [
@@ -95,7 +98,7 @@ export const scriptAgent = new Agent({
           "id": "layer-1",
           "type": "code",
           "position": { "x": "center", "y": "center", "width": "full", "height": "auto", "zIndex": 0 },
-          "content": "const greeting: string = 'Hello, TypeScript!';",
+          "content": "from unsloth import FastLanguageModel\nmodel, tokenizer = FastLanguageModel.from_pretrained('unsloth/llama-3-8b-bnb-4bit')",
           "animation": { "enter": "typewriter", "enterDelay": 0, "exit": "fadeOut" }
         }
       ]
@@ -104,18 +107,26 @@ export const scriptAgent = new Agent({
       "id": "scene-4",
       "type": "outro",
       "title": "总结",
-      "narration": "本视频介绍了 TypeScript 的基本类型系统...",
+      "narration": "本视频介绍了...",
       "duration": 15,
-      "visualLayers": []
+      "visualLayers": [
+        {
+          "id": "layer-1",
+          "type": "text",
+          "position": { "x": "center", "y": "center", "width": "auto", "height": "auto", "zIndex": 0 },
+          "content": "感谢观看！",
+          "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+        }
+      ]
     }
   ]
 }
 
 重要规则：
 - **每个场景必须包含必填字段**：id, type, title, narration, duration
+- **每个场景必须包含 visualLayers 数组，且至少有一个 layer**
 - type 必须是：intro、feature、code、outro 之一
 - duration 必须根据场景类型在合理范围内
-- visualLayers 是可选的，但如果提供则必须包含完整的 layer 对象
 - 所有字段必须严格遵循上述 JSON 格式`,
   model: "minimax-cn-coding-plan/MiniMax-M2.7",
 });

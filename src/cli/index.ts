@@ -241,41 +241,51 @@ program
 
       spinner.start("📝 Running script agent...");
 
-      const result = await scriptAgent.generate([
-        {
-          role: "user",
-          content:
-            "根据以下研究数据生成视频脚本。\n\n研究数据:\n" +
-            JSON.stringify(research, null, 2) +
-            '\n\n输出格式 (JSON):\n{\n  "title": "视频标题",\n  "totalDuration": 180,\n  "scenes": [\n    {\n      "id": "scene-1",\n      "type": "intro|feature|code|outro",\n      "title": "场景标题",\n      "narration": "旁白文本",\n      "duration": 12\n    }\n  ]\n}\n\n要求:\n- 每个场景必须有: id, type, title, narration, duration\n- type 必须是: intro, feature, code, outro 之一\n- intro 和 outro: 10-15秒\n- feature: 20-60秒\n- code: 30-90秒\n- totalDuration 是所有场景 duration 之和\n- 不要包含 visualLayers 字段',
-        },
-      ]);
+      const MAX_RETRIES = 3;
+      let lastError: Error | undefined;
+      let scriptOutput: ScriptOutput | undefined;
+
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const result = await scriptAgent.generate([
+            {
+              role: "user",
+              content:
+                "根据以下研究数据生成视频脚本。\n\n研究数据:\n" +
+                JSON.stringify(research, null, 2) +
+                '\n\n输出格式 (JSON):\n{\n  "title": "视频标题",\n  "totalDuration": 180,\n  "scenes": [\n    {\n      "id": "scene-1",\n      "type": "intro|feature|code|outro",\n      "title": "场景标题",\n      "narration": "旁白文本",\n      "duration": 12,\n      "visualLayers": [\n        {\n          "id": "layer-1",\n          "type": "screenshot",\n          "position": { "x": 0, "y": 0, "width": "full", "height": "auto", "zIndex": 0 },\n          "content": "描述需要的截图内容"\n        }\n      ]\n    }\n  ]\n}\n\n要求:\n- 每个场景必须有: id, type, title, narration, duration, visualLayers\n- type 必须是: intro, feature, code, outro 之一\n- intro 和 outro: 10-15秒\n- feature: 20-60秒\n- code: 30-90秒\n- totalDuration 是所有场景 duration 之和\n- visualLayers 是一个数组，每个元素描述一个视觉层（截图、文字、代码等）',
+            },
+          ]);
+
+          const textContent =
+            typeof result.text === "string"
+              ? result.text
+              : JSON.stringify(result.text);
+
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            throw new Error("No JSON found in agent response");
+          }
+
+          const parsed = JSON.parse(jsonMatch[0]);
+          scriptOutput = ScriptOutputSchema.parse(parsed);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < MAX_RETRIES - 1) {
+            spinner.text = chalk.yellow(
+              `  Retrying... (${attempt + 1}/${MAX_RETRIES})`,
+            );
+          }
+        }
+      }
+
+      if (!scriptOutput) {
+        spinner.fail("Failed to parse script output");
+        throw lastError || new Error("Script generation failed after retries");
+      }
 
       spinner.text = "📝 Processing script output...";
-
-      let scriptOutput: ScriptOutput;
-      try {
-        const textContent =
-          typeof result.text === "string"
-            ? result.text
-            : JSON.stringify(result.text);
-
-        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error("No JSON found in agent response");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        scriptOutput = ScriptOutputSchema.parse(parsed);
-      } catch (parseError) {
-        spinner.fail("Failed to parse script output");
-        throw new Error(
-          "Failed to parse script output: " +
-            (parseError instanceof Error
-              ? parseError.message
-              : String(parseError)),
-        );
-      }
 
       const scriptPath = join(dir, "script.json");
       writeFileSync(scriptPath, JSON.stringify(scriptOutput, null, 2));
