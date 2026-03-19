@@ -836,4 +836,153 @@ describe("Renderer Schema Consistency", () => {
     const result = renderer.ScriptOutputSchema.safeParse(validScript);
     expect(result.success).toBe(true);
   });
+
+  it("renderer SceneScriptSchema should accept scene with visualLayers", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      id: "scene-1",
+      type: "feature",
+      title: "Scene with Layers",
+      narration: "Multiple visual layers",
+      duration: 30,
+      visualLayers: [
+        {
+          id: "layer-1",
+          type: "screenshot",
+          position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+          content: "https://example.com/screenshot.png",
+          animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should accept scene with multiple visualLayers", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      id: "scene-1",
+      type: "feature",
+      title: "Scene with Multiple Layers",
+      narration: "Text and screenshot layers",
+      duration: 45,
+      visualLayers: [
+        {
+          id: "layer-text",
+          type: "text",
+          position: {
+            x: 100,
+            y: 100,
+            width: "auto",
+            height: "auto",
+            zIndex: 1,
+          },
+          content: "Title text",
+          animation: { enter: "slideUp", enterDelay: 0, exit: "slideOut" },
+        },
+        {
+          id: "layer-screenshot",
+          type: "screenshot",
+          position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+          content: "https://example.com/screenshot.png",
+          animation: { enter: "fadeIn", enterDelay: 10, exit: "fadeOut" },
+        },
+        {
+          id: "layer-code",
+          type: "code",
+          position: { x: 0, y: 0, width: "full", height: "full", zIndex: 0 },
+          content: "const x = 1;",
+          animation: { enter: "zoomIn", enterDelay: 0, exit: "zoomOut" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("renderer SceneScriptSchema should accept all visual layer types in visualLayers", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    for (const type of [
+      "screenshot",
+      "code",
+      "text",
+      "diagram",
+      "image",
+    ] as const) {
+      const result = renderer.SceneScriptSchema.safeParse({
+        id: "scene-1",
+        type: "feature",
+        title: "Layer Type Test",
+        narration: "Testing layer types",
+        duration: 30,
+        visualLayers: [
+          {
+            id: `layer-${type}`,
+            type,
+            position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+            content: "test content",
+            animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+          },
+        ],
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it("renderer SceneScriptSchema should reject visualLayers with invalid layer type", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      id: "scene-1",
+      type: "feature",
+      title: "Invalid Layer Type",
+      narration: "Should fail",
+      duration: 30,
+      visualLayers: [
+        {
+          id: "layer-1",
+          type: "video" as any,
+          position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+          content: "test",
+          animation: { enter: "fadeIn", enterDelay: 0, exit: "fadeOut" },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("renderer SceneScriptSchema should reject visualLayers with invalid animation", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      id: "scene-1",
+      type: "feature",
+      title: "Invalid Animation",
+      narration: "Should fail",
+      duration: 30,
+      visualLayers: [
+        {
+          id: "layer-1",
+          type: "text",
+          position: { x: 0, y: 0, width: 1920, height: 1080, zIndex: 0 },
+          content: "test",
+          animation: {
+            enter: "spinAround" as any,
+            enterDelay: 0,
+            exit: "fadeOut",
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("renderer SceneScriptSchema should accept scene without visualLayers (optional)", async () => {
+    const renderer = await import("../../../packages/renderer/src/types.js");
+    const result = renderer.SceneScriptSchema.safeParse({
+      id: "scene-1",
+      type: "intro",
+      title: "Simple Intro",
+      narration: "No visual layers",
+      duration: 10,
+    });
+    expect(result.success).toBe(true);
+  });
 });
