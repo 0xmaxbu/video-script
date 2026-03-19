@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
+import { randomBytes } from "crypto";
+
+export function generateRunId(): string {
+  return randomBytes(8).toString("hex");
+}
 
 export const WorkflowStepStatusSchema = z.enum([
   "pending",

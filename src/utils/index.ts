@@ -40,3 +40,11 @@ export {
   type RenderProcessOutput,
   type RenderProcessOptions,
 } from "./process-manager.js";
+export {
+  WorkflowStateManager,
+  workflowStateManager,
+  generateRunId,
+  type WorkflowState,
+  type WorkflowStepState,
+  type WorkflowStepStatus,
+} from "./workflow-state.js";

@@ -18,7 +18,11 @@ import {
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
-import { spawnRenderer } from "../utils/index.js";
+import {
+  spawnRenderer,
+  workflowStateManager,
+  generateRunId,
+} from "../utils/index.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -670,6 +674,752 @@ program
             "\n",
         ),
       );
+      process.exit(1);
+    }
+  });
+
+// Two-Phase Workflow Commands
+
+program
+  .command("create [title]")
+  .description("Create a new video project (runs research + script)")
+  .option("--links <urls>", "Reference links (comma-separated)")
+  .option("--doc <file>", "Reference document file path")
+  .option(
+    "--output <dir>",
+    "Output directory (optional, auto-generated if not specified)",
+  )
+  .option("--no-review", "Skip review and continue to screenshot/compose")
+  .option("--aspect-ratio <ratio>", "Aspect ratio", "16:9")
+  .action(async (title, options) => {
+    const spinner = ora();
+    gracefulShutdown.setSpinner(spinner);
+
+    try {
+      // Initialize workflow state manager for this output directory
+      let outputDir: string;
+      if (options.output) {
+        outputDir = options.output;
+      } else {
+        const baseDir = join(homedir(), "simple-videos");
+        outputDir = await generateOutputDirectory(baseDir, title || "untitled");
+      }
+
+      if (!existsSync(outputDir)) {
+        mkdirSync(outputDir, { recursive: true });
+      }
+
+      // Initialize workflow state
+      workflowStateManager.initialize(
+        "video-generation",
+        generateRunId(),
+        ["research", "script", "screenshot", "compose"],
+        { title, outputDir, aspectRatio: options.aspectRatio },
+      );
+      workflowStateManager.startWorkflow();
+
+      // Phase 1: Research
+      spinner.start("🔍 Running research agent...");
+
+      let input: ResearchInput = { title: title || "" };
+      const links = options.links
+        ? options.links.split(",").map((url: string) => url.trim())
+        : undefined;
+      let document: string | undefined;
+
+      if (options.doc) {
+        document = readFileSync(options.doc, "utf-8");
+      }
+
+      if (!links && !document && !title) {
+        // Interactive mode - use prompt
+        const prompted = await promptForInput(title || "");
+        input = prompted;
+      } else {
+        input = { title: title || "", links, document };
+      }
+
+      console.log(chalk.blue("\n🔍 Researching: " + chalk.bold(input.title)));
+      if (input.links && input.links.length > 0) {
+        console.log(chalk.gray("  Links: " + input.links.join(", ")));
+      }
+
+      const MAX_RETRIES = 3;
+      let lastError: Error | undefined;
+      let researchOutput: ResearchOutput | undefined;
+
+      workflowStateManager.startStep("research");
+
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const result = await researchAgent.generate([
+            {
+              role: "user",
+              content: JSON.stringify({
+                title: input.title,
+                links: input.links || [],
+                document: input.document || "",
+              }),
+            },
+          ]);
+
+          const textContent =
+            typeof result.text === "string"
+              ? result.text
+              : JSON.stringify(result.text);
+
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            throw new Error("No JSON found in agent response");
+          }
+
+          const parsed = JSON.parse(jsonMatch[0]);
+
+          researchOutput = {
+            title: parsed.title || input.title,
+            segments:
+              parsed.segments ||
+              parsed.keyPoints?.map(
+                (
+                  kp: { title: string; description: string },
+                  index: number,
+                ) => ({
+                  order: index + 1,
+                  sentence: kp.description || kp.title,
+                  keyContent: { concept: kp.title },
+                  links:
+                    parsed.sources?.map(
+                      (s: { url: string; title: string }) => ({
+                        url: s.url,
+                        key: s.title,
+                      }),
+                    ) || [],
+                }),
+              ) ||
+              [],
+          };
+
+          researchOutput = ResearchOutputSchema.parse(researchOutput);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < MAX_RETRIES - 1) {
+            spinner.text = chalk.yellow(
+              `  Retrying... (${attempt + 1}/${MAX_RETRIES})`,
+            );
+          }
+        }
+      }
+
+      if (!researchOutput) {
+        workflowStateManager.failStep(
+          "research",
+          lastError?.message || "Failed",
+        );
+        workflowStateManager.failWorkflow("Research failed after retries");
+        spinner.fail("Failed to parse research output");
+        throw lastError || new Error("Research failed after retries");
+      }
+
+      // Save research output
+      const researchPath = join(outputDir, "research.json");
+      writeFileSync(researchPath, JSON.stringify(researchOutput, null, 2));
+      workflowStateManager.completeStep("research", { researchPath });
+
+      spinner.text = "📝 Processing research output...";
+      spinner.succeed("✅ Research completed!");
+
+      console.log(chalk.green("\n📊 Research Output:\n"));
+      console.log(chalk.bold("  Title: " + researchOutput.title));
+      console.log(chalk.gray("  Segments: " + researchOutput.segments.length));
+
+      // Phase 1: Script Generation
+      spinner.start("📝 Running script agent...");
+
+      workflowStateManager.startStep("script");
+
+      let scriptOutput: ScriptOutput | undefined;
+
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const result = await scriptAgent.generate([
+            {
+              role: "user",
+              content:
+                "根据以下研究数据生成视频脚本。\n\n研究数据:\n" +
+                JSON.stringify(researchOutput, null, 2) +
+                '\n\n输出格式 (JSON):\n{\n  "title": "视频标题",\n  "totalDuration": 180,\n  "scenes": [\n    {\n      "id": "scene-1",\n      "type": "intro|feature|code|outro",\n      "title": "场景标题",\n      "narration": "旁白文本",\n      "duration": 12,\n      "visualLayers": [\n        {\n          "id": "layer-1",\n          "type": "screenshot",\n          "position": { "x": 0, "y": 0, "width": "full", "height": "auto", "zIndex": 0 },\n          "content": "描述需要的截图内容"\n        }\n      ]\n    }\n  ]\n}\n\n要求:\n- 每个场景必须有: id, type, title, narration, duration, visualLayers\n- type 必须是: intro, feature, code, outro 之一\n- intro 和 outro: 10-15秒\n- feature: 20-60秒\n- code: 30-90秒\n- totalDuration 是所有场景 duration 之和\n- visualLayers 是一个数组，每个元素描述一个视觉层（截图、文字、代码等）',
+            },
+          ]);
+
+          const textContent =
+            typeof result.text === "string"
+              ? result.text
+              : JSON.stringify(result.text);
+
+          // Split by markdown code fences and try each block
+          const jsonBlocks = textContent.split(/```json\s*/).slice(1);
+
+          let parsed: unknown;
+          let bestScore = 0;
+
+          for (const block of jsonBlocks) {
+            const jsonStr = block.split("```")[0].trim();
+            if (!jsonStr) continue;
+
+            try {
+              const candidate = JSON.parse(jsonStr);
+              // Score by how complete the structure is
+              const score =
+                (candidate.scenes?.length || 0) * 100 +
+                (candidate.title ? 10 : 0) +
+                (candidate.totalDuration ? 5 : 0);
+              if (score > bestScore) {
+                bestScore = score;
+                parsed = candidate;
+              }
+            } catch {
+              // Try to fix truncated JSON by finding balanced braces
+              let braceCount = 0;
+              let endIdx = 0;
+              for (let i = 0; i < jsonStr.length; i++) {
+                if (jsonStr[i] === "{") braceCount++;
+                else if (jsonStr[i] === "}") {
+                  braceCount--;
+                  if (braceCount === 0) {
+                    endIdx = i + 1;
+                    break;
+                  }
+                }
+              }
+              if (endIdx > 0) {
+                try {
+                  const fixed = jsonStr.substring(0, endIdx);
+                  const candidate = JSON.parse(fixed);
+                  const score =
+                    (candidate.scenes?.length || 0) * 100 +
+                    (candidate.title ? 10 : 0) +
+                    (candidate.totalDuration ? 5 : 0);
+                  if (score > bestScore) {
+                    bestScore = score;
+                    parsed = candidate;
+                  }
+                } catch {
+                  // Still can't parse, skip
+                }
+              }
+            }
+          }
+
+          if (!parsed) {
+            throw new Error("No valid JSON found in agent response");
+          }
+
+          scriptOutput = ScriptOutputSchema.parse(parsed);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < MAX_RETRIES - 1) {
+            spinner.text = chalk.yellow(
+              `  Retrying... (${attempt + 1}/${MAX_RETRIES})`,
+            );
+          }
+        }
+      }
+
+      if (!scriptOutput) {
+        workflowStateManager.failStep("script", lastError?.message || "Failed");
+        workflowStateManager.failWorkflow(
+          "Script generation failed after retries",
+        );
+        spinner.fail("Failed to parse script output");
+        throw lastError || new Error("Script generation failed after retries");
+      }
+
+      // Save script output
+      const scriptPath = join(outputDir, "script.json");
+      writeFileSync(scriptPath, JSON.stringify(scriptOutput, null, 2));
+      workflowStateManager.completeStep("script", { scriptPath });
+
+      spinner.text = "📝 Processing script output...";
+      spinner.succeed("✅ Script generated!");
+
+      console.log(chalk.green("\n🎬 Script Output:\n"));
+      console.log(chalk.bold("  Title: " + scriptOutput.title));
+      console.log(chalk.gray("  Scenes: " + scriptOutput.scenes.length));
+
+      const state = workflowStateManager.getState();
+      if (state) {
+        console.log(chalk.blue("\n📁 Output directory: " + outputDir));
+        console.log(
+          chalk.gray(
+            "\nRun `video-script resume` to continue or `video-script screenshot " +
+              outputDir +
+              "` followed by `video-script compose " +
+              outputDir +
+              "`",
+          ),
+        );
+      }
+
+      // Check if we should continue to Phase 2
+      if (options.noReview) {
+        console.log(
+          chalk.blue("\n▶️  Continuing to Phase 2 (screenshot + compose)..."),
+        );
+        // Continue to screenshot and compose phases
+        await runScreenshotAndCompose(outputDir, spinner);
+      } else {
+        console.log(
+          chalk.blue(
+            "\n⏸️  Workflow paused. Run `video-script resume` to continue.",
+          ),
+        );
+        workflowStateManager.suspendWorkflow();
+      }
+    } catch (error) {
+      spinner.fail("❌ Create workflow failed");
+      workflowStateManager.failWorkflow(
+        error instanceof Error ? error.message : String(error),
+      );
+      if (error instanceof Error) {
+        console.error(chalk.red("\n❌ Error: " + error.message + "\n"));
+        if (error.stack) {
+          console.error(chalk.gray(error.stack));
+        }
+      } else {
+        console.error(chalk.red("\n❌ An unexpected error occurred\n"));
+      }
+      process.exit(1);
+    }
+  });
+
+// Helper function to run screenshot and compose phases
+async function runScreenshotAndCompose(
+  outputDir: string,
+  spinner: ReturnType<typeof ora>,
+): Promise<void> {
+  const scriptPath = join(outputDir, "script.json");
+  const screenshotsDir = join(outputDir, "screenshots");
+
+  if (!existsSync(scriptPath)) {
+    throw new Error("script.json not found. Run 'video-script create' first.");
+  }
+
+  const scriptContent = readFileSync(scriptPath, "utf-8");
+  const script: ScriptOutput = ScriptOutputSchema.parse(
+    JSON.parse(scriptContent),
+  );
+
+  if (!existsSync(screenshotsDir)) {
+    mkdirSync(screenshotsDir, { recursive: true });
+  }
+
+  // Phase 2: Screenshot
+  spinner.start("📸 Running screenshot agent...");
+  workflowStateManager.startStep("screenshot");
+
+  const screenshotResult = await screenshotAgent.generate([
+    {
+      role: "user",
+      content:
+        "Process the following script and generate screenshots for each scene.\n\nScript:\n" +
+        JSON.stringify(script, null, 2) +
+        "\n\nOutput directory: " +
+        screenshotsDir +
+        '\n\nFor each scene:\n- If type is "url", capture a webpage screenshot using playwrightScreenshot tool\n- If type is "text", generate a text image\n- Save files as scene-001.png, scene-002.png, etc.\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
+    },
+  ]);
+
+  interface ScreenshotResult {
+    screenshots: Array<{
+      sceneOrder: number;
+      filename: string;
+      success: boolean;
+      error?: string;
+    }>;
+  }
+
+  let screenshotData: ScreenshotResult;
+  try {
+    const textContent =
+      typeof screenshotResult.text === "string"
+        ? screenshotResult.text
+        : JSON.stringify(screenshotResult.text);
+
+    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      screenshotData = {
+        screenshots: script.scenes.map((_scene, index) => ({
+          sceneOrder: index + 1,
+          filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
+          success: true,
+        })),
+      };
+    } else {
+      screenshotData = JSON.parse(jsonMatch[0]);
+    }
+  } catch {
+    screenshotData = {
+      screenshots: script.scenes.map((_scene, index) => ({
+        sceneOrder: index + 1,
+        filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
+        success: true,
+      })),
+    };
+  }
+
+  workflowStateManager.completeStep("screenshot", {
+    screenshotsDir,
+    screenshotCount: screenshotData.screenshots.length,
+  });
+  spinner.succeed("✅ Screenshots captured!");
+
+  // Phase 2: Compose
+  spinner.start("🎬 Rendering video...");
+  workflowStateManager.startStep("compose");
+
+  const screenshotResources: Record<string, string> = {};
+  script.scenes.forEach((scene, index) => {
+    const sceneKey = scene.id || String(index + 1);
+    const filename = `scene-${sceneKey}.png`;
+    const filepath = join(screenshotsDir, filename);
+    if (existsSync(filepath)) {
+      screenshotResources[sceneKey] = filepath;
+    }
+  });
+
+  const srtPath = join(outputDir, "output.srt");
+
+  const onProgress = (progress: number) => {
+    if (progress === 10) {
+      spinner.text = "🎬 Generating Remotion project...";
+    } else if (progress === 30) {
+      spinner.text = "🎬 Preparing video output...";
+    } else if (progress === 50) {
+      spinner.text = "🎬 Rendering video frames...";
+    } else if (progress === 80) {
+      spinner.text = "🎬 Finalizing video...";
+    } else if (progress === 90) {
+      spinner.text = "🎬 Cleaning up...";
+    } else if (progress === 100) {
+      spinner.text = "🎬 Complete!";
+    }
+  };
+
+  const videoResult = await spawnRenderer(
+    {
+      script: {
+        title: script.title,
+        totalDuration: script.scenes.reduce((sum, s) => sum + s.duration, 0),
+        scenes: script.scenes.map((scene) => ({
+          id: scene.id,
+          type: scene.type,
+          title: scene.title,
+          narration: scene.narration,
+          duration: scene.duration,
+          ...(scene.visualLayers !== undefined && {
+            visualLayers: scene.visualLayers,
+          }),
+        })),
+      },
+      screenshotResources,
+      outputDir,
+      videoFileName: "output.mp4",
+      srtOutputPath: srtPath,
+    },
+    { onProgress },
+  );
+
+  if (!videoResult.success) {
+    workflowStateManager.failStep(
+      "compose",
+      videoResult.error ?? "Render failed",
+    );
+    workflowStateManager.failWorkflow("Video rendering failed");
+    throw new Error(videoResult.error ?? "Video rendering failed");
+  }
+
+  workflowStateManager.completeStep("compose", {
+    videoPath: videoResult.videoPath,
+    srtPath,
+  });
+  workflowStateManager.completeWorkflow({ outputDir });
+
+  spinner.succeed("✅ Video composed!");
+
+  console.log(chalk.green("\n🎉 Composition Complete!\n"));
+  console.log(chalk.blue("📁 Video:"), videoResult.videoPath);
+  console.log(chalk.blue("📝 Subtitles:"), srtPath);
+  console.log(
+    chalk.blue("⏱️  Duration:"),
+    Math.round(videoResult.duration ?? 0) + "s",
+  );
+  console.log(chalk.blue("🎬 Scenes:"), script.scenes.length);
+  console.log(chalk.green("\n✨ Your video is ready!"));
+}
+
+// Resume command
+program
+  .command("resume [runId]")
+  .description("Resume a suspended workflow")
+  .action(async (runId) => {
+    const spinner = ora();
+    gracefulShutdown.setSpinner(spinner);
+
+    try {
+      // Try to load existing workflow state
+      const state = workflowStateManager.load();
+
+      if (!state) {
+        if (runId) {
+          spinner.fail(`Workflow ${runId} not found`);
+        } else {
+          spinner.fail(
+            "No workflow state found. Run 'video-script create' first.",
+          );
+        }
+        process.exit(1);
+      }
+
+      if (state.status !== "suspended" && state.status !== "failed") {
+        console.log(chalk.blue("\n📊 Workflow Status: " + state.status));
+        console.log(chalk.gray("  Run ID: " + state.runId));
+        console.log(chalk.gray("  Created: " + state.createdAt));
+
+        const progress = workflowStateManager.getProgress();
+        console.log(
+          chalk.gray(
+            `  Progress: ${progress.completed}/${progress.total} steps`,
+          ),
+        );
+
+        if (state.status === "completed") {
+          console.log(chalk.green("\n✅ Workflow already completed!"));
+          console.log(
+            chalk.gray(
+              "  Output: " +
+                (state.output as Record<string, unknown>)?.outputDir,
+            ),
+          );
+        }
+        process.exit(0);
+      }
+
+      console.log(chalk.blue("\n▶️  Resuming workflow..."));
+      console.log(chalk.gray("  Run ID: " + state.runId));
+      console.log(
+        chalk.gray(
+          "  Title: " + (state.input as Record<string, unknown>)?.title,
+        ),
+      );
+      console.log(
+        chalk.gray(
+          "  Output: " + (state.input as Record<string, unknown>)?.outputDir,
+        ),
+      );
+
+      // Determine where to resume based on completed steps
+      const outputDir = (state.input as Record<string, unknown>)
+        ?.outputDir as string;
+
+      if (!outputDir || !existsSync(outputDir)) {
+        spinner.fail(
+          "Output directory not found. Workflow state may be corrupted.",
+        );
+        process.exit(1);
+      }
+
+      // Find the next step to run
+      const scriptPath = join(outputDir, "script.json");
+      const screenshotsDir = join(outputDir, "screenshots");
+
+      if (!existsSync(scriptPath)) {
+        spinner.fail("script.json not found. Run 'video-script create' first.");
+        process.exit(1);
+      }
+
+      const scriptContent = readFileSync(scriptPath, "utf-8");
+      const script: ScriptOutput = ScriptOutputSchema.parse(
+        JSON.parse(scriptContent),
+      );
+
+      // Resume from screenshot if script exists, or compose if screenshots exist
+      let needsScreenshot = !existsSync(join(screenshotsDir, "scene-001.png"));
+
+      // Check if we have screenshots
+      if (existsSync(screenshotsDir)) {
+        const files = require("fs").readdirSync(screenshotsDir);
+        needsScreenshot = !files.some(
+          (f: string) => f.startsWith("scene-") && f.endsWith(".png"),
+        );
+      }
+
+      if (needsScreenshot) {
+        // Run screenshot phase
+        spinner.start("📸 Running screenshot agent...");
+        workflowStateManager.startStep("screenshot");
+
+        if (!existsSync(screenshotsDir)) {
+          mkdirSync(screenshotsDir, { recursive: true });
+        }
+
+        const screenshotResult = await screenshotAgent.generate([
+          {
+            role: "user",
+            content:
+              "Process the following script and generate screenshots for each scene.\n\nScript:\n" +
+              JSON.stringify(script, null, 2) +
+              "\n\nOutput directory: " +
+              screenshotsDir +
+              '\n\nFor each scene:\n- If type is "url", capture a webpage screenshot using playwrightScreenshot tool\n- If type is "text", generate a text image\n- Save files as scene-001.png, scene-002.png, etc.\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
+          },
+        ]);
+
+        interface ScreenshotResult {
+          screenshots: Array<{
+            sceneOrder: number;
+            filename: string;
+            success: boolean;
+            error?: string;
+          }>;
+        }
+
+        let screenshotData: ScreenshotResult;
+        try {
+          const textContent =
+            typeof screenshotResult.text === "string"
+              ? screenshotResult.text
+              : JSON.stringify(screenshotResult.text);
+
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            screenshotData = {
+              screenshots: script.scenes.map((_scene, index) => ({
+                sceneOrder: index + 1,
+                filename:
+                  "scene-" + String(index + 1).padStart(3, "0") + ".png",
+                success: true,
+              })),
+            };
+          } else {
+            screenshotData = JSON.parse(jsonMatch[0]);
+          }
+        } catch {
+          screenshotData = {
+            screenshots: script.scenes.map((_scene, index) => ({
+              sceneOrder: index + 1,
+              filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
+              success: true,
+            })),
+          };
+        }
+
+        workflowStateManager.completeStep("screenshot", {
+          screenshotsDir,
+          screenshotCount: screenshotData.screenshots.length,
+        });
+        spinner.succeed("✅ Screenshots captured!");
+      }
+
+      // Run compose phase
+      spinner.start("🎬 Rendering video...");
+      workflowStateManager.startStep("compose");
+
+      const screenshotResources: Record<string, string> = {};
+      script.scenes.forEach((scene, index) => {
+        const sceneKey = scene.id || String(index + 1);
+        const filename = `scene-${sceneKey}.png`;
+        const filepath = join(screenshotsDir, filename);
+        if (existsSync(filepath)) {
+          screenshotResources[sceneKey] = filepath;
+        }
+      });
+
+      const srtPath = join(outputDir, "output.srt");
+
+      const onProgress = (progress: number) => {
+        if (progress === 10) {
+          spinner.text = "🎬 Generating Remotion project...";
+        } else if (progress === 30) {
+          spinner.text = "🎬 Preparing video output...";
+        } else if (progress === 50) {
+          spinner.text = "🎬 Rendering video frames...";
+        } else if (progress === 80) {
+          spinner.text = "🎬 Finalizing video...";
+        } else if (progress === 90) {
+          spinner.text = "🎬 Cleaning up...";
+        } else if (progress === 100) {
+          spinner.text = "🎬 Complete!";
+        }
+      };
+
+      const videoResult = await spawnRenderer(
+        {
+          script: {
+            title: script.title,
+            totalDuration: script.scenes.reduce(
+              (sum, s) => sum + s.duration,
+              0,
+            ),
+            scenes: script.scenes.map((scene) => ({
+              id: scene.id,
+              type: scene.type,
+              title: scene.title,
+              narration: scene.narration,
+              duration: scene.duration,
+              ...(scene.visualLayers !== undefined && {
+                visualLayers: scene.visualLayers,
+              }),
+            })),
+          },
+          screenshotResources,
+          outputDir,
+          videoFileName: "output.mp4",
+          srtOutputPath: srtPath,
+        },
+        { onProgress },
+      );
+
+      if (!videoResult.success) {
+        workflowStateManager.failStep(
+          "compose",
+          videoResult.error ?? "Render failed",
+        );
+        workflowStateManager.failWorkflow("Video rendering failed");
+        throw new Error(videoResult.error ?? "Video rendering failed");
+      }
+
+      workflowStateManager.completeStep("compose", {
+        videoPath: videoResult.videoPath,
+        srtPath,
+      });
+      workflowStateManager.completeWorkflow({ outputDir });
+
+      spinner.succeed("✅ Video composed!");
+
+      console.log(chalk.green("\n🎉 Composition Complete!\n"));
+      console.log(chalk.blue("📁 Video:"), videoResult.videoPath);
+      console.log(chalk.blue("📝 Subtitles:"), srtPath);
+      console.log(
+        chalk.blue("⏱️  Duration:"),
+        Math.round(videoResult.duration ?? 0) + "s",
+      );
+      console.log(chalk.blue("🎬 Scenes:"), script.scenes.length);
+      console.log(chalk.green("\n✨ Your video is ready!"));
+    } catch (error) {
+      spinner.fail("❌ Resume workflow failed");
+      workflowStateManager.failWorkflow(
+        error instanceof Error ? error.message : String(error),
+      );
+      if (error instanceof Error) {
+        console.error(chalk.red("\n❌ Error: " + error.message + "\n"));
+        if (error.stack) {
+          console.error(chalk.gray(error.stack));
+        }
+      } else {
+        console.error(chalk.red("\n❌ An unexpected error occurred\n"));
+      }
       process.exit(1);
     }
   });
