@@ -117,5 +117,5 @@ export const scriptAgent = new Agent({
 - duration 必须根据场景类型在合理范围内
 - visualLayers 是可选的，但如果提供则必须包含完整的 layer 对象
 - 所有字段必须严格遵循上述 JSON 格式`,
-  model: "minimax-cn-coding-plan/MiniMax-M2.5",
+  model: "minimax-cn-coding-plan/MiniMax-M2.7",
 });

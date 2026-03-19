@@ -39,7 +39,7 @@ export const screenshotAgent = new Agent({
 - 每个 code 类型都必须调用 codeHighlightTool
 - outputDir 和 filename 是必需参数，必须传递
 - 使用 visualLayer.id 作为文件名的一部分来保证唯一性`,
-  model: "minimax-cn-coding-plan/MiniMax-M2.5",
+  model: "minimax-cn-coding-plan/MiniMax-M2.7",
   tools: {
     playwrightScreenshot: playwrightScreenshotTool,
     codeHighlight: codeHighlightTool,
