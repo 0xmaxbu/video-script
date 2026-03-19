@@ -100,6 +100,13 @@ export const VisualLayerSchema = z.object({
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
+// SceneTransitionSchema must be defined before SceneSchema since SceneSchema references it
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "none"]),
+  duration: z.number().min(0),
+});
+export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
+
 export const SceneSchema = z.object({
   id: z.string(),
   type: SceneNarrativeType,
@@ -112,6 +119,7 @@ export const SceneSchema = z.object({
   visualContent: z.string().optional(),
   screenshot: ScreenshotSpecSchema.optional(),
   code: CodeSpecSchema.optional(),
+  transition: SceneTransitionSchema.optional(),
 });
 
 export type Scene = z.infer<typeof SceneSchema>;
@@ -123,12 +131,6 @@ export const ScriptOutputSchema = z.object({
 });
 
 export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;
-
-export const SceneTransitionSchema = z.object({
-  type: z.enum(["fade", "slide", "wipe", "none"]),
-  duration: z.number().min(0),
-});
-export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
 export const VideoConfigSchema = z.object({
   aspectRatio: z.enum(["16:9", "9:16"]),
