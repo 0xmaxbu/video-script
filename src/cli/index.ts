@@ -95,62 +95,77 @@ program
 
       spinner.start("🔍 Running research agent...");
 
-      const result = await researchAgent.generate([
-        {
-          role: "user",
-          content: JSON.stringify({
-            title: input.title,
-            links: input.links || [],
-            document: input.document || "",
-          }),
-        },
-      ]);
+      const MAX_RETRIES = 3;
+      let lastError: Error | undefined;
+      let researchOutput: ResearchOutput | undefined;
+
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const result = await researchAgent.generate([
+            {
+              role: "user",
+              content: JSON.stringify({
+                title: input.title,
+                links: input.links || [],
+                document: input.document || "",
+              }),
+            },
+          ]);
+
+          const textContent =
+            typeof result.text === "string"
+              ? result.text
+              : JSON.stringify(result.text);
+
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            throw new Error("No JSON found in agent response");
+          }
+
+          const parsed = JSON.parse(jsonMatch[0]);
+
+          researchOutput = {
+            title: parsed.title || input.title,
+            segments:
+              parsed.segments ||
+              parsed.keyPoints?.map(
+                (
+                  kp: { title: string; description: string },
+                  index: number,
+                ) => ({
+                  order: index + 1,
+                  sentence: kp.description || kp.title,
+                  keyContent: JSON.stringify({ concept: kp.title }),
+                  links:
+                    parsed.sources?.map(
+                      (s: { url: string; title: string }) => ({
+                        url: s.url,
+                        key: s.title,
+                      }),
+                    ) || [],
+                }),
+              ) ||
+              [],
+          };
+
+          researchOutput = ResearchOutputSchema.parse(researchOutput);
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < MAX_RETRIES - 1) {
+            spinner.text = chalk.yellow(
+              `  Retrying... (${attempt + 1}/${MAX_RETRIES})`,
+            );
+          }
+        }
+      }
+
+      if (!researchOutput) {
+        spinner.fail("Failed to parse research output");
+        throw lastError || new Error("Research failed after retries");
+      }
 
       spinner.text = "📝 Processing research output...";
-
-      let researchOutput: ResearchOutput;
-      try {
-        const textContent =
-          typeof result.text === "string"
-            ? result.text
-            : JSON.stringify(result.text);
-
-        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error("No JSON found in agent response");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-
-        researchOutput = {
-          title: parsed.title || input.title,
-          segments:
-            parsed.segments ||
-            parsed.keyPoints?.map(
-              (kp: { title: string; description: string }, index: number) => ({
-                order: index + 1,
-                sentence: kp.description || kp.title,
-                keyContent: JSON.stringify({ concept: kp.title }),
-                links:
-                  parsed.sources?.map((s: { url: string; title: string }) => ({
-                    url: s.url,
-                    key: s.title,
-                  })) || [],
-              }),
-            ) ||
-            [],
-        };
-
-        researchOutput = ResearchOutputSchema.parse(researchOutput);
-      } catch (parseError) {
-        spinner.fail("Failed to parse research output");
-        throw new Error(
-          "Failed to parse research output: " +
-            (parseError instanceof Error
-              ? parseError.message
-              : String(parseError)),
-        );
-      }
 
       const researchPath = join(outputDir, "research.json");
       writeFileSync(researchPath, JSON.stringify(researchOutput, null, 2));
