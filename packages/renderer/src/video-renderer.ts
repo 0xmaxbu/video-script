@@ -6,7 +6,6 @@ import {
   generateRemotionProject,
   type GenerateProjectInput,
 } from "./remotion-project-generator.js";
-import { cleanupRemotionTempDir } from "./cleanup.js";
 
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
@@ -188,14 +187,6 @@ export async function renderVideo(
     }
 
     onProgress?.(90);
-
-    try {
-      await cleanupRemotionTempDir(projectResult.projectPath, {
-        preservePatterns: ["*.mp4", "*.srt", "*.json"],
-      });
-    } catch (cleanupError) {
-      console.warn("Failed to clean up temporary project files:", cleanupError);
-    }
 
     onProgress?.(100);
 
