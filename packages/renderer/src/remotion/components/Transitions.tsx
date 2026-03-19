@@ -8,14 +8,7 @@ import {
   Easing,
 } from "remotion";
 
-type TransitionType =
-  | "fade"
-  | "slideLeft"
-  | "slideRight"
-  | "slideUp"
-  | "slideDown"
-  | "zoom"
-  | "wipe";
+type TransitionType = "fade" | "slide" | "wipe" | "none";
 
 interface TransitionProps {
   children: React.ReactNode;
@@ -74,33 +67,17 @@ export const Transition: React.FC<TransitionProps> = ({
         styles.opacity = progress;
         break;
 
-      case "slideLeft":
+      case "slide":
         styles.transform = `translateX(${interpolate(progress, [0, 1], [100, 0])}px)`;
-        styles.opacity = progress;
-        break;
-
-      case "slideRight":
-        styles.transform = `translateX(${interpolate(progress, [0, 1], [-100, 0])}px)`;
-        styles.opacity = progress;
-        break;
-
-      case "slideUp":
-        styles.transform = `translateY(${interpolate(progress, [0, 1], [100, 0])}px)`;
-        styles.opacity = progress;
-        break;
-
-      case "slideDown":
-        styles.transform = `translateY(${interpolate(progress, [0, 1], [-100, 0])}px)`;
-        styles.opacity = progress;
-        break;
-
-      case "zoom":
-        styles.transform = `scale(${interpolate(progress, [0, 1], [0.5, 1])})`;
         styles.opacity = progress;
         break;
 
       case "wipe":
         styles.clipPath = `inset(0 ${interpolate(progress, [0, 1], [100, 0])}% 0 0)`;
+        break;
+
+      case "none":
+        styles.opacity = 1;
         break;
     }
 

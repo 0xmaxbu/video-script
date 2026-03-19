@@ -130,6 +130,12 @@ export const VisualLayerSchema = z.object({
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "none"]),
+  duration: z.number().min(0),
+});
+export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
+
 export const SceneScriptSchema = z.object({
   id: z.string(),
   type: SceneNarrativeType,
@@ -137,14 +143,9 @@ export const SceneScriptSchema = z.object({
   narration: z.string(),
   duration: z.number().positive(),
   visualLayers: z.array(VisualLayerSchema).optional(),
+  transition: SceneTransitionSchema.optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
-
-export const SceneTransitionSchema = z.object({
-  type: z.enum(["fade", "slide", "wipe", "none"]),
-  duration: z.number().min(0),
-});
-export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
 export const ScriptOutputSchema = z.object({
   title: z.string(),
