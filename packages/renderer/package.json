@@ -29,6 +29,7 @@
     "@remotion/studio": "4.0.436",
     "@remotion/studio-server": "4.0.436",
     "commander": "^14.0.3",
+    "pinyin": "^3.0.0",
     "playwright": "^1.58.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

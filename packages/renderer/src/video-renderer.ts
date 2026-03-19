@@ -7,6 +7,7 @@ import {
   generateRemotionProject,
   type GenerateProjectInput,
 } from "./remotion-project-generator.js";
+import { generateOutputDirectory } from "./output-directory.js";
 
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
@@ -61,17 +62,23 @@ export async function renderVideo(
     const {
       script,
       screenshotResources,
-      outputDir = join(homedir(), "simple-videos"),
+      outputDir,
       videoFileName = `${script.title.toLowerCase().replace(/\s+/g, "-")}.mp4`,
       onProgress,
     } = input;
+
+    const baseOutputDir = outputDir || join(homedir(), "simple-videos");
+    const finalOutputDir = await generateOutputDirectory(
+      baseOutputDir,
+      script.title,
+    );
 
     onProgress?.(10);
 
     const projectInput: GenerateProjectInput = {
       script,
       screenshotResources,
-      outputPath: join(outputDir, ".remotion-project"),
+      outputPath: join(finalOutputDir, ".remotion-project"),
     };
 
     const projectResult = await generateRemotionProject(projectInput);
@@ -89,7 +96,7 @@ export async function renderVideo(
 
     onProgress?.(30);
 
-    const videoOutputPath = join(outputDir, videoFileName);
+    const videoOutputPath = join(finalOutputDir, videoFileName);
     const { existsSync, mkdirSync } = await import("fs");
     const { dirname } = await import("path");
 
