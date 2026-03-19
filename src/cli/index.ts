@@ -6,7 +6,7 @@ import { Command } from "commander";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import { homedir } from "os";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import chalk from "chalk";
 import ora from "ora";
 import { promptForInput } from "./prompts.js";
@@ -570,13 +570,16 @@ program
       );
 
       const screenshotResources: Record<string, string> = {};
-      script.scenes.forEach((scene, index) => {
-        const sceneKey = scene.id || String(index + 1);
-        const filename = `scene-${sceneKey}.png`;
-        const filepath = join(screenshotsDir, filename);
-        if (existsSync(filepath)) {
-          screenshotResources[sceneKey] = filepath;
-        }
+      script.scenes.forEach((scene) => {
+        scene.visualLayers?.forEach((layer) => {
+          if (layer.type === "screenshot" || layer.type === "code") {
+            const filename = `${layer.id}.png`;
+            const filepath = join(screenshotsDir, filename);
+            if (existsSync(filepath)) {
+              screenshotResources[`${scene.id}-${layer.id}`] = filepath;
+            }
+          }
+        });
       });
 
       const srtPath = join(dir, "output.srt");
@@ -1080,13 +1083,17 @@ async function runScreenshotAndCompose(
   workflowStateManager.startStep("compose");
 
   const screenshotResources: Record<string, string> = {};
-  script.scenes.forEach((scene, index) => {
-    const sceneKey = scene.id || String(index + 1);
-    const filename = `scene-${sceneKey}.png`;
-    const filepath = join(screenshotsDir, filename);
-    if (existsSync(filepath)) {
-      screenshotResources[sceneKey] = filepath;
-    }
+  script.scenes.forEach((scene) => {
+    scene.visualLayers?.forEach((layer) => {
+      if (layer.type === "screenshot" || layer.type === "code") {
+        const filename = `${layer.id}.png`;
+        const filepath = join(screenshotsDir, filename);
+        if (existsSync(filepath)) {
+          screenshotResources[`${scene.id}-${layer.id}`] =
+            `file://${resolve(filepath)}`;
+        }
+      }
+    });
   });
 
   const srtPath = join(outputDir, "output.srt");
@@ -1327,13 +1334,16 @@ program
       workflowStateManager.startStep("compose");
 
       const screenshotResources: Record<string, string> = {};
-      script.scenes.forEach((scene, index) => {
-        const sceneKey = scene.id || String(index + 1);
-        const filename = `scene-${sceneKey}.png`;
-        const filepath = join(screenshotsDir, filename);
-        if (existsSync(filepath)) {
-          screenshotResources[sceneKey] = filepath;
-        }
+      script.scenes.forEach((scene) => {
+        scene.visualLayers?.forEach((layer) => {
+          if (layer.type === "screenshot" || layer.type === "code") {
+            const filename = `${layer.id}.png`;
+            const filepath = join(screenshotsDir, filename);
+            if (existsSync(filepath)) {
+              screenshotResources[`${scene.id}-${layer.id}`] = filepath;
+            }
+          }
+        });
       });
 
       const srtPath = join(outputDir, "output.srt");
