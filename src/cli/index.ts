@@ -78,7 +78,7 @@ program
         );
       }
 
-      const baseDir = "./output";
+      const baseDir = join(homedir(), "simple-videos");
       let outputDir: string;
 
       if (options.output) {
