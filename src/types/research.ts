@@ -10,7 +10,7 @@ export type ResearchLink = z.infer<typeof ResearchLinkSchema>;
 export const ResearchSegmentSchema = z.object({
   order: z.number().int().positive(),
   sentence: z.string().min(1),
-  keyContent: z.string(),
+  keyContent: z.record(z.string(), z.string()),
   links: z.array(ResearchLinkSchema).min(1),
 });
 

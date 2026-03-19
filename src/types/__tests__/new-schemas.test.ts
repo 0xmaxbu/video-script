@@ -39,7 +39,7 @@ describe("ResearchSegmentSchema", () => {
   const validSegment = {
     order: 1,
     sentence: "TypeScript generics allow type-safe reuse.",
-    keyContent: '{"concept":"generics"}',
+    keyContent: { concept: "generics" },
     links: [{ url: "https://typescriptlang.org", key: "TS Docs" }],
   };
 
@@ -66,11 +66,11 @@ describe("ResearchSegmentSchema", () => {
     ).toBe(false);
   });
 
-  it("should accept keyContent as a string (JSON serialized)", () => {
+  it("should accept keyContent as a plain object", () => {
     expect(
       ResearchSegmentSchema.safeParse({
         ...validSegment,
-        keyContent: '{"some":"data"}',
+        keyContent: { some: "data" },
       }).success,
     ).toBe(true);
   });
@@ -80,7 +80,7 @@ describe("ResearchOutputSchema", () => {
   const validSegment = {
     order: 1,
     sentence: "A sentence",
-    keyContent: "{}",
+    keyContent: { concept: "test" },
     links: [{ url: "https://example.com", key: "Source" }],
   };
 
@@ -298,13 +298,15 @@ describe("SceneScriptSchema", () => {
 
   it("should reject invalid scene type", () => {
     expect(
-      SceneScriptSchema.safeParse({ ...validScene, type: "video" as any }).success,
+      SceneScriptSchema.safeParse({ ...validScene, type: "video" as any })
+        .success,
     ).toBe(false);
   });
 
   it("should reject missing required fields", () => {
     expect(
-      SceneScriptSchema.safeParse({ id: "scene-1", type: "intro" as const }).success,
+      SceneScriptSchema.safeParse({ id: "scene-1", type: "intro" as const })
+        .success,
     ).toBe(false);
   });
 });

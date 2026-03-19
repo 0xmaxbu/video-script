@@ -136,7 +136,7 @@ program
                 ) => ({
                   order: index + 1,
                   sentence: kp.description || kp.title,
-                  keyContent: JSON.stringify({ concept: kp.title }),
+                  keyContent: { concept: kp.title },
                   links:
                     parsed.sources?.map(
                       (s: { url: string; title: string }) => ({

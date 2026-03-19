@@ -19,7 +19,7 @@ export const researchAgent = new Agent({
     {
       "order": 1,
       "sentence": "A complete sentence about a key point (string, required)",
-      "keyContent": "JSON stringified object with concept details, e.g. '{"concept": "description"}' (string, required)",
+      "keyContent": {"concept": "A brief description of the key concept"},
       "links": [
         {
           "url": "https://example.com (valid URL, required)",
