@@ -42,6 +42,7 @@ export async function slugify(text: string): Promise<string> {
   return words
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
+    .replace(/\.{2,}/g, "-") // Prevent path traversal
     .replace(/^-|-$/g, "");
 }
 
