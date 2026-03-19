@@ -7,6 +7,7 @@ import {
   ScreenshotSpecSchema,
   CodeSpecSchema,
   VisualTypeEnum,
+  SceneTransitionSchema,
 } from "../index.js";
 
 describe("ResearchInputSchema", () => {
@@ -231,6 +232,124 @@ describe("SceneSchema", () => {
       visualContent: "console.log('hello')",
       startTime: 0,
       endTime: 30,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept scene with transition field", () => {
+    const result = SceneSchema.safeParse({
+      id: "1",
+      type: "feature",
+      title: "Scene with Transition",
+      narration: "This scene has a transition",
+      duration: 30,
+      transition: { type: "fade", duration: 0.5 },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept scene with wipe transition", () => {
+    const result = SceneSchema.safeParse({
+      id: "1",
+      type: "code",
+      title: "Code Scene",
+      narration: "Code example",
+      duration: 45,
+      transition: { type: "wipe", duration: 0.3 },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept scene with slide transition", () => {
+    const result = SceneSchema.safeParse({
+      id: "1",
+      type: "feature",
+      title: "Feature Scene",
+      narration: "Feature description",
+      duration: 30,
+      transition: { type: "slide", duration: 0.4 },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept scene with none transition", () => {
+    const result = SceneSchema.safeParse({
+      id: "1",
+      type: "intro",
+      title: "Intro",
+      narration: "Welcome",
+      duration: 10,
+      transition: { type: "none", duration: 0 },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should reject scene with invalid transition type", () => {
+    const result = SceneSchema.safeParse({
+      id: "1",
+      type: "feature",
+      title: "Bad Transition",
+      narration: "This has invalid transition",
+      duration: 30,
+      transition: { type: "zoom" as any, duration: 0.5 },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("SceneTransitionSchema", () => {
+  it("should accept fade transition", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "fade",
+      duration: 0.5,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept slide transition", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "slide",
+      duration: 0.4,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept wipe transition", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "wipe",
+      duration: 0.3,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept none transition", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "none",
+      duration: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should reject invalid transition type", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "zoom" as any,
+      duration: 0.5,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should reject negative duration", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "fade",
+      duration: -0.1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should accept zero duration", () => {
+    const result = SceneTransitionSchema.safeParse({
+      type: "none",
+      duration: 0,
     });
     expect(result.success).toBe(true);
   });
