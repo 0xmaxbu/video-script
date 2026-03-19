@@ -1,0 +1,115 @@
+{
+  "title": "Unsloth AI 介绍",
+  "segments": [
+    {
+      "order": 1,
+      "sentence": "Unsloth 是一个开源的大语言模型本地训练和运行工具,支持 Qwen、DeepSeek、gpt-oss、Gemma 等 500 多种模型。",
+      "keyContent": "{\"concept\": \"Unsloth 是一个统一的大语言模型本地训练和推理框架,支持多种开源模型\"}",
+      "links": [
+        {
+          "url": "https://github.com/unslothai/unsloth",
+          "key": "GitHub 仓库"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "sentence": "Unsloth 提供两种使用方式:Unsloth Studio(Web UI 界面)和 Unsloth Core(代码编程方式)。",
+      "keyContent": "{\"concept\": \"Unsloth 提供两种使用模式:图形界面和代码接口\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/",
+          "key": "官方网站"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "sentence": "Unsloth 训练速度比标准方法快 2 倍,显存占用减少 70%,同时保持相同的模型精度。",
+      "keyContent": "{\"concept\": \"Unsloth 的核心性能优势:训练速度提升 2 倍,显存降低 70%\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/basics/unsloth-benchmarks",
+          "key": "基准测试文档"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "sentence": "在 80GB 显存的 GPU 上,Unsloth 可以支持 Llama 3.3 (70B) 模型实现 13 倍更长的上下文长度,而标准方法仅支持 6,916 个 token。",
+      "keyContent": "{\"concept\": \"长上下文训练能力:Unsloth 支持更长的上下文长度\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/basics/unsloth-benchmarks",
+          "key": "上下文长度基准测试"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "sentence": "Unsloth Studio 支持在 Mac 和 Windows 设备上 100% 离线运行 GGUF 和 Safetensors 格式模型,具备工具调用、网络搜索和 OpenAI 兼容 API 功能。",
+      "keyContent": "{\"concept\": \"Unsloth Studio 的离线推理功能和工具调用支持\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/",
+          "key": "产品功能介绍"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "sentence": "Unsloth 支持无代码训练,可以从 PDF、CSV、JSON 文档自动创建数据集,并提供实时可观察性监控训练过程。",
+      "keyContent": "{\"concept\": \"无代码训练和数据处理功能\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/",
+          "key": "无代码训练功能"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "sentence": "Unsloth 还支持强化学习(RL),包括 GRPO、FP8 训练等多种技术,显存占用比传统方法减少 80%。",
+      "keyContent": "{\"concept\": \"强化学习训练支持和高效率\"}",
+      "links": [
+        {
+          "url": "https://github.com/unslothai/unsloth",
+          "key": "GitHub 功能介绍"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "sentence": "用户可以将训练好的模型导出为 safetensors 或 GGUF 格式,用于 llama.cpp、vLLM、Ollama 等推理框架。",
+      "keyContent": "{\"concept\": \"模型导出和多平台兼容性\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/",
+          "key": "模型导出功能"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "sentence": "Unsloth 提供三个定价版本:免费开源版、Pro 版(2.5 倍训练速度+20% 显存节省)、企业版(30 倍训练速度+多节点支持)。",
+      "keyContent": "{\"concept\": \"定价版本和功能分层\"}",
+      "links": [
+        {
+          "url": "https://unsloth.ai/",
+          "key": "定价信息"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "sentence": "Unsloth 采用双许可证模式,核心包使用 Apache 2.0 许可证,Unsloth Studio UI 使用 AGPL-3.0 许可证。",
+      "keyContent": "{\"concept\": \"开源许可证模式\"}",
+      "links": [
+        {
+          "url": "https://github.com/unslothai/unsloth",
+          "key": "许可证说明"
+        }
+      ]
+    }
+  ]
+}

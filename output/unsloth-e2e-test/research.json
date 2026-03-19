@@ -1,0 +1,139 @@
+{
+  "title": "Unsloth: Fast LLM Fine-tuning with 2x Speed Boost",
+  "segments": [
+    {
+      "order": 1,
+      "sentence": "Unsloth is an open-source library that enables training and running open-source LLMs like Qwen, DeepSeek, gpt-oss, and Gemma locally with up to 2x faster performance and 70% less VRAM usage.",
+      "keyContent": {
+        "concept": "Unsloth is an open-source LLM fine-tuning library that dramatically accelerates training speed while reducing memory consumption."
+      },
+      "links": [
+        {
+          "url": "https://github.com/unslothai/unsloth",
+          "key": "GitHub Repository"
+        },
+        {
+          "url": "https://unsloth.ai/",
+          "key": "Official Website"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "sentence": "Unsloth supports over 500 models including Llama, Mistral, Gemma, Qwen, DeepSeek, gpt-oss, and handles text, vision, audio, and embedding models with optimized kernels.",
+      "keyContent": {
+        "concept": "Extensive model support covering major open-source architectures for diverse AI tasks."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/get-started/unsloth-model-catalog",
+          "key": "Model Catalog"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "sentence": "The library offers multiple training modes including 4-bit and 16-bit LoRA fine-tuning, full fine-tuning, pretraining, and FP8 training to balance speed and accuracy.",
+      "keyContent": {
+        "concept": "Flexible training options from quantized LoRA to full precision fine-tuning."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs",
+          "key": "Documentation"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "sentence": "Unsloth Studio provides a web-based user interface for running and training models on Windows, Linux, macOS, and WSL with real-time observability for monitoring loss and GPU usage.",
+      "keyContent": {
+        "concept": "No-code web UI making LLM training accessible without command-line expertise."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/new/studio",
+          "key": "Unsloth Studio"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "sentence": "The platform includes Data Recipes feature that auto-creates training datasets from PDFs, CSVs, and JSON documents through a visual node-based workflow editor.",
+      "keyContent": {
+        "concept": "Automated dataset preparation from unstructured documents for training."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/new/studio/data-recipe",
+          "key": "Data Recipes"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "sentence": "Unsloth provides the most memory-efficient reinforcement learning implementation, using 80% less VRAM for GRPO training and supporting FP8 reinforcement learning on consumer GPUs.",
+      "keyContent": {
+        "concept": "Advanced reinforcement learning capabilities with extreme memory optimization."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/get-started/reinforcement-learning-rl-guide",
+          "key": "RL Guide"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "sentence": "Users can train models for free using Google Colab or Kaggle notebooks, with examples for Llama 3.1, gpt-oss, Qwen3, Gemma 3, and embedding models.",
+      "keyContent": {
+        "concept": "Free cloud notebook access for hands-on model training without local hardware."
+      },
+      "links": [
+        {
+          "url": "https://github.com/unslothai/notebooks",
+          "key": "Free Notebooks"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "sentence": "Models can be exported to GGUF, 16-bit safetensors, and other formats compatible with llama.cpp, vLLM, and Ollama for efficient inference deployment.",
+      "keyContent": {
+        "concept": "Flexible model export for deployment across various inference frameworks."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/new/studio/export",
+          "key": "Export Guide"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "sentence": "Unsloth supports multi-GPU training and is compatible with NVIDIA RTX 30/40/50 series, Blackwell GPUs, AMD, and Intel accelerators with platform-specific installation guides.",
+      "keyContent": {
+        "concept": "Cross-platform GPU support including latest hardware architectures."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/basics/multi-gpu-training-with-unsloth",
+          "key": "Multi-GPU Training"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "sentence": "Installation is available via pip, Docker containers, or nightly builds, with quickstart guides for Linux, Windows, macOS, and WSL environments using uv package manager.",
+      "keyContent": {
+        "concept": "Multiple installation methods for diverse development environments."
+      },
+      "links": [
+        {
+          "url": "https://unsloth.ai/docs/get-started/install",
+          "key": "Installation Guide"
+        }
+      ]
+    }
+  ]
+}
