@@ -1,4 +1,4 @@
-import { join } from "path";
+import { join, resolve } from "path";
 import { homedir } from "os";
 import { spawn } from "child_process";
 import { z } from "zod";
@@ -180,7 +180,7 @@ export async function renderVideo(
 
     onProgress?.(30);
 
-    const videoOutputPath = join(finalOutputDir, videoFileName);
+    const videoOutputPath = resolve(join(finalOutputDir, videoFileName));
     const { existsSync, mkdirSync } = await import("fs");
     const { dirname } = await import("path");
 
