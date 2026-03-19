@@ -50,6 +50,58 @@ export interface SceneAccumulator {
  * 创建场景累加器实例
  */
 export function createSceneAccumulator(): SceneAccumulator {
-  // TODO: 实现
-  throw new Error("Not implemented");
+  const scenes: Map<string, SceneScript> = new Map();
+
+  function buildScript(): ScriptOutput | null {
+    if (scenes.size === 0) {
+      return null;
+    }
+    const scenesArray = Array.from(scenes.values());
+    const totalDuration = scenesArray.reduce((sum, s) => sum + s.duration, 0);
+    return {
+      title: "Generated Video",
+      totalDuration,
+      scenes: scenesArray,
+    };
+  }
+
+  return {
+    addScene(scene: SceneScript): boolean {
+      if (scenes.has(scene.id)) {
+        return false;
+      }
+      scenes.set(scene.id, scene);
+      return true;
+    },
+
+    addVisualLayers(
+      sceneId: string,
+      visualLayers: SceneScript["visualLayers"],
+    ): void {
+      const scene = scenes.get(sceneId);
+      if (scene) {
+        scene.visualLayers = visualLayers;
+      }
+    },
+
+    async savePartial(outputPath: string): Promise<void> {
+      const { promises: fs } = await import("fs");
+      const script = buildScript();
+      if (script) {
+        await fs.writeFile(
+          outputPath,
+          JSON.stringify(script, null, 2),
+          "utf-8",
+        );
+      }
+    },
+
+    getScript(): ScriptOutput | null {
+      return buildScript();
+    },
+
+    reset(): void {
+      scenes.clear();
+    },
+  };
 }
