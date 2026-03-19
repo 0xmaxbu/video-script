@@ -5,6 +5,7 @@ import "dotenv/config";
 import { Command } from "commander";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
+import { homedir } from "os";
 import { dirname, join } from "path";
 import chalk from "chalk";
 import ora from "ora";
