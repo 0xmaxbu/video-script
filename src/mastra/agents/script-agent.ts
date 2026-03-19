@@ -35,6 +35,14 @@ export const scriptAgent = new Agent({
    - type: "outro" - 结尾总结场景
    - 每个场景必须有清晰的 type，选择最合适的类型
 
+5. 为场景添加转场效果（transition）【关键要求】
+   - **至少 50% 的场景必须有 transition 字段**
+   - transition 是可选的，但鼓励为连续场景添加转场
+   - transition.type 可选值：fade（淡入淡出）、slide（滑动）、wipe（擦除）、none（无转场）
+   - transition.duration：转场持续时间（秒），通常 0.3-0.5 秒
+   - 示例：{ "transition": { "type": "fade", "duration": 0.4 } }
+   - **建议：相邻场景之间添加转场效果**，让视频更流畅
+
 5. 为场景添加丰富的视觉层（visualLayers）【核心要求 - 必须多图多效果】
    - **每个 scene 必须包含 visualLayers 数组，不能为空**
    - **每个场景至少 3-6 个 visualLayer，越多越好**
@@ -101,6 +109,7 @@ export const scriptAgent = new Agent({
       "title": "主题讲解",
       "narration": "这个功能的特点是...",
       "duration": 45,
+      "transition": { "type": "fade", "duration": 0.4 },
       "visualLayers": [
         {
           "id": "layer-1",
@@ -200,9 +209,12 @@ export const scriptAgent = new Agent({
 - **每个场景必须包含 visualLayers 数组，且至少有三个 layer**
 - **screenshot 类型的 layer 必须占多数**（至少 50% 以上）
 - **每个 layer 必须有 animation 字段**，不能为空
+- **transition 字段**：至少 50% 的场景需要包含 transition（相邻场景之间）
+- transition.type 可选值：fade、slide、wipe、none
+- transition.duration 推荐值：0.3-0.5 秒
 - type 必须是：intro、feature、code、outro 之一
 - duration 必须根据场景类型在合理范围内
 - 所有字段必须严格遵循上述 JSON 格式
-- **多图 + 多效果 = 高质量视频**，不要吝啬 visualLayers`,
+- **多图 + 多效果 + 转场 = 高质量视频**，不要吝啬 visualLayers 和 transition`,
   model: "minimax-cn-coding-plan/MiniMax-M2.7",
 });
