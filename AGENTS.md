@@ -4,16 +4,16 @@
 
 ## 技术栈
 
-| 层级 | 技术 | 版本 |
-|------|------|------|
-| 运行时 | Node.js + TypeScript | TS 5.4+ |
-| CLI | Commander.js + Inquirer | - |
-| Agent 框架 | Mastra | ^0.1.0 |
-| LLM | OpenAI / Anthropic | - |
-| 截图 | Playwright | ^1.42.0 |
-| 代码高亮 | Shiki | ^1.0.0 |
-| 视频合成 | Remotion | ^4.0.0 |
-| 测试 | Vitest | ^1.4.0 |
+| 层级       | 技术                    | 版本    |
+| ---------- | ----------------------- | ------- |
+| 运行时     | Node.js + TypeScript    | TS 5.4+ |
+| CLI        | Commander.js + Inquirer | -       |
+| Agent 框架 | Mastra                  | ^0.1.0  |
+| LLM        | OpenAI / Anthropic      | -       |
+| 截图       | Playwright              | ^1.42.0 |
+| 代码高亮   | Shiki                   | ^1.0.0  |
+| 视频合成   | Remotion                | ^4.0.0  |
+| 测试       | Vitest                  | ^1.4.0  |
 
 ---
 
@@ -28,11 +28,11 @@
 ### 数据流
 
 ```
-Input (title + links + document) 
-  → Research (collected info) 
-  → Script (narration + timeline) 
-  → Screenshots (images) 
-  → Composition (Remotion project) 
+Input (title + links + document)
+  → Research (collected info)
+  → Script (narration + timeline)
+  → Screenshots (images)
+  → Composition (Remotion project)
   → Render (final video)
 ```
 
@@ -51,6 +51,7 @@ src/
 ```
 
 **规则**:
+
 - CLI 层不包含业务逻辑
 - Agent 只通过 Mastra Tools 与外部系统交互
 - Remotion 组件必须是纯 React 组件
@@ -81,7 +82,7 @@ src/
 
 ```typescript
 // src/types/research.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ResearchInputSchema = z.object({
   title: z.string().min(1),
@@ -93,21 +94,86 @@ export const ResearchInputSchema = z.object({
 export type ResearchInput = z.infer<typeof ResearchInputSchema>;
 ```
 
+### Schema 定义（视频脚本）
+
+```typescript
+// SceneNarrativeType - 场景类型枚举
+export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
+export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
+
+// VisualLayerSchema - 视觉层配置
+export const PositionSchema = z.object({
+  x: z.union([z.number().min(0), z.enum(["left", "center", "right"])]),
+  y: z.union([z.number().min(0), z.enum(["top", "center", "bottom"])]),
+  width: z.union([z.number().min(0), z.literal("auto"), z.literal("full")]),
+  height: z.union([z.number().min(0), z.literal("auto"), z.literal("full")]),
+  zIndex: z.number().default(0),
+});
+
+export const AnimationConfigSchema = z.object({
+  enter: z.enum([
+    "fadeIn",
+    "slideLeft",
+    "slideRight",
+    "slideUp",
+    "slideDown",
+    "zoomIn",
+    "typewriter",
+    "none",
+  ]),
+  enterDelay: z.number().default(0),
+  exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
+  exitAt: z.number().optional(),
+});
+
+export const VisualLayerSchema = z.object({
+  id: z.string(),
+  type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
+  position: PositionSchema,
+  content: z.string(),
+  animation: AnimationConfigSchema,
+});
+
+// SceneSchema - 单个场景配置
+export const SceneSchema = z.object({
+  id: z.string(),
+  type: SceneNarrativeType,
+  title: z.string(),
+  narration: z.string(),
+  duration: z.number().positive(),
+  visualLayers: z.array(VisualLayerSchema).optional(),
+});
+
+// ScriptOutputSchema - 完整脚本输出
+export const ScriptOutputSchema = z.object({
+  title: z.string(),
+  totalDuration: z.number().positive(),
+  scenes: z.array(SceneSchema).min(1),
+  transitions: z.array(TransitionSchema).optional(),
+});
+
+// SceneTransitionSchema - 场景转场配置
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "none"]),
+  duration: z.number().min(0),
+});
+```
+
 ### Agent 定义规范
 
 使用 Mastra 框架定义 Agent：
 
 ```typescript
 // src/mastra/agents/research-agent.ts
-import { Agent } from '@mastra/core';
-import { webFetchTool } from '../tools/web-fetch';
+import { Agent } from "@mastra/core";
+import { webFetchTool } from "../tools/web-fetch";
 
 export const researchAgent = new Agent({
-  name: 'Research Agent',
+  name: "Research Agent",
   instructions: `你是一个技术内容研究员。
     根据用户提供的标题、链接和文档，搜集并整理相关信息。
     输出结构化的研究结果。`,
-  model: 'openai/gpt-4-turbo',
+  model: "openai/gpt-4-turbo",
   tools: {
     webFetch: webFetchTool,
   },
@@ -118,12 +184,12 @@ export const researchAgent = new Agent({
 
 ```typescript
 // src/mastra/tools/playwright-screenshot.ts
-import { createTool } from '@mastra/core';
-import { z } from 'zod';
+import { createTool } from "@mastra/core";
+import { z } from "zod";
 
 export const playwrightScreenshotTool = createTool({
-  id: 'playwright-screenshot',
-  description: '使用 Playwright 截取网页截图',
+  id: "playwright-screenshot",
+  description: "使用 Playwright 截取网页截图",
   inputSchema: z.object({
     url: z.string().url(),
     selector: z.string().optional(),
@@ -148,20 +214,20 @@ export const playwrightScreenshotTool = createTool({
 ```typescript
 // src/utils/errors.ts
 export enum VideoGenerationError {
-  INVALID_INPUT = 'INVALID_INPUT',
-  WEB_FETCH_FAILED = 'WEB_FETCH_FAILED',
-  LLM_API_ERROR = 'LLM_API_ERROR',
-  REMOTION_RENDER_FAILED = 'REMOTION_RENDER_FAILED',
+  INVALID_INPUT = "INVALID_INPUT",
+  WEB_FETCH_FAILED = "WEB_FETCH_FAILED",
+  LLM_API_ERROR = "LLM_API_ERROR",
+  REMOTION_RENDER_FAILED = "REMOTION_RENDER_FAILED",
 }
 
 export class VideoGenerationError extends Error {
   constructor(
     public code: ErrorCode,
     message: string,
-    public retryable: boolean = false
+    public retryable: boolean = false,
   ) {
     super(message);
-    this.name = 'VideoGenerationError';
+    this.name = "VideoGenerationError";
   }
 }
 ```
@@ -196,16 +262,16 @@ src/
 
 ```typescript
 // src/mastra/tools/__tests__/playwright-screenshot.test.ts
-import { describe, it, expect } from 'vitest';
-import { playwrightScreenshotTool } from '../playwright-screenshot';
+import { describe, it, expect } from "vitest";
+import { playwrightScreenshotTool } from "../playwright-screenshot";
 
-describe('playwrightScreenshotTool', () => {
-  it('should capture full page screenshot', async () => {
+describe("playwrightScreenshotTool", () => {
+  it("should capture full page screenshot", async () => {
     const result = await playwrightScreenshotTool.execute({
-      url: 'https://example.com',
+      url: "https://example.com",
       viewport: { width: 1920, height: 1080 },
     });
-    
+
     expect(result.imagePath).toMatch(/\.png$/);
   });
 });
@@ -395,6 +461,7 @@ video-script config   # 配置
 - [设计文档](./docs/plans/2025-03-15-video-script-design.md)
 
 <!-- BEGIN BEADS INTEGRATION -->
+
 ## Issue Tracking with bd (beads)
 
 **IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
@@ -500,6 +567,7 @@ For more details, see README.md and docs/QUICKSTART.md.
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
+
 - Work is NOT complete until `git push` succeeds
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
