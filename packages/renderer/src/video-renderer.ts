@@ -153,10 +153,9 @@ export async function renderVideo(
     } = input;
 
     const baseOutputDir = outputDir || join(homedir(), "simple-videos");
-    const finalOutputDir = await generateOutputDirectory(
-      baseOutputDir,
-      script.title,
-    );
+    const finalOutputDir = outputDir
+      ? outputDir
+      : await generateOutputDirectory(baseOutputDir, script.title);
 
     onProgress?.(10);
 
