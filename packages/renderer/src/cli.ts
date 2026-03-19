@@ -1,8 +1,7 @@
 import { readFile } from "fs/promises";
 import { Command } from "commander";
-import { renderVideo } from "./video-renderer.js";
+import { renderVideo, RenderVideoInputSchema } from "./index.js";
 import { generateSrt } from "./srt-generator.js";
-import { RenderVideoInputSchema } from "./video-renderer.js";
 
 const program = new Command();
 

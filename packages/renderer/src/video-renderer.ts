@@ -126,7 +126,7 @@ export async function renderVideo(
       const args = [
         remotionScript,
         "render",
-        "src/index.ts",
+        "src/index.tsx",
         "Video",
         videoOutputPath,
         "--codec",

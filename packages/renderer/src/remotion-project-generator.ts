@@ -177,19 +177,29 @@ export async function generateRemotionProject(
     );
 
     // Create remotion.config.ts to fix webpack alias issue with @remotion/studio
+    // The @remotion/bundler aliases @remotion/studio to dist/index.js which breaks
+    // subpath imports like @remotion/studio/renderEntry. We override to use the
+    // ESM entry which properly supports subpath resolution.
     const remotionConfigContent = `const path = require("path");
 const { Config } = require("@remotion/cli/config");
 
 Config.overrideWebpackConfig((currentConfiguration) => {
-  const studioPath = path.join(__dirname, "node_modules", "@remotion", "studio", "dist", "renderEntry.js");
+  // Point @remotion/studio to its ESM entry instead of CJS entry
+  // This fixes the subpath import issue (e.g., @remotion/studio/renderEntry)
+  const studioEsmPath = path.join(__dirname, "node_modules", "@remotion", "studio", "dist", "esm", "index.mjs");
+  const { alias } = currentConfiguration.resolve || {};
+  
+  // Remove the problematic @remotion/studio alias entirely
+  // so subpaths resolve correctly through normal node_modules resolution
+  const newAlias = Object.fromEntries(
+    Object.entries(alias || {}).filter(([key]) => key !== "@remotion/studio")
+  );
+  
   return {
     ...currentConfiguration,
     resolve: {
       ...currentConfiguration.resolve,
-      alias: {
-        ...currentConfiguration.resolve?.alias,
-        "@remotion/studio/renderEntry": studioPath,
-      },
+      alias: newAlias,
     },
   };
 });
@@ -200,13 +210,43 @@ Config.overrideWebpackConfig((currentConfiguration) => {
       remotionConfigContent,
     );
 
-    const indexContent = `import { registerRoot } from "@remotion/cli";
+    const indexContent = `import { registerRoot } from "remotion";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { RemotionRoot } from "./Root";
 
 registerRoot(RemotionRoot);
+
+const container = document.getElementById("root");
+if (container) {
+  const root = createRoot(container);
+  root.render(
+    StrictMode ? <StrictMode><RemotionRoot /></StrictMode> : <RemotionRoot />
+  );
+}
 `;
 
-    await writeFile(join(srcPath, "index.ts"), indexContent);
+    await writeFile(join(srcPath, "index.tsx"), indexContent);
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remotion Video</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="./index.js"></script>
+</body>
+</html>
+`;
+
+    await writeFile(join(projectPath, "index.html"), htmlContent);
 
     const rootContent = `import React from "react";
 import { Composition } from "remotion";

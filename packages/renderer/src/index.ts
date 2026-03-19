@@ -7,6 +7,16 @@ export {
 export type { RenderVideoInput, RenderVideoOutput } from "./video-renderer.js";
 
 export {
+  renderVideoWithPuppeteer,
+  PuppeteerRenderInputSchema,
+  PuppeteerRenderOutputSchema,
+} from "./puppeteer-renderer.js";
+export type {
+  PuppeteerRenderInput,
+  PuppeteerRenderOutput,
+} from "./puppeteer-renderer.js";
+
+export {
   generateSrt,
   GenerateSrtInputSchema,
   GenerateSrtOutputSchema,
