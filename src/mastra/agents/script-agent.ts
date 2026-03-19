@@ -16,12 +16,15 @@ export const scriptAgent = new Agent({
    - 语言简洁易懂，适合听众快速理解
    - 融入适当的解释和例子，增强可理解性
 
-3. 规划时间轴
+3. 规划时间轴【关键要求】
    - 为每个场景指定时长（秒数）
+   - **时长计算规则**：
+     * 中文旁白：约 3 字/秒（如 100 字旁白 ≈ 33 秒）
+     * 代码场景：时长增加 50%（因需要展示、解释、阅读代码）
    - 根据场景类型分配时长：
      * intro（开场介绍）：10-15秒
      * feature（主题讲解）：20-60秒
-     * code（代码演示）：30-90秒
+     * code（代码演示）：45-135秒（标准时长的1.5倍）
      * outro（结尾总结）：10-15秒
    - 确保整体视频时长在 3-10 分钟（180-600秒）
 
@@ -32,18 +35,32 @@ export const scriptAgent = new Agent({
    - type: "outro" - 结尾总结场景
    - 每个场景必须有清晰的 type，选择最合适的类型
 
-5. 为场景添加视觉层（visualLayers）【必须】
-   - 每个 scene 必须包含 visualLayers 数组，不能为空
-   - 每个场景至少要有 1-3 个 visualLayer
-   - screenshot 类型的 content 使用相关的 URL（GitHub、官网、文档等）
-   - 如果没有合适的 URL，使用 text 类型并提供关键词
+5. 为场景添加丰富的视觉层（visualLayers）【核心要求 - 必须多图多效果】
+   - **每个 scene 必须包含 visualLayers 数组，不能为空**
+   - **每个场景至少 3-6 个 visualLayer，越多越好**
+   - **优先使用 screenshot 类型**，大量使用相关 URL（GitHub、官网、文档、演示视频等）
+   - 文字内容（text）仅作为辅助点缀，不要作为主要视觉层
+   - 代码内容（code）可以适当使用，但截图更吸引眼球
+   - 多个 screenshot 可以叠加不同层级，展示不同角度
+   
+   **视觉效果优先级**：screenshot > code > text
+   
+   **animation 动画效果指南**（必须为每个 layer 添加 animation）：
+   - slideUp / slideDown / slideLeft / slideRight：入场动画
+   - fadeIn / fadeOut：渐变效果
+   - scaleIn / scaleOut：缩放效果
+   - typewriter：打字机效果（适合代码）
+   - blurIn / blurOut：模糊效果
+   - rotateIn：旋转入场
+   - 建议组合使用：enter + exit 动画形成完整过渡
+   - 不同 layer 错开 enterDelay 制造层次感（如 0, 0.5, 1, 1.5 秒）
 
 6. 保证质量
    - 整体叙事流畅、吸引听众
    - 信息密度适中，避免信息过载
    - 确保科学性和准确性
 
-输出 JSON 格式：
+ 输出 JSON 格式：
 {
   "title": "视频标题",
   "totalDuration": 180,
@@ -61,6 +78,20 @@ export const scriptAgent = new Agent({
           "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
           "content": "https://github.com/unslothai/unsloth",
           "animation": { "enter": "slideUp", "enterDelay": 0, "exit": "slideOut" }
+        },
+        {
+          "id": "layer-2",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "center", "width": "80%", "height": "auto", "zIndex": 1 },
+          "content": "https://unsloth.ai/",
+          "animation": { "enter": "fadeIn", "enterDelay": 0.5, "exit": "fadeOut" }
+        },
+        {
+          "id": "layer-3",
+          "type": "text",
+          "position": { "x": "center", "y": "bottom", "width": "auto", "height": "auto", "zIndex": 2 },
+          "content": "⚡ 快速 · 高效 · 开源",
+          "animation": { "enter": "scaleIn", "enterDelay": 1, "exit": "fadeOut" }
         }
       ]
     },
@@ -74,16 +105,30 @@ export const scriptAgent = new Agent({
         {
           "id": "layer-1",
           "type": "screenshot",
-          "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
-          "content": "https://unsloth.ai/",
-          "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+          "position": { "x": "left", "y": "top", "width": "60%", "height": "auto", "zIndex": 0 },
+          "content": "https://unsloth.ai/features",
+          "animation": { "enter": "slideRight", "enterDelay": 0, "exit": "slideLeft" }
         },
         {
           "id": "layer-2",
+          "type": "screenshot",
+          "position": { "x": "right", "y": "top", "width": "40%", "height": "auto", "zIndex": 1 },
+          "content": "https://github.com/unslothai/unsloth",
+          "animation": { "enter": "slideLeft", "enterDelay": 0.3, "exit": "slideRight" }
+        },
+        {
+          "id": "layer-3",
           "type": "text",
-          "position": { "x": "center", "y": "bottom", "width": "auto", "height": "auto", "zIndex": 1 },
+          "position": { "x": "center", "y": "bottom", "width": "auto", "height": "auto", "zIndex": 2 },
           "content": "关键要点：xxx",
-          "animation": { "enter": "slideUp", "enterDelay": 1, "exit": "fadeOut" }
+          "animation": { "enter": "slideUp", "enterDelay": 0.8, "exit": "fadeOut" }
+        },
+        {
+          "id": "layer-4",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "center", "width": "full", "height": "auto", "zIndex": 0 },
+          "content": "https://benchmark.example.com",
+          "animation": { "enter": "fadeIn", "enterDelay": 1.2, "exit": "fadeOut" }
         }
       ]
     },
@@ -96,10 +141,24 @@ export const scriptAgent = new Agent({
       "visualLayers": [
         {
           "id": "layer-1",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "top", "width": "full", "height": "50%", "zIndex": 0 },
+          "content": "https://github.com/unslothai/unsloth/blob/main/README.md",
+          "animation": { "enter": "slideDown", "enterDelay": 0, "exit": "slideUp" }
+        },
+        {
+          "id": "layer-2",
           "type": "code",
-          "position": { "x": "center", "y": "center", "width": "full", "height": "auto", "zIndex": 0 },
+          "position": { "x": "center", "y": "center", "width": "full", "height": "auto", "zIndex": 1 },
           "content": "from unsloth import FastLanguageModel\nmodel, tokenizer = FastLanguageModel.from_pretrained('unsloth/llama-3-8b-bnb-4bit')",
-          "animation": { "enter": "typewriter", "enterDelay": 0, "exit": "fadeOut" }
+          "animation": { "enter": "typewriter", "enterDelay": 0.3, "exit": "fadeOut" }
+        },
+        {
+          "id": "layer-3",
+          "type": "screenshot",
+          "position": { "x": "right", "y": "bottom", "width": "30%", "height": "auto", "zIndex": 2 },
+          "content": "https://docs.python.org/",
+          "animation": { "enter": "scaleIn", "enterDelay": 1, "exit": "fadeOut" }
         }
       ]
     },
@@ -112,21 +171,38 @@ export const scriptAgent = new Agent({
       "visualLayers": [
         {
           "id": "layer-1",
-          "type": "text",
-          "position": { "x": "center", "y": "center", "width": "auto", "height": "auto", "zIndex": 0 },
-          "content": "感谢观看！",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "top", "width": "80%", "height": "auto", "zIndex": 0 },
+          "content": "https://github.com/unslothai/unsloth",
           "animation": { "enter": "fadeIn", "enterDelay": 0, "exit": "fadeOut" }
+        },
+        {
+          "id": "layer-2",
+          "type": "text",
+          "position": { "x": "center", "y": "center", "width": "auto", "height": "auto", "zIndex": 1 },
+          "content": "感谢观看！",
+          "animation": { "enter": "scaleIn", "enterDelay": 0.5, "exit": "scaleOut" }
+        },
+        {
+          "id": "layer-3",
+          "type": "screenshot",
+          "position": { "x": "center", "y": "bottom", "width": "60%", "height": "auto", "zIndex": 2 },
+          "content": "https://github.com/unslothai/unsloth/stargazers",
+          "animation": { "enter": "slideUp", "enterDelay": 1, "exit": "fadeOut" }
         }
       ]
     }
   ]
-}
+ }
 
 重要规则：
 - **每个场景必须包含必填字段**：id, type, title, narration, duration
-- **每个场景必须包含 visualLayers 数组，且至少有一个 layer**
+- **每个场景必须包含 visualLayers 数组，且至少有三个 layer**
+- **screenshot 类型的 layer 必须占多数**（至少 50% 以上）
+- **每个 layer 必须有 animation 字段**，不能为空
 - type 必须是：intro、feature、code、outro 之一
 - duration 必须根据场景类型在合理范围内
-- 所有字段必须严格遵循上述 JSON 格式`,
+- 所有字段必须严格遵循上述 JSON 格式
+- **多图 + 多效果 = 高质量视频**，不要吝啬 visualLayers`,
   model: "minimax-cn-coding-plan/MiniMax-M2.7",
 });
