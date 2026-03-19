@@ -496,7 +496,7 @@ describe("Pipeline Schema Validation", () => {
                   position: {
                     x: "left",
                     y: "top",
-                    width: "60%",
+                    width: 1152,
                     height: "auto",
                     zIndex: 0,
                   },
@@ -504,7 +504,7 @@ describe("Pipeline Schema Validation", () => {
                   animation: {
                     enter: "slideRight",
                     enterDelay: 0,
-                    exit: "slideLeft",
+                    exit: "slideOut",
                   },
                 },
                 {
@@ -513,7 +513,7 @@ describe("Pipeline Schema Validation", () => {
                   position: {
                     x: "right",
                     y: "center",
-                    width: "40%",
+                    width: 768,
                     height: "auto",
                     zIndex: 1,
                   },
@@ -546,9 +546,9 @@ describe("Pipeline Schema Validation", () => {
                   },
                   content: "Thanks for watching!",
                   animation: {
-                    enter: "scaleIn",
+                    enter: "zoomIn",
                     enterDelay: 0,
-                    exit: "scaleOut",
+                    exit: "zoomOut",
                   },
                 },
               ],
