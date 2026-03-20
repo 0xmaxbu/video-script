@@ -4,8 +4,16 @@ import {
   ScreenshotSpecSchema,
   CodeSpecSchema,
   VisualLayerSchema,
+  SceneTransitionSchema,
+  SceneNarrativeType,
 } from "./index.js";
-export { ScreenshotSpecSchema, CodeSpecSchema, VisualLayerSchema };
+export {
+  ScreenshotSpecSchema,
+  CodeSpecSchema,
+  VisualLayerSchema,
+  SceneTransitionSchema,
+  SceneNarrativeType,
+};
 
 export const ScreenshotConfigSchema = z.object({
   background: z.string().default("#1E1E1E"),
@@ -30,28 +38,23 @@ export const EffectSchema = z.object({
 });
 export type Effect = z.infer<typeof EffectSchema>;
 
-export const TransitionSchema = z.object({
-  from: z.number().int().positive(),
-  to: z.number().int().positive(),
-  type: z.enum(["sceneFade"]),
-  duration: z.number().min(0.1),
-});
-export type Transition = z.infer<typeof TransitionSchema>;
-
+// NEW Schema B: SceneScriptSchema with embedded transition
 export const SceneScriptSchema = z.object({
   id: z.string(),
-  type: z.enum(["intro", "feature", "code", "outro"]),
+  type: SceneNarrativeType,
   title: z.string(),
   narration: z.string(),
   duration: z.number().positive(),
   visualLayers: z.array(VisualLayerSchema).optional(),
+  transition: SceneTransitionSchema.optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 
-export const ScriptOutputSchema = z.object({
-  title: z.string(),
-  totalDuration: z.number().positive(),
-  scenes: z.array(SceneScriptSchema).min(1),
-  transitions: z.array(TransitionSchema).optional(),
-});
+export const ScriptOutputSchema = z
+  .object({
+    title: z.string(),
+    totalDuration: z.number().positive(),
+    scenes: z.array(SceneScriptSchema).min(1),
+  })
+  .strict();
 export type ScriptOutput = z.infer<typeof ScriptOutputSchema>;

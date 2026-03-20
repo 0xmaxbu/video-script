@@ -7,7 +7,6 @@ import {
 import {
   ScreenshotConfigSchema,
   EffectSchema,
-  TransitionSchema,
   SceneScriptSchema,
   ScriptOutputSchema,
 } from "../script.js";
@@ -225,52 +224,6 @@ describe("EffectSchema", () => {
   });
 });
 
-describe("TransitionSchema", () => {
-  it("should accept a valid transition", () => {
-    expect(
-      TransitionSchema.safeParse({
-        from: 1,
-        to: 2,
-        type: "sceneFade",
-        duration: 0.3,
-      }).success,
-    ).toBe(true);
-  });
-
-  it("should reject invalid transition type", () => {
-    expect(
-      TransitionSchema.safeParse({
-        from: 1,
-        to: 2,
-        type: "wipe",
-        duration: 0.3,
-      }).success,
-    ).toBe(false);
-  });
-
-  it("should reject duration below 0.1", () => {
-    expect(
-      TransitionSchema.safeParse({
-        from: 1,
-        to: 2,
-        type: "sceneFade",
-        duration: 0.05,
-      }).success,
-    ).toBe(false);
-  });
-
-  it("should reject negative from/to values", () => {
-    expect(
-      TransitionSchema.safeParse({
-        from: 0,
-        to: 1,
-        type: "sceneFade",
-        duration: 0.5,
-      }).success,
-    ).toBe(false);
-  });
-});
-
 describe("SceneScriptSchema", () => {
   const validScene = {
     id: "scene-1",
@@ -309,6 +262,68 @@ describe("SceneScriptSchema", () => {
         .success,
     ).toBe(false);
   });
+
+  it("should accept scene with fade transition", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "fade", duration: 0.5 },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should accept scene with slide transition and direction", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: {
+          type: "slide",
+          duration: 0.3,
+          direction: "from-left" as const,
+        },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should accept scene with wipe transition", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "wipe", duration: 0.4 },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should accept scene with none transition", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "none", duration: 0 },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should accept scene without transition (optional)", () => {
+    expect(SceneScriptSchema.safeParse(validScene).success).toBe(true);
+  });
+
+  it("should reject invalid transition type", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "flip" as any, duration: 0.5 },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("should reject negative transition duration", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "fade", duration: -0.5 },
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe("ScriptOutputSchema", () => {
@@ -340,7 +355,24 @@ describe("ScriptOutputSchema", () => {
     ).toBe(false);
   });
 
-  it("should accept optional transitions", () => {
+  it("should accept script with scene-level transitions", () => {
+    expect(
+      ScriptOutputSchema.safeParse({
+        title: "My Script",
+        totalDuration: 60,
+        scenes: [
+          { ...validScene, transition: { type: "fade", duration: 0.5 } },
+          {
+            ...validScene,
+            id: "scene-2",
+            transition: { type: "slide", duration: 0.3 },
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should reject top-level transitions array (old Schema A format)", () => {
     expect(
       ScriptOutputSchema.safeParse({
         title: "My Script",
@@ -348,6 +380,6 @@ describe("ScriptOutputSchema", () => {
         scenes: [validScene],
         transitions: [{ from: 1, to: 2, type: "sceneFade", duration: 0.3 }],
       }).success,
-    ).toBe(true);
+    ).toBe(false);
   });
 });
