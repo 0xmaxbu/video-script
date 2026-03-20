@@ -5,6 +5,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
   interpolate,
+  spring,
 } from "remotion";
 import { VisualLayer } from "../../types.js";
 
@@ -22,42 +23,44 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   const { content, position, animation } = layer;
 
   const enterFrame = Math.max(0, frame - animation.enterDelay * fps);
-  const enterDuration = 30;
+
+  const springProgress = spring({
+    frame: enterFrame,
+    fps,
+    config: { damping: 15, stiffness: 100, mass: 1 },
+  });
 
   let opacity = interpolate(
     enterFrame,
-    [0, enterDuration],
+    [0, 30],
     animation.enter === "fadeIn" ? [0, 1] : [1, 1],
     { extrapolateRight: "clamp" },
   );
 
   let translateX = interpolate(
-    enterFrame,
-    [0, enterDuration],
+    springProgress,
+    [0, 1],
     animation.enter === "slideLeft"
       ? [100, 0]
       : animation.enter === "slideRight"
         ? [-100, 0]
         : [0, 0],
-    { extrapolateRight: "clamp" },
   );
 
   let translateY = interpolate(
-    enterFrame,
-    [0, enterDuration],
+    springProgress,
+    [0, 1],
     animation.enter === "slideUp"
       ? [100, 0]
       : animation.enter === "slideDown"
         ? [-100, 0]
         : [0, 0],
-    { extrapolateRight: "clamp" },
   );
 
   let scale = interpolate(
-    enterFrame,
-    [0, enterDuration],
+    springProgress,
+    [0, 1],
     animation.enter === "zoomIn" ? [0.8, 1] : [1, 1],
-    { extrapolateRight: "clamp" },
   );
 
   if (animation.exitAt !== undefined && animation.exit !== "none") {
