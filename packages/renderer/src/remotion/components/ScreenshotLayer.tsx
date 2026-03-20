@@ -22,7 +22,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   const { content, position, animation } = layer;
 
   const enterFrame = Math.max(0, frame - animation.enterDelay * fps);
-  const enterDuration = 15;
+  const enterDuration = 30;
 
   let opacity = interpolate(
     enterFrame,
@@ -46,9 +46,9 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
     enterFrame,
     [0, enterDuration],
     animation.enter === "slideUp"
-      ? [50, 0]
+      ? [100, 0]
       : animation.enter === "slideDown"
-        ? [-50, 0]
+        ? [-100, 0]
         : [0, 0],
     { extrapolateRight: "clamp" },
   );
@@ -62,7 +62,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
 
   if (animation.exitAt !== undefined && animation.exit !== "none") {
     const exitStartFrame = animation.exitAt * fps;
-    const exitDuration = 15;
+    const exitDuration = 30;
 
     if (frame >= exitStartFrame) {
       const exitFrame = frame - exitStartFrame;
@@ -90,7 +90,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
       const exitTranslateY = interpolate(
         exitFrame,
         [0, exitDuration],
-        animation.exit === "slideOut" ? [0, 50] : [0, 0],
+        animation.exit === "slideOut" ? [0, 100] : [0, 0],
         { extrapolateRight: "clamp" },
       );
       translateY += exitTranslateY;
