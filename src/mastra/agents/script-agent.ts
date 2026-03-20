@@ -35,12 +35,22 @@ export const scriptAgent = new Agent({
 }
 
 【模式二：生成单个场景的 visualLayers】
-当用户提供场景信息要求生成 visualLayers 时，为该场景生成丰富的视觉层：
+当用户提供场景信息要求生成 visualLayers 时：
+
+**提示**：remotion-best-practices skill 已配置到 workspace 中。为需要生成专业 Remotion 动画时，可以调用 skill 工具加载获取最佳实践。
+
+根据以下指南为该场景生成丰富的视觉层：
 1. **每个场景至少 3-6 个 visualLayer，越多越好**
 2. **优先使用 screenshot 类型**，大量使用相关 URL（GitHub、官网、文档、演示视频等）
 3. 文字内容（text）仅作为辅助点缀
 4. 代码内容（code）可以适当使用
 5. 多个 screenshot 可以叠加不同层级
+
+**动画效果指南**：
+- 使用 useCurrentFrame() 驱动动画
+- CSS transitions/animations 禁止使用
+- 使用 spring animations 获得自然运动效果
+- 使用 interpolate 进行平滑过渡
 
 **animation 动画效果指南**：
 - slideUp / slideDown / slideLeft / slideRight：入场动画
@@ -104,10 +114,18 @@ ${JSON.stringify(researchData, null, 2)}
 }
 
 export function generateVisualLayersPrompt(
-  scene: { id: string; type: string; title: string; narration: string; duration: number },
-  researchData?: unknown
+  scene: {
+    id: string;
+    type: string;
+    title: string;
+    narration: string;
+    duration: number;
+  },
+  researchData?: unknown,
 ): string {
-  return `为以下场景生成 visualLayers（视觉层）：
+  return `为以下场景生成 visualLayers（视觉层）。
+
+**提示**：remotion-best-practices skill 已配置到 workspace 中。为需要生成专业 Remotion 动画时，可以调用 skill 工具加载获取最佳实践。
 
 场景信息：
 ${JSON.stringify(scene, null, 2)}
@@ -130,5 +148,6 @@ ${researchData ? `参考研究数据：\n${JSON.stringify(researchData, null, 2)
 - 每个场景至少 3-6 个 visualLayer
 - screenshot 类型占多数（至少 50%）
 - 每个 layer 必须有 animation 字段
-- 不同 layer 错开 enterDelay 制造层次感`;
+- 不同 layer 错开 enterDelay 制造层次感
+- 动画效果应遵循 Remotion 最佳实践`;
 }
