@@ -471,11 +471,11 @@ const AnimatedLayer: React.FC<{ layer: VisualLayer; imagePath?: string }> = ({ l
 
   const style = getPositionStyle(position);
 
-  if (type === "screenshot" && imagePath) {
+  if ((type === "screenshot" || type === "diagram" || type === "image") && (imagePath || content)) {
     return (
       <div style={{ ...style, opacity: progress }}>
         <Img
-          src={imagePath}
+          src={imagePath || content}
           style={{
             width: "100%",
             height: "100%",

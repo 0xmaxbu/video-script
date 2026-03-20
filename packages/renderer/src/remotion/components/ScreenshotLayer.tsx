@@ -21,43 +21,89 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   const { fps } = useVideoConfig();
   const { content, position, animation } = layer;
 
-  const enterFrame = frame - animation.enterDelay * fps;
+  const enterFrame = Math.max(0, frame - animation.enterDelay * fps);
+  const enterDuration = 15;
 
-  const opacity = interpolate(
+  let opacity = interpolate(
     enterFrame,
-    [0, 15],
+    [0, enterDuration],
     animation.enter === "fadeIn" ? [0, 1] : [1, 1],
     { extrapolateRight: "clamp" },
   );
 
-  const translateX = interpolate(
+  let translateX = interpolate(
     enterFrame,
-    [0, 15],
+    [0, enterDuration],
     animation.enter === "slideLeft"
-      ? [50, 0]
+      ? [100, 0]
       : animation.enter === "slideRight"
+        ? [-100, 0]
+        : [0, 0],
+    { extrapolateRight: "clamp" },
+  );
+
+  let translateY = interpolate(
+    enterFrame,
+    [0, enterDuration],
+    animation.enter === "slideUp"
+      ? [50, 0]
+      : animation.enter === "slideDown"
         ? [-50, 0]
         : [0, 0],
     { extrapolateRight: "clamp" },
   );
 
-  const translateY = interpolate(
+  let scale = interpolate(
     enterFrame,
-    [0, 15],
-    animation.enter === "slideUp"
-      ? [30, 0]
-      : animation.enter === "slideDown"
-        ? [-30, 0]
-        : [0, 0],
+    [0, enterDuration],
+    animation.enter === "zoomIn" ? [0.8, 1] : [1, 1],
     { extrapolateRight: "clamp" },
   );
 
-  const scale = interpolate(
-    enterFrame,
-    [0, 15],
-    animation.enter === "zoomIn" ? [0.9, 1] : [1, 1],
-    { extrapolateRight: "clamp" },
-  );
+  if (animation.exitAt !== undefined && animation.exit !== "none") {
+    const exitStartFrame = animation.exitAt * fps;
+    const exitDuration = 15;
+
+    if (frame >= exitStartFrame) {
+      const exitFrame = frame - exitStartFrame;
+
+      const exitOpacity = interpolate(
+        exitFrame,
+        [0, exitDuration],
+        animation.exit === "fadeOut" || animation.exit === "zoomOut"
+          ? [1, 0]
+          : animation.exit === "slideOut"
+            ? [1, 0]
+            : [1, 1],
+        { extrapolateRight: "clamp" },
+      );
+      opacity = Math.min(opacity, exitOpacity);
+
+      const exitTranslateX = interpolate(
+        exitFrame,
+        [0, exitDuration],
+        animation.exit === "slideOut" ? [0, 100] : [0, 0],
+        { extrapolateRight: "clamp" },
+      );
+      translateX += exitTranslateX;
+
+      const exitTranslateY = interpolate(
+        exitFrame,
+        [0, exitDuration],
+        animation.exit === "slideOut" ? [0, 50] : [0, 0],
+        { extrapolateRight: "clamp" },
+      );
+      translateY += exitTranslateY;
+
+      const exitScale = interpolate(
+        exitFrame,
+        [0, exitDuration],
+        animation.exit === "zoomOut" ? [1, 0.8] : [1, 1],
+        { extrapolateRight: "clamp" },
+      );
+      scale = Math.min(scale, exitScale);
+    }
+  }
 
   const style: React.CSSProperties = {
     position: "absolute",

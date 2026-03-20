@@ -102,11 +102,15 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
           <h1 style={titleStyle}>{title}</h1>
           {visualLayers
             ?.filter((l) => l.type === "text")
-            .map((layer) => (
-              <div key={layer.id} style={getPositionStyle(layer.position)}>
-                <VisualLayerRenderer layer={layer} />
-              </div>
-            ))}
+            .map((layer) => {
+              const imageKey = `${scene.id}-${layer.id}`;
+              const imagePath = imagePaths?.[imageKey];
+              return (
+                <div key={layer.id} style={getPositionStyle(layer.position)}>
+                  <VisualLayerRenderer layer={layer} imagePath={imagePath} />
+                </div>
+              );
+            })}
         </div>
         <Subtitle text={narration} />
       </AbsoluteFill>
@@ -148,11 +152,15 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
         </div>
         {visualLayers
           ?.filter((l) => l.type !== "code")
-          .map((layer) => (
-            <div key={layer.id} style={getPositionStyle(layer.position)}>
-              <VisualLayerRenderer layer={layer} />
-            </div>
-          ))}
+          .map((layer) => {
+            const imageKey = `${scene.id}-${layer.id}`;
+            const imagePath = imagePaths?.[imageKey];
+            return (
+              <div key={layer.id} style={getPositionStyle(layer.position)}>
+                <VisualLayerRenderer layer={layer} imagePath={imagePath} />
+              </div>
+            );
+          })}
         <Subtitle text={narration} />
       </AbsoluteFill>
     );
