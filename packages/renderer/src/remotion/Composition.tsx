@@ -1,5 +1,12 @@
 import React from "react";
-import { Sequence, useVideoConfig, AbsoluteFill } from "remotion";
+import { useVideoConfig, AbsoluteFill } from "remotion";
+import { TransitionSeries, linearTiming } from "@remotion/transitions";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fade = require("@remotion/transitions/dist/esm/fade.mjs").fade;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const slide = require("@remotion/transitions/dist/esm/slide.mjs").slide;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const wipe = require("@remotion/transitions/dist/esm/wipe.mjs").wipe;
 import { ScriptOutput } from "../types.js";
 import { Scene } from "./Scene.js";
 
@@ -8,12 +15,24 @@ export interface VideoCompositionProps {
   images?: Record<string, string>;
 }
 
+const getTransitionPresentation = (type: string) => {
+  switch (type) {
+    case "fade":
+      return fade();
+    case "slide":
+      return slide({ direction: "from-left" });
+    case "wipe":
+      return wipe();
+    default:
+      return undefined;
+  }
+};
+
 export const VideoComposition: React.FC<VideoCompositionProps> = ({
   script,
   images,
 }) => {
   const { fps } = useVideoConfig();
-  let currentFrame = 0;
 
   if (!script || !script.scenes) {
     return (
@@ -33,21 +52,29 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: "black" }}>
-      {script.scenes.map((scene) => {
-        const durationInFrames = Math.ceil(scene.duration * fps);
-        const from = currentFrame;
-        currentFrame += durationInFrames;
+      <TransitionSeries>
+        {script.scenes.map((scene, index) => {
+          const durationInFrames = Math.ceil(scene.duration * fps);
+          const transition = scene.transition;
+          const nextScene = script.scenes[index + 1];
 
-        return (
-          <Sequence
-            key={scene.id}
-            from={from}
-            durationInFrames={durationInFrames}
-          >
-            <Scene scene={scene} imagePaths={images} />
-          </Sequence>
-        );
-      })}
+          return (
+            <React.Fragment key={scene.id}>
+              <TransitionSeries.Sequence durationInFrames={durationInFrames}>
+                <Scene scene={scene} imagePaths={images} />
+              </TransitionSeries.Sequence>
+              {nextScene && transition && transition.type !== "none" && (
+                <TransitionSeries.Transition
+                  timing={linearTiming({
+                    durationInFrames: Math.ceil(transition.duration * fps),
+                  })}
+                  presentation={getTransitionPresentation(transition.type)}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </TransitionSeries>
     </AbsoluteFill>
   );
 };
