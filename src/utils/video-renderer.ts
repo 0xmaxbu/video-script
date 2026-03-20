@@ -28,7 +28,6 @@ export const RenderVideoInputSchema = z.object({
         visualLayers: z.array(z.any()).optional(),
       }),
     ),
-    transitions: z.array(z.any()).optional(),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputDir: z.string().min(1),

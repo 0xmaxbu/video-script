@@ -15,9 +15,9 @@ const GenerateProjectInputSchema = z.object({
         narration: z.string(),
         duration: z.number().positive(),
         visualLayers: z.array(z.any()).optional(),
+        transition: z.any().optional(),
       }),
     ),
-    transitions: z.array(z.any()).optional(),
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputPath: z.string().min(1),
@@ -146,9 +146,9 @@ const compositionSchema = z.object({
         content: z.string(),
         screenshot: z.any().optional(),
         effects: z.array(z.any()).optional(),
+        transition: z.any().optional(),
       })
     ),
-    transitions: z.array(z.any()).optional(),
   }),
   images: z.record(z.string(), z.string()).optional(),
 });

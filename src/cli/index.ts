@@ -47,6 +47,42 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 
 const program = new Command();
 
+/**
+ * Find screenshot file with flexible matching:
+ * 1. First tries exact match: {layer.id}.png (e.g., layer-1.png)
+ * 2. Then tries scene-prefixed match: scene-XXX-layer-Y.png (e.g., scene-001-layer-1.png)
+ * 3. Falls back to any file in the scene directory
+ */
+function findScreenshotFile(
+  screenshotsDir: string,
+  sceneIndex: number,
+  layerId: string,
+): string | null {
+  const files = readdirSync(screenshotsDir).filter((f) => f.endsWith(".png"));
+
+  // 1. Try exact match: layer-1.png
+  const exactPath = join(screenshotsDir, `${layerId}.png`);
+  if (existsSync(exactPath)) {
+    return exactPath;
+  }
+
+  // 2. Try scene-XXX-layer-Y.png format
+  const scenePrefix = `scene-${String(sceneIndex + 1).padStart(3, "0")}`;
+  const sceneLayerPattern = `${scenePrefix}-${layerId}.png`;
+  const sceneLayerMatch = files.find((f) => f === sceneLayerPattern);
+  if (sceneLayerMatch) {
+    return join(screenshotsDir, sceneLayerMatch);
+  }
+
+  // 3. Try any file starting with scene prefix (fallback for agent-generated names)
+  const scenePrefixMatch = files.find((f) => f.startsWith(scenePrefix));
+  if (scenePrefixMatch) {
+    return join(screenshotsDir, scenePrefixMatch);
+  }
+
+  return null;
+}
+
 program
   .name("video-script")
   .description("AI-powered video generation CLI tool for tech tutorials")
@@ -702,12 +738,15 @@ program
       );
 
       const screenshotResources: Record<string, string> = {};
-      script.scenes.forEach((scene) => {
+      script.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
-            const filename = `${layer.id}.png`;
-            const filepath = join(screenshotsDir, filename);
-            if (existsSync(filepath)) {
+            const filepath = findScreenshotFile(
+              screenshotsDir,
+              sceneIndex,
+              layer.id,
+            );
+            if (filepath) {
               screenshotResources[`${scene.id}-${layer.id}`] = filepath;
             }
           }
@@ -750,6 +789,9 @@ program
               duration: scene.duration,
               ...(scene.visualLayers !== undefined && {
                 visualLayers: scene.visualLayers,
+              }),
+              ...(scene.transition !== undefined && {
+                transition: scene.transition,
               }),
             })),
           },
@@ -1339,28 +1381,17 @@ async function runScreenshotAndCompose(
   workflowStateManager.startStep("compose");
 
   const screenshotResources: Record<string, string> = {};
-  const screenshotFiles = readdirSync(screenshotsDir).filter((f) =>
-    f.endsWith(".png"),
-  );
-
   script.scenes.forEach((scene, sceneIndex) => {
-    const sceneFilePrefix = `scene-${String(sceneIndex + 1).padStart(3, "0")}`;
     scene.visualLayers?.forEach((layer) => {
       if (layer.type === "screenshot" || layer.type === "code") {
-        const layerFilename = `${layer.id}.png`;
-        const layerFilepath = join(screenshotsDir, layerFilename);
-
-        if (existsSync(layerFilepath)) {
+        const filepath = findScreenshotFile(
+          screenshotsDir,
+          sceneIndex,
+          layer.id,
+        );
+        if (filepath) {
           screenshotResources[`${scene.id}-${layer.id}`] =
-            `file://${resolve(layerFilepath)}`;
-        } else {
-          const matchingFile = screenshotFiles.find(
-            (f) => f.startsWith(sceneFilePrefix) && !f.includes("-layer-"),
-          );
-          if (matchingFile) {
-            screenshotResources[`${scene.id}-${layer.id}`] =
-              `file://${resolve(join(screenshotsDir, matchingFile))}`;
-          }
+            `file://${resolve(filepath)}`;
         }
       }
     });
@@ -1397,6 +1428,9 @@ async function runScreenshotAndCompose(
           duration: scene.duration,
           ...(scene.visualLayers !== undefined && {
             visualLayers: scene.visualLayers,
+          }),
+          ...(scene.transition !== undefined && {
+            transition: scene.transition,
           }),
         })),
       },
@@ -1604,12 +1638,15 @@ program
       workflowStateManager.startStep("compose");
 
       const screenshotResources: Record<string, string> = {};
-      script.scenes.forEach((scene) => {
+      script.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
-            const filename = `${layer.id}.png`;
-            const filepath = join(screenshotsDir, filename);
-            if (existsSync(filepath)) {
+            const filepath = findScreenshotFile(
+              screenshotsDir,
+              sceneIndex,
+              layer.id,
+            );
+            if (filepath) {
               screenshotResources[`${scene.id}-${layer.id}`] = filepath;
             }
           }

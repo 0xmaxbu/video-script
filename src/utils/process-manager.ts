@@ -14,6 +14,10 @@ export interface RenderProcessInput {
       title: string;
       narration: string;
       duration: number;
+      transition?: {
+        type: "fade" | "slide" | "wipe" | "none";
+        duration: number;
+      };
       startTime?: number;
       endTime?: number;
       visualLayers?: Array<{
