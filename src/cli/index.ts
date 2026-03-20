@@ -3,7 +3,13 @@
 import "dotenv/config";
 
 import { Command } from "commander";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+} from "fs";
 import { fileURLToPath } from "url";
 import { homedir } from "os";
 import { dirname, join, resolve } from "path";
@@ -1333,14 +1339,28 @@ async function runScreenshotAndCompose(
   workflowStateManager.startStep("compose");
 
   const screenshotResources: Record<string, string> = {};
-  script.scenes.forEach((scene) => {
+  const screenshotFiles = readdirSync(screenshotsDir).filter((f) =>
+    f.endsWith(".png"),
+  );
+
+  script.scenes.forEach((scene, sceneIndex) => {
+    const sceneFilePrefix = `scene-${String(sceneIndex + 1).padStart(3, "0")}`;
     scene.visualLayers?.forEach((layer) => {
       if (layer.type === "screenshot" || layer.type === "code") {
-        const filename = `${layer.id}.png`;
-        const filepath = join(screenshotsDir, filename);
-        if (existsSync(filepath)) {
+        const layerFilename = `${layer.id}.png`;
+        const layerFilepath = join(screenshotsDir, layerFilename);
+
+        if (existsSync(layerFilepath)) {
           screenshotResources[`${scene.id}-${layer.id}`] =
-            `file://${resolve(filepath)}`;
+            `file://${resolve(layerFilepath)}`;
+        } else {
+          const matchingFile = screenshotFiles.find(
+            (f) => f.startsWith(sceneFilePrefix) && !f.includes("-layer-"),
+          );
+          if (matchingFile) {
+            screenshotResources[`${scene.id}-${layer.id}`] =
+              `file://${resolve(join(screenshotsDir, matchingFile))}`;
+          }
         }
       }
     });
