@@ -44,7 +44,7 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
             from={from}
             durationInFrames={durationInFrames}
           >
-            <Scene scene={scene} imagePath={images?.[scene.id]} />
+            <Scene scene={scene} imagePaths={images} />
           </Sequence>
         );
       })}

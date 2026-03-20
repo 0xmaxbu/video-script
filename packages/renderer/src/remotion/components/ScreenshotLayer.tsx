@@ -10,9 +10,13 @@ import { VisualLayer } from "../../types.js";
 
 interface ScreenshotLayerProps {
   layer: VisualLayer;
+  imagePath: string | undefined;
 }
 
-export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({ layer }) => {
+export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
+  layer,
+  imagePath,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { content, position, animation } = layer;
@@ -91,10 +95,12 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({ layer }) => {
     opacity,
   };
 
+  const imageSrc = imagePath || content;
+
   return (
     <AbsoluteFill style={style}>
       <Img
-        src={content}
+        src={imageSrc}
         style={{
           width: "100%",
           height: "100%",
