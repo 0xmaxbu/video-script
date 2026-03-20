@@ -98,23 +98,29 @@ export async function generateRemotionProject(
     await mkdir(scenesPath, { recursive: true });
     await mkdir(publicPath, { recursive: true });
 
-    let processedScreenshotResources = screenshotResources;
+    let processedScreenshotResources: Record<string, string> = {};
     if (screenshotResources) {
-      const { copyFileSync, existsSync } = await import("fs");
-      const entries: [string, string][] = [];
+      const { existsSync, readFileSync } = await import("fs");
       for (const [key, srcPath] of Object.entries(screenshotResources)) {
         if (existsSync(srcPath)) {
-          const filename = srcPath.split("/").pop() || `${key}.png`;
-          const destPath = join(publicPath, filename);
           try {
-            copyFileSync(srcPath, destPath);
-            entries.push([key, `/${filename}`]);
+            const buffer = readFileSync(srcPath);
+            const base64 = buffer.toString("base64");
+            const filename = srcPath.split("/").pop() || `${key}.png`;
+            const ext = filename.split(".").pop()?.toLowerCase() || "png";
+            const mimeType =
+              ext === "png"
+                ? "image/png"
+                : ext === "jpg" || ext === "jpeg"
+                  ? "image/jpeg"
+                  : "image/png";
+            processedScreenshotResources[key] =
+              `data:${mimeType};base64,${base64}`;
           } catch {
-            console.warn(`Failed to copy screenshot: ${srcPath}`);
+            console.warn(`Failed to read screenshot: ${srcPath}`);
           }
         }
       }
-      processedScreenshotResources = Object.fromEntries(entries);
     }
 
     const packageJson = {
