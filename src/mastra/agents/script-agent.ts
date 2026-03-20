@@ -78,8 +78,8 @@ visualLayers JSON 格式：
 - type 必须是：screenshot、code、text、diagram、image 之一
 - position.x 可选：数字、"left"、"center"、"right"
 - position.y 可选：数字、"top"、"center"、"bottom"
-- position.width 可选：数字、"auto"、"full"
-- position.height 可选：数字、"auto"、"full"`,
+- position.width 只可用：数字(>=0)、"auto"、"full"；**禁止百分比如 50%、100%**
+- position.height 只可用：数字(>=0)、"auto"、"full"；**禁止百分比如 50%、100%**`,
   model: "minimax-cn-coding-plan/MiniMax-M2.7",
 });
 
@@ -113,14 +113,16 @@ ${JSON.stringify(researchData, null, 2)}
 - totalDuration 是所有场景 duration 之和`;
 }
 
+export interface SceneForVisualLayers {
+  id: string;
+  type: string;
+  title: string;
+  narration: string;
+  duration: number;
+}
+
 export function generateVisualLayersPrompt(
-  scene: {
-    id: string;
-    type: string;
-    title: string;
-    narration: string;
-    duration: number;
-  },
+  scene: SceneForVisualLayers,
   researchData?: unknown,
 ): string {
   return `为以下场景生成 visualLayers（视觉层）。
@@ -130,24 +132,32 @@ export function generateVisualLayersPrompt(
 场景信息：
 ${JSON.stringify(scene, null, 2)}
 
-${researchData ? `参考研究数据：\n${JSON.stringify(researchData, null, 2)}\n` : ""}
-输出 JSON 格式：
+${researchData ? `参考研究数据（包含相关链接，可用于截图）：\n${JSON.stringify(researchData, null, 2)}\n` : ""}
+输出 JSON 格式（包含原场景信息 + visualLayers）：
 {
+  "id": "scene-1",
+  "type": "feature",
+  "title": "场景标题",
+  "narration": "旁白文本",
+  "duration": 45,
   "visualLayers": [
     {
       "id": "layer-1",
       "type": "screenshot",
       "position": { "x": "center", "y": "top", "width": "full", "height": "auto", "zIndex": 0 },
-      "content": "截图内容描述或 URL",
+      "content": "https://example.com/...",
       "animation": { "enter": "slideUp", "enterDelay": 0, "exit": "fadeOut" }
     }
   ]
 }
 
 要求：
+- **必须保留原场景的 id, type, title, narration, duration**
 - 每个场景至少 3-6 个 visualLayer
 - screenshot 类型占多数（至少 50%）
 - 每个 layer 必须有 animation 字段
 - 不同 layer 错开 enterDelay 制造层次感
-- 动画效果应遵循 Remotion 最佳实践`;
+- 动画效果应遵循 Remotion 最佳实践
+- **position.width 只可用：数字(>=0)、"auto"、"full"；禁止百分比如 50%、100%**
+- **position.height 只可用：数字(>=0)、"auto"、"full"；禁止百分比如 50%、100%**`;
 }

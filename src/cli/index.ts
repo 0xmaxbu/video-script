@@ -14,6 +14,9 @@ import {
   researchAgent,
   scriptAgent,
   screenshotAgent,
+  generateStructurePrompt,
+  generateVisualLayersPrompt,
+  type SceneForVisualLayers,
 } from "../mastra/agents/index.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
@@ -23,7 +26,7 @@ import {
   workflowStateManager,
   generateRunId,
 } from "../utils/index.js";
-import type { ResearchInput } from "../types/index.js";
+import type { ResearchInput, VisualLayer } from "../types/index.js";
 import {
   ResearchOutputSchema,
   type ResearchOutput,
@@ -243,21 +246,21 @@ program
         JSON.parse(researchContent),
       );
 
-      spinner.start("📝 Running script agent...");
+      // ========================================
+      // Phase 1: Generate scene structure only
+      // ========================================
+      spinner.start("📝 Phase 1: Generating scene structure...");
 
       const MAX_RETRIES = 3;
       let lastError: Error | undefined;
-      let scriptOutput: ScriptOutput | undefined;
+      let structureOutput: ScriptOutput | undefined;
 
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
           const result = await scriptAgent.generate([
             {
               role: "user",
-              content:
-                "根据以下研究数据生成视频脚本。\n\n研究数据:\n" +
-                JSON.stringify(research, null, 2) +
-                '\n\n输出格式 (JSON):\n{\n  "title": "视频标题",\n  "totalDuration": 180,\n  "scenes": [\n    {\n      "id": "scene-1",\n      "type": "intro|feature|code|outro",\n      "title": "场景标题",\n      "narration": "旁白文本",\n      "duration": 12,\n      "visualLayers": [\n        {\n          "id": "layer-1",\n          "type": "screenshot",\n          "position": { "x": 0, "y": 0, "width": "full", "height": "auto", "zIndex": 0 },\n          "content": "描述需要的截图内容"\n        }\n      ]\n    }\n  ]\n}\n\n要求:\n- 每个场景必须有: id, type, title, narration, duration, visualLayers\n- type 必须是: intro, feature, code, outro 之一\n- intro 和 outro: 10-15秒\n- feature: 20-60秒\n- code: 30-90秒\n- totalDuration 是所有场景 duration 之和\n- visualLayers 是一个数组，每个元素描述一个视觉层（截图、文字、代码等）',
+              content: generateStructurePrompt(research),
             },
           ]);
 
@@ -324,21 +327,144 @@ program
             throw new Error("No valid JSON found in agent response");
           }
 
-          scriptOutput = ScriptOutputSchema.parse(parsed);
+          structureOutput = ScriptOutputSchema.parse(parsed);
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
           if (attempt < MAX_RETRIES - 1) {
             spinner.text = chalk.yellow(
-              `  Retrying... (${attempt + 1}/${MAX_RETRIES})`,
+              `  Retrying structure... (${attempt + 1}/${MAX_RETRIES})`,
             );
           }
         }
       }
 
-      if (!scriptOutput) {
-        spinner.fail("Failed to parse script output");
-        throw lastError || new Error("Script generation failed after retries");
+      if (!structureOutput) {
+        spinner.fail("Failed to parse script structure");
+        throw (
+          lastError || new Error("Structure generation failed after retries")
+        );
+      }
+
+      // ========================================
+      // Phase 2: Generate visualLayers for each scene
+      // ========================================
+      spinner.start("📝 Phase 2: Generating visualLayers...");
+
+      const scriptOutput: ScriptOutput = {
+        title: structureOutput.title,
+        totalDuration: structureOutput.totalDuration,
+        scenes: [],
+      };
+
+      for (let i = 0; i < structureOutput.scenes.length; i++) {
+        const scene = structureOutput.scenes[i];
+        spinner.text = chalk.gray(
+          `  Processing scene ${i + 1}/${structureOutput.scenes.length}: ${scene.title}`,
+        );
+
+        let sceneWithLayers = scene;
+
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+          try {
+            const sceneInfo: SceneForVisualLayers = {
+              id: scene.id,
+              type: scene.type,
+              title: scene.title,
+              narration: scene.narration,
+              duration: scene.duration,
+            };
+
+            const result = await scriptAgent.generate([
+              {
+                role: "user",
+                content: generateVisualLayersPrompt(sceneInfo, research),
+              },
+            ]);
+
+            const textContent =
+              typeof result.text === "string"
+                ? result.text
+                : JSON.stringify(result.text);
+
+            const jsonBlocks = textContent.split(/```json\s*/).slice(1);
+
+            let parsedScene: Record<string, unknown> | undefined;
+
+            for (const block of jsonBlocks) {
+              const jsonStr = block.split("```")[0].trim();
+              if (!jsonStr) continue;
+
+              try {
+                const candidate = JSON.parse(jsonStr);
+                if (
+                  candidate.visualLayers &&
+                  Array.isArray(candidate.visualLayers)
+                ) {
+                  parsedScene = candidate;
+                  break;
+                }
+              } catch {
+                // Try balanced brace fix
+                let braceCount = 0;
+                let endIdx = 0;
+                for (let j = 0; j < jsonStr.length; j++) {
+                  if (jsonStr[j] === "{") braceCount++;
+                  else if (jsonStr[j] === "}") {
+                    braceCount--;
+                    if (braceCount === 0) {
+                      endIdx = j + 1;
+                      break;
+                    }
+                  }
+                }
+                if (endIdx > 0) {
+                  try {
+                    const fixed = jsonStr.substring(0, endIdx);
+                    const candidate = JSON.parse(fixed);
+                    if (
+                      candidate.visualLayers &&
+                      Array.isArray(candidate.visualLayers)
+                    ) {
+                      parsedScene = candidate;
+                      break;
+                    }
+                  } catch {
+                    // Still invalid
+                  }
+                }
+              }
+            }
+
+            if (!parsedScene) {
+              throw new Error("No visualLayers found in agent response");
+            }
+
+            // Merge: keep original scene fields, add visualLayers
+            sceneWithLayers = {
+              ...scene,
+              visualLayers: parsedScene.visualLayers as VisualLayer[],
+            };
+            break;
+          } catch (error) {
+            if (attempt < MAX_RETRIES - 1) {
+              spinner.text = chalk.yellow(
+                `  Retrying scene ${scene.id}... (${attempt + 1}/${MAX_RETRIES})`,
+              );
+            }
+          }
+        }
+
+        if (!sceneWithLayers.visualLayers) {
+          console.warn(
+            chalk.yellow(
+              `  Warning: Could not generate visualLayers for scene ${scene.id}, skipping`,
+            ),
+          );
+          sceneWithLayers.visualLayers = [];
+        }
+
+        scriptOutput.scenes.push(sceneWithLayers);
       }
 
       spinner.text = "📝 Processing script output...";

@@ -3,6 +3,7 @@ export {
   scriptAgent,
   generateStructurePrompt,
   generateVisualLayersPrompt,
+  type SceneForVisualLayers,
 } from "./script-agent.js";
 export { screenshotAgent } from "./screenshot-agent.js";
 export { composeAgent } from "./compose-agent.js";
