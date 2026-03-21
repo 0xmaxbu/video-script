@@ -85,7 +85,7 @@ export const scriptAgent = new Agent({
 - transition 让场景之间过渡更自然
 - position.x/y 使用数字或 "left/center/right/top/bottom"
 - position.width/height 使用数字、"auto" 或 "full"`,
-  model: "minimax-cn-coding-plan/MiniMax-M2.7",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
 });
 
 export function generateStructurePrompt(researchData: unknown): string {

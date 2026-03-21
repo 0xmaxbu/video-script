@@ -39,7 +39,7 @@ export const researchAgent = new Agent({
 - Extract core technical concepts and practical advice
 - Suggest appropriate screenshot topics for each segment
 `,
-  model: "minimax-cn-coding-plan/MiniMax-M2.7",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     webFetch: webFetchTool,
   },

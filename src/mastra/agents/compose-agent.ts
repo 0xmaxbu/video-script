@@ -56,7 +56,7 @@ export const composeAgent = new Agent({
 - 路径问题：自动创建必要的目录，处理权限错误
 - 时间轴不一致：检测并报告时间轴问题（如场景时长总和不符）
 - 组件生成失败：返回具体的代码生成错误，便于诊断`,
-  model: "minimax-cn-coding-plan/MiniMax-M2.7",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     remotionRender: remotionRenderTool,
   },

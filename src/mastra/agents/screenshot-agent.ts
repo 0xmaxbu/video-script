@@ -1,6 +1,5 @@
 import { Agent } from "@mastra/core/agent";
 import { playwrightScreenshotTool } from "../tools/playwright-screenshot.js";
-import { codeHighlightTool } from "../tools/code-highlight.js";
 
 export const screenshotAgent = new Agent({
   id: "screenshot-agent",
@@ -40,9 +39,8 @@ export const screenshotAgent = new Agent({
 - screenshot 类型的 content 是 URL，必须截图
 - code 类型的 content 是代码，必须生成代码高亮图
 - 每个 scene 都要有至少一个截图`,
-  model: "minimax-cn-coding-plan/MiniMax-M2.7",
+  model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
-    playwrightScreenshot: playwrightScreenshotTool,
-    codeHighlight: codeHighlightTool,
+    playwrightScreenshotTool: playwrightScreenshotTool as any,
   },
 });

@@ -299,12 +299,15 @@ program
 
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-          const result = await scriptAgent.generate([
-            {
-              role: "user",
-              content: generateStructurePrompt(research),
-            },
-          ]);
+          const result = await scriptAgent.generate(
+            [
+              {
+                role: "user",
+                content: generateStructurePrompt(research),
+              },
+            ],
+            { modelSettings: { maxOutputTokens: 16000 } },
+          );
 
           const textContent =
             typeof result.text === "string"
@@ -417,12 +420,15 @@ program
               duration: scene.duration,
             };
 
-            const result = await scriptAgent.generate([
-              {
-                role: "user",
-                content: generateVisualLayersPrompt(sceneInfo, research),
-              },
-            ]);
+            const result = await scriptAgent.generate(
+              [
+                {
+                  role: "user",
+                  content: generateVisualLayersPrompt(sceneInfo, research),
+                },
+              ],
+              { modelSettings: { maxOutputTokens: 16000 } },
+            );
 
             const textContent =
               typeof result.text === "string"
@@ -1021,12 +1027,15 @@ program
 
       for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
         try {
-          const result = await scriptAgent.generate([
-            {
-              role: "user",
-              content: generateStructurePrompt(researchOutput),
-            },
-          ]);
+          const result = await scriptAgent.generate(
+            [
+              {
+                role: "user",
+                content: generateStructurePrompt(researchOutput),
+              },
+            ],
+            { modelSettings: { maxOutputTokens: 16000 } },
+          );
 
           const textContent =
             typeof result.text === "string"
@@ -1143,12 +1152,18 @@ program
               duration: scene.duration,
             };
 
-            const result = await scriptAgent.generate([
-              {
-                role: "user",
-                content: generateVisualLayersPrompt(sceneInfo, researchOutput),
-              },
-            ]);
+            const result = await scriptAgent.generate(
+              [
+                {
+                  role: "user",
+                  content: generateVisualLayersPrompt(
+                    sceneInfo,
+                    researchOutput,
+                  ),
+                },
+              ],
+              { modelSettings: { maxOutputTokens: 16000 } },
+            );
 
             const textContent =
               typeof result.text === "string"
