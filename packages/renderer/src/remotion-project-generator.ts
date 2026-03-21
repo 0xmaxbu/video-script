@@ -139,7 +139,7 @@ export async function generateRemotionProject(
         "@remotion/cli": "4.0.436",
         "@remotion/renderer": "4.0.436",
         "@remotion/studio": "4.0.436",
-        "@remotion/transitions": "4.0.438",
+        "@remotion/transitions": "4.0.436",
       },
       devDependencies: {
         "@types/node": "^25.5.0",
@@ -330,17 +330,17 @@ export const RemotionRoot: React.FC = () => {
 import { useVideoConfig, AbsoluteFill } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const fade = require("@remotion/transitions/dist/esm/fade.mjs").fade;
+const fade = require("@remotion/transitions/fade").fade;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const slide = require("@remotion/transitions/dist/esm/slide.mjs").slide;
+const slide = require("@remotion/transitions/slide").slide;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const wipe = require("@remotion/transitions/dist/esm/wipe.mjs").wipe;
+const wipe = require("@remotion/transitions/wipe").wipe;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const flip = require("@remotion/transitions/dist/esm/flip.mjs").flip;
+const flip = require("@remotion/transitions/flip").flip;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const clockWipe = require("@remotion/transitions/dist/esm/clock-wipe.mjs").clockWipe;
+const clockWipe = require("@remotion/transitions/clock-wipe").clockWipe;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const iris = require("@remotion/transitions/dist/esm/iris.mjs").iris;
+const iris = require("@remotion/transitions/iris").iris;
 import { Scene } from "./Scene";
 
 export interface VideoCompositionProps {
