@@ -27,6 +27,7 @@ import {
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
+import { HELP_TEXT } from "./help-text.js";
 import {
   spawnRenderer,
   workflowStateManager,
@@ -46,6 +47,10 @@ const packageJsonPath = join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 
 const program = new Command();
+
+program.helpOption("-h, --help", "显示帮助信息").on("--help", () => {
+  console.log(HELP_TEXT);
+});
 
 /**
  * Find screenshot file with flexible matching:
