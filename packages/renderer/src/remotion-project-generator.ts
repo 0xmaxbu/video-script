@@ -333,6 +333,12 @@ const fade = require("@remotion/transitions/dist/esm/fade.mjs").fade;
 const slide = require("@remotion/transitions/dist/esm/slide.mjs").slide;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const wipe = require("@remotion/transitions/dist/esm/wipe.mjs").wipe;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const flip = require("@remotion/transitions/dist/esm/flip.mjs").flip;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const clockWipe = require("@remotion/transitions/dist/esm/clock-wipe.mjs").clockWipe;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const iris = require("@remotion/transitions/dist/esm/iris.mjs").iris;
 import { Scene } from "./Scene";
 
 export interface VideoCompositionProps {
@@ -369,6 +375,14 @@ const getTransitionPresentation = (type: string) => {
       return slide({ direction: "from-left" });
     case "wipe":
       return wipe();
+    case "flip":
+      return flip();
+    case "clockWipe":
+      return clockWipe();
+    case "iris":
+      return iris();
+    case "none":
+      return undefined;
     default:
       return undefined;
   }

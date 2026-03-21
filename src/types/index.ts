@@ -95,8 +95,8 @@ export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
 // SceneTransitionSchema must be defined before SceneSchema since SceneSchema references it
 export const SceneTransitionSchema = z.object({
-  type: z.enum(["fade", "slide", "wipe", "none"]),
-  duration: z.number().min(0),
+  type: z.enum(["fade", "slide", "wipe", "flip", "clockWipe", "iris", "none"]),
+  duration: z.number().min(0).max(1),
 });
 export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 

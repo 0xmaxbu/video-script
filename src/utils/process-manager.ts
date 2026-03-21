@@ -15,7 +15,7 @@ export interface RenderProcessInput {
       narration: string;
       duration: number;
       transition?: {
-        type: "fade" | "slide" | "wipe" | "none";
+        type: "fade" | "slide" | "wipe" | "flip" | "clockWipe" | "iris" | "none";
         duration: number;
       };
       startTime?: number;
