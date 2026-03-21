@@ -11,26 +11,19 @@ export type ResearchInput = z.infer<typeof ResearchInputSchema>;
 
 export const ResearchOutputSchema = z.object({
   title: z.string(),
-  overview: z.string(),
-  keyPoints: z.array(
+  segments: z.array(
     z.object({
-      title: z.string(),
-      description: z.string(),
-    }),
-  ),
-  scenes: z.array(
-    z.object({
-      sceneTitle: z.string(),
-      duration: z.number(),
-      description: z.string(),
-      screenshotSubjects: z.array(z.string()),
-    }),
-  ),
-  sources: z.array(
-    z.object({
-      url: z.string(),
-      title: z.string(),
-      keyContent: z.string(),
+      order: z.number().int().positive(),
+      sentence: z.string(),
+      keyContent: z.object({
+        concept: z.string(),
+      }),
+      links: z.array(
+        z.object({
+          url: z.string(),
+          key: z.string(),
+        }),
+      ),
     }),
   ),
 });

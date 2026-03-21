@@ -36,6 +36,13 @@ Input (title + links + document)
   → Render (final video)
 ```
 
+### 开发流程
+
+- 严格按照beads标准进行
+- 领取bd ready 任务
+- 按照 Spec Design 进行开发
+- 开发产出需要满足 Spec Goal
+
 ### 模块边界
 
 ```
@@ -438,6 +445,40 @@ video-script create "标题" --links "url1,url2"
 video-script create "标题" --doc ./notes.md
 video-script config   # 配置
 ```
+
+---
+
+## 默认输出路径规则
+
+**默认输出目录**: `~/simple-videos/<Year>/<Week>-<StartMonth>_<StartDay>-<EndMonth>_<EndDay>/<slugified-title>`
+
+### 路径结构说明
+
+| 组成部分                  | 示例                        | 说明                                |
+| ------------------------- | --------------------------- | ----------------------------------- |
+| `~/simple-videos/`        | 基础目录                    | 用户主目录下的 simple-videos 文件夹 |
+| `<Year>`                  | `2026`                      | 4位年份                             |
+| `<Week>`                  | `12`                        | ISO周数 (1-53)                      |
+| `<StartMonth>_<StartDay>` | `3_16`                      | 周起始日期 (月\_日)                 |
+| `<EndMonth>_<EndDay>`     | `3_22`                      | 周结束日期 (月\_日)                 |
+| `<slugified-title>`       | `typescript-54-xin-te-xing` | 标题的拼音slug格式                  |
+
+### 示例
+
+```
+~/simple-videos/2026/12-3_16-3_22/typescript-54-xin-te-xing
+```
+
+### 规则
+
+1. **自动创建目录**: 如果指定 `--output`，使用指定路径；否则按上述规则自动生成
+2. **拼音转换**: 中文标题转换为拼音，英文和数字保留
+3. **日期范围**: 使用ISO周计算，周一为起始日，周日为结束日
+4. **可通过 `resume` 命令恢复**: 工作流暂停后可用 `video-script resume <dir>` 继续
+
+### 相关代码
+
+参考 `src/utils/output-directory.ts` 中的 `generateOutputDirectory()` 函数。
 
 ---
 
