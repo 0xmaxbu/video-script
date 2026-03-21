@@ -43,6 +43,7 @@ const GenerateProjectInputSchema = z.object({
                   "slideRight",
                   "slideUp",
                   "slideDown",
+                  "slideIn",
                   "zoomIn",
                   "typewriter",
                   "none",
@@ -138,6 +139,7 @@ export async function generateRemotionProject(
         "@remotion/cli": "4.0.436",
         "@remotion/renderer": "4.0.436",
         "@remotion/studio": "4.0.436",
+        "@remotion/transitions": "4.0.438",
       },
       devDependencies: {
         "@types/node": "^25.5.0",
@@ -362,7 +364,7 @@ export interface VideoCompositionProps {
         content: string;
         animation: any;
       }>;
-    }>);
+      }>;
   };
   images?: Record<string, string>;
 }
@@ -458,7 +460,7 @@ interface VisualLayer {
   };
   content: string;
   animation: {
-    enter: "fadeIn" | "slideLeft" | "slideRight" | "slideUp" | "slideDown" | "zoomIn" | "typewriter" | "none";
+    enter: "fadeIn" | "slideLeft" | "slideRight" | "slideUp" | "slideDown" | "slideIn" | "zoomIn" | "typewriter" | "none";
     enterDelay: number;
     exit: "fadeOut" | "slideOut" | "zoomOut" | "none";
     exitAt?: number;

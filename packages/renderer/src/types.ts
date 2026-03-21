@@ -112,6 +112,7 @@ export const AnimationConfigSchema = z.object({
     "slideRight",
     "slideUp",
     "slideDown",
+    "slideIn",
     "zoomIn",
     "typewriter",
     "none",

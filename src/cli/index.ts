@@ -1575,7 +1575,7 @@ program
 
       // Check if we have screenshots
       if (existsSync(screenshotsDir)) {
-        const files = require("fs").readdirSync(screenshotsDir);
+        const files = readdirSync(screenshotsDir);
         needsScreenshot = !files.some(
           (f: string) => f.startsWith("scene-") && f.endsWith(".png"),
         );

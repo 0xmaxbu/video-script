@@ -40,7 +40,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   let translateX = interpolate(
     springProgress,
     [0, 1],
-    animation.enter === "slideLeft"
+    animation.enter === "slideLeft" || animation.enter === "slideIn"
       ? [100, 0]
       : animation.enter === "slideRight"
         ? [-100, 0]

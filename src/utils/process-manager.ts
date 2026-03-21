@@ -15,7 +15,14 @@ export interface RenderProcessInput {
       narration: string;
       duration: number;
       transition?: {
-        type: "fade" | "slide" | "wipe" | "flip" | "clockWipe" | "iris" | "none";
+        type:
+          | "fade"
+          | "slide"
+          | "wipe"
+          | "flip"
+          | "clockWipe"
+          | "iris"
+          | "none";
         duration: number;
       };
       startTime?: number;
@@ -38,6 +45,7 @@ export interface RenderProcessInput {
             | "slideRight"
             | "slideUp"
             | "slideDown"
+            | "slideIn"
             | "zoomIn"
             | "typewriter"
             | "none";
