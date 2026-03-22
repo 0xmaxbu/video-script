@@ -17,26 +17,17 @@ describe("Pipeline Schema Validation", () => {
     it("should accept valid research output", () => {
       const researchOutput = {
         title: "TypeScript Generics",
-        overview: "Learn about TypeScript generics",
-        keyPoints: [
+        segments: [
           {
-            title: "What are Generics",
-            description: "Generics allow type-safe reuse",
-          },
-        ],
-        scenes: [
-          {
-            sceneTitle: "Intro",
-            duration: 10,
-            description: "Introduction",
-            screenshotSubjects: ["typescriptlang.org"],
-          },
-        ],
-        sources: [
-          {
-            url: "https://typescriptlang.org",
-            title: "TS Docs",
-            keyContent: "Generics",
+            order: 1,
+            sentence: "Generics allow type-safe reuse of code components",
+            keyContent: { concept: "Generics" },
+            links: [
+              {
+                url: "https://typescriptlang.org",
+                key: "TS Docs",
+              },
+            ],
           },
         ],
       };
