@@ -3,7 +3,7 @@
 ## Milestones
 
 - [x] **v1.0 MVP** - Core video generation pipeline (shipped 2026-03-22)
-- [ ] **v1.1 Professional Quality** - Phases 1-5 (in progress)
+- [ ] **v1.1 Professional Quality** - Phases 1-5, gap closure 6-8 (in progress)
 - [ ] **v2.0 Advanced** - Deep research, themes, batch processing (planned)
 
 ## Overview
@@ -96,12 +96,35 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
-| 2. Layout System | 5/5 | Complete   | 2026-03-22 |
-| 3. Research & Content | 1/3 | In Progress | - |
+| 2. Layout System | 5/5 | ✅ Complete | 2026-03-22 |
+| 3. Research & Content | 3/3 | ✅ Complete | 2026-03-22 |
 | 4. Transitions | 2/2 | ✅ Complete | 2026-03-22 |
-| 5. Composition | 2/3 | In Progress|  |
+| 5. Composition | 3/3 | ✅ Complete | 2026-03-22 |
+| 6. Type Package + Schema | 0/? | Gap Closure | - |
+| 7. Wire Layouts | 0/? | Gap Closure | - |
+| 8. Verification Docs | 0/? | Gap Closure | - |
 
 **Coverage:** 16/16 v1 requirements mapped
+
+## Gap Closure Phases
+
+### Phase 6: Type Package + Schema Adapter
+**Goal:** Fix blocking integration issues — @video-script/types package and script→renderer schema mismatch
+**Depends on**: Phase 5
+**Requirements**: VIS-01, VIS-02, VIS-03, RES-01, RES-03, SCR-01, SCR-02, COMP-01
+**Gap Closure:** Closes blocking gaps from v1.0 audit
+
+### Phase 7: Wire Layouts to Composition
+**Goal:** Connect orphaned Phase 2 layouts (Grid, FrostedCard, 8 templates) to generated Scene.tsx
+**Depends on**: Phase 6
+**Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
+**Gap Closure:** Closes major integration gap — layouts created but never used
+
+### Phase 8: Verification Docs + Cleanup
+**Goal:** Document Phase 01 and 04 verification, remove orphaned exports
+**Depends on**: Phase 7
+**Requirements**: (documentation + cleanup)
+**Gap Closure:** Closes nice-to-have gaps from v1.0 audit
 
 ---
 
