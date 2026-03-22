@@ -46,7 +46,14 @@ Plans:
   2. All layout templates function: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
   3. Headlines render at 72pt+ and body text at 18-24pt
   4. Frosted glass cards display with proper backdrop-filter blur effects
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Create Grid, FrostedCard, and grid-utils foundation
+- [ ] 02-02-PLAN.md — Refactor HeroFullscreen and SplitVertical layouts
+- [ ] 02-03-PLAN.md — Refactor SplitHorizontal and TextOverImage layouts
+- [ ] 02-04-PLAN.md — Refactor CodeFocus and Comparison layouts
+- [ ] 02-05-PLAN.md — Refactor BulletList and Quote layouts
 
 ### Phase 3: Research & Content
 **Goal**: Users receive in-depth research and engaging narration
@@ -84,7 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
-| 2. Layout System | 0/4 | Not started | - |
+| 2. Layout System | 0/5 | Not started | - |
 | 3. Research & Content | 0/4 | Not started | - |
 | 4. Transitions | 0/3 | Not started | - |
 | 5. Composition | 0/3 | Not started | - |
