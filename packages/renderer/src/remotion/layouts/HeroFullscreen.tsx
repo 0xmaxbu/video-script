@@ -7,6 +7,9 @@ import {
   interpolate,
   spring,
 } from "remotion";
+import { Grid } from "./Grid.js";
+import { FrostedCard } from "./FrostedCard.js";
+import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -41,12 +44,12 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
     extrapolateRight: "clamp",
   });
 
-  const titleY = interpolate(titleProgress, [0, 1], [50, 0], {
+  const titleY = interpolate(titleProgress, [0, 1], [-50, 0], {
     extrapolateRight: "clamp",
   });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <Grid>
       {/* 背景 */}
       {bgScreenshot && (
         <AbsoluteFill>
@@ -69,7 +72,7 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
         </AbsoluteFill>
       )}
 
-      {/* 底部标题 */}
+      {/* 底部标题 - FrostedCard */}
       {titleElement && (
         <AbsoluteFill
           style={{
@@ -84,31 +87,43 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
             transform: `translateY(${titleY}px)`,
           }}
         >
-          <h1
+          <FrostedCard
             style={{
-              fontSize: "4rem",
-              fontWeight: "bold",
-              color: "white",
-              textAlign: "center",
-              textShadow: "0 2px 20px rgba(0,0,0,0.5)",
-              margin: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              paddingBottom: "10%",
+              paddingLeft: "5%",
+              paddingRight: "5%",
+              width: "100%",
             }}
           >
-            {titleElement.content}
-          </h1>
-          {scene.textElements.find((t) => t.role === "subtitle") && (
-            <p
+            <h1
               style={{
-                fontSize: "1.5rem",
-                color: "rgba(255,255,255,0.8)",
-                marginTop: "0.5rem",
+                fontSize: TYPOGRAPHY.title.hero,
+                fontWeight: "bold",
+                color: "white",
+                textAlign: "center",
+                textShadow: "0 2px 20px rgba(0,0,0,0.5)",
+                margin: 0,
               }}
             >
-              {scene.textElements.find((t) => t.role === "subtitle")?.content}
-            </p>
-          )}
+              {titleElement.content}
+            </h1>
+            {scene.textElements.find((t) => t.role === "subtitle") && (
+              <p
+                style={{
+                  fontSize: TYPOGRAPHY.body.secondary,
+                  color: "rgba(255,255,255,0.8)",
+                  marginTop: "0.5rem",
+                }}
+              >
+                {scene.textElements.find((t) => t.role === "subtitle")?.content}
+              </p>
+            )}
+          </FrostedCard>
         </AbsoluteFill>
       )}
-    </AbsoluteFill>
+    </Grid>
   );
 };
