@@ -4,10 +4,13 @@ import { SceneScript as SceneType, VisualLayer } from "../types.js";
 import { Subtitle } from "./Subtitle.js";
 import { VisualLayerRenderer } from "./components/VisualLayerRenderer.js";
 import { CodeAnimation } from "./components/CodeAnimation.js";
+import { AnnotationRenderer } from "./annotations/AnnotationRenderer.js";
+import type { Annotation } from "@video-script/types";
 
 interface SceneProps {
   scene: SceneType;
   imagePaths: Record<string, string> | undefined;
+  annotations?: Annotation[];
 }
 
 const getPositionStyle = (
@@ -62,7 +65,11 @@ const getPositionStyle = (
   return style;
 };
 
-export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
+export const Scene: React.FC<SceneProps> = ({
+  scene,
+  imagePaths,
+  annotations = [],
+}) => {
   const { type, title, narration, visualLayers } = scene;
 
   const containerStyle: React.CSSProperties = {
@@ -112,6 +119,7 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
               );
             })}
         </div>
+        <AnnotationRenderer annotations={annotations} />
         <Subtitle text={narration} />
       </AbsoluteFill>
     );
@@ -132,6 +140,7 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
             );
           })}
         </div>
+        <AnnotationRenderer annotations={annotations} />
         <Subtitle text={narration} />
       </AbsoluteFill>
     );
@@ -161,6 +170,7 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
               </div>
             );
           })}
+        <AnnotationRenderer annotations={annotations} />
         <Subtitle text={narration} />
       </AbsoluteFill>
     );

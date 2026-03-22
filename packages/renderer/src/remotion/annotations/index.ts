@@ -1,11 +1,18 @@
 /**
- * Annotation Components - Phase 6
+ * Annotation Components - Phase 1
  *
  * 手绘风格标注组件
  * 核心特点：一笔画动画（stroke-dashoffset）
  */
 
+// 导出所有标注组件
 export { Circle } from "./Circle.js";
+export { Underline } from "./Underline.js";
+export { Arrow } from "./Arrow.js";
+export { Box } from "./Box.js";
+export { Highlight } from "./Highlight.js";
+export { Number } from "./Number.js";
+export { AnnotationRenderer } from "./AnnotationRenderer.js";
 
 // 颜色常量
 export const ANNOTATION_COLORS = {
