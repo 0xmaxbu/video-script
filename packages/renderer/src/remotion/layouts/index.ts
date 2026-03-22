@@ -15,6 +15,8 @@ export { CodeFocus } from "./CodeFocus.js";
 export { Comparison } from "./Comparison.js";
 export { BulletList } from "./BulletList.js";
 export { Quote } from "./Quote.js";
+export { Grid } from "./Grid.js";
+export { FrostedCard } from "./FrostedCard.js";
 
 import type { ReactNode } from "react";
 import type { VisualScene } from "@video-script/types";
