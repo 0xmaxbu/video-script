@@ -37,8 +37,8 @@
 
 ### Composition
 
-- [ ] **COMP-01**: Final video matches visual plan — all annotations render
-- [ ] **COMP-02**: Video quality feels polished and professional
+- [x] **COMP-01**: Final video matches visual plan — all annotations render
+- [x] **COMP-02**: Video quality feels polished and professional
 
 ## v2 Requirements
 
@@ -75,8 +75,8 @@
 | VIS-08 | Phase 4 | Complete |
 | VIS-09 | Phase 4 | Complete |
 | VIS-10 | Phase 4 | Complete |
-| COMP-01 | Phase 5 | Pending |
-| COMP-02 | Phase 5 | Pending |
+| COMP-01 | Phase 5 | Complete |
+| COMP-02 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 16 total

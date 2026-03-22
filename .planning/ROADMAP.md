@@ -98,8 +98,8 @@ Plans:
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
 | 2. Layout System | 5/5 | Complete   | 2026-03-22 |
 | 3. Research & Content | 1/3 | In Progress | - |
-| 4. Transitions | 0/3 | Not started | - |
-| 5. Composition | 0/3 | Not started | - |
+| 4. Transitions | 2/2 | ✅ Complete | 2026-03-22 |
+| 5. Composition | 1/3 | In Progress|  |
 
 **Coverage:** 16/16 v1 requirements mapped
 
