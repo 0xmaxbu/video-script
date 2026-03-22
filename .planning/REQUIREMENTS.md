@@ -20,7 +20,7 @@
 ### Layout System
 
 - [x] **VIS-04**: Grid-based layout system with safe zones (12-column)
-- [ ] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
+- [x] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
 - [x] **VIS-06**: PPT-style visual hierarchy (headlines 72pt+, body 18-24pt)
 - [x] **VIS-07**: Frosted glass cards with backdrop-filter effects
 
@@ -64,7 +64,7 @@
 | VIS-02 | Phase 1 | Pending |
 | VIS-03 | Phase 1 | Pending |
 | VIS-04 | Phase 2 | Complete |
-| VIS-05 | Phase 2 | Pending |
+| VIS-05 | Phase 2 | Complete |
 | VIS-06 | Phase 2 | Complete |
 | VIS-07 | Phase 2 | Complete |
 | RES-01 | Phase 3 | Pending |

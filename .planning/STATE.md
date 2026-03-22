@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed phase-2 plan 01
-last_updated: "2026-03-22T10:38:48.352Z"
+stopped_at: Completed phase-2 plan 05
+last_updated: "2026-03-22T10:42:47.766Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 9
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
@@ -60,6 +60,8 @@ From research (2026-03-22):
 - Phase 4: Transitions enhance layouts (low effort, high impact)
 - Phase 5: Composition ties everything together
 - [Phase phase-2]: Grid and FrostedCard components establish 12-column layout system foundation
+- [Phase phase-2]: BulletList: FrostedCard at 85% opacity wraps title+bullets with 60pt title, 24pt bullet text
+- [Phase phase-2]: Quote: FrostedCard centered at 70x60% for visual impact; decorative 10rem quote mark overflows card bounds
 
 ### Pending Todos
 
@@ -71,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T10:38:44.286Z
-Stopped at: Completed phase-2 plan 01
+Last session: 2026-03-22T10:42:47.764Z
+Stopped at: Completed phase-2 plan 05
 Resume file: None
