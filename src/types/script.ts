@@ -6,6 +6,8 @@ import {
   VisualLayerSchema,
   SceneTransitionSchema,
   SceneNarrativeType,
+  SceneHighlightSchema,
+  CodeHighlightSchema,
 } from "./index.js";
 export {
   ScreenshotSpecSchema,
@@ -13,6 +15,8 @@ export {
   VisualLayerSchema,
   SceneTransitionSchema,
   SceneNarrativeType,
+  SceneHighlightSchema,
+  CodeHighlightSchema,
 };
 
 export const ScreenshotConfigSchema = z.object({
@@ -47,6 +51,10 @@ export const SceneScriptSchema = z.object({
   duration: z.number().positive(),
   visualLayers: z.array(VisualLayerSchema).optional(),
   transition: SceneTransitionSchema.optional(),
+  // Extended fields from LLM (optional for backward compatibility)
+  highlights: z.array(SceneHighlightSchema).optional(),
+  codeHighlights: z.array(CodeHighlightSchema).optional(),
+  sourceRef: z.string().optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 

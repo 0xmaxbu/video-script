@@ -383,6 +383,34 @@ program
             throw new Error("No valid JSON found in agent response");
           }
 
+          // Post-process: flatten narration objects to strings
+          // LLM may return narration as { fullText, segments, ... } instead of plain string
+          if (parsed && typeof parsed === "object" && "scenes" in parsed) {
+            const output = parsed as {
+              scenes: Array<{
+                narration?: unknown;
+                codeHighlights?: Array<Record<string, unknown>>;
+              }>;
+            };
+            for (const scene of output.scenes) {
+              // Flatten narration object to string
+              if (scene.narration && typeof scene.narration === "object") {
+                const narrationObj = scene.narration as { fullText?: string };
+                scene.narration =
+                  narrationObj.fullText || JSON.stringify(narrationObj);
+              }
+              // Filter out incomplete codeHighlights
+              if (scene.codeHighlights && Array.isArray(scene.codeHighlights)) {
+                scene.codeHighlights = scene.codeHighlights.filter(
+                  (ch) =>
+                    ch.codeLine !== undefined &&
+                    ch.codeText !== undefined &&
+                    ch.annotationType !== undefined,
+                );
+              }
+            }
+          }
+
           structureOutput = ScriptOutputSchema.parse(parsed);
           break;
         } catch (error) {
@@ -1007,6 +1035,34 @@ program
 
           if (!parsed) {
             throw new Error("No valid JSON found in agent response");
+          }
+
+          // Post-process: flatten narration objects to strings
+          // LLM may return narration as { fullText, segments, ... } instead of plain string
+          if (parsed && typeof parsed === "object" && "scenes" in parsed) {
+            const output = parsed as {
+              scenes: Array<{
+                narration?: unknown;
+                codeHighlights?: Array<Record<string, unknown>>;
+              }>;
+            };
+            for (const scene of output.scenes) {
+              // Flatten narration object to string
+              if (scene.narration && typeof scene.narration === "object") {
+                const narrationObj = scene.narration as { fullText?: string };
+                scene.narration =
+                  narrationObj.fullText || JSON.stringify(narrationObj);
+              }
+              // Filter out incomplete codeHighlights
+              if (scene.codeHighlights && Array.isArray(scene.codeHighlights)) {
+                scene.codeHighlights = scene.codeHighlights.filter(
+                  (ch) =>
+                    ch.codeLine !== undefined &&
+                    ch.codeText !== undefined &&
+                    ch.annotationType !== undefined,
+                );
+              }
+            }
           }
 
           structureOutput = ScriptOutputSchema.parse(parsed);

@@ -239,11 +239,12 @@ ${researchMd}
 ---
 
 输出格式要求：
-1. 只输出 JSON，不要 markdown 代码块
+1. 只输出 JSON，用 \`\`\`json 代码块包裹
 2. 口播要口语化，适合朗读
-3. 每个场景的 narration 必须包含 segments 数组
-4. 标记所有需要视觉强调的重点
-5. 代码场景要标记 codeHighlights`;
+3. 标记所有需要视觉强调的重点（highlights）
+4. 代码场景要标记 codeHighlights
+5. 场景类型：intro, feature, code, outro
+6. 输出结构：{ title, totalDuration, scenes: [{ id, type, title, narration, duration, highlights?, codeHighlights? }] }`;
 }
 
 /**
