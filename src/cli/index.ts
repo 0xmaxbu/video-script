@@ -20,7 +20,9 @@ import {
   researchAgent,
   scriptAgent,
   screenshotAgent,
+  visualAgent,
   generateScriptPrompt,
+  generateVisualPrompt,
 } from "../mastra/agents/index.js";
 import { convertResearchMdToJson } from "./phase8-cli-integration.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
@@ -485,6 +487,185 @@ program
       );
     } catch (error) {
       spinner.fail("❌ Script generation failed");
+      if (error instanceof Error) {
+        console.error(chalk.red("\n❌ Error: " + error.message + "\n"));
+        if (error.stack) {
+          console.error(chalk.gray(error.stack));
+        }
+      } else {
+        console.error(chalk.red("\n❌ An unexpected error occurred\n"));
+      }
+      process.exit(1);
+    }
+  });
+
+program
+  .command("visual <dir>")
+  .description("Generate visual.json from script.json and research.md")
+  .action(async (dir) => {
+    const spinner = ora();
+    gracefulShutdown.setSpinner(spinner);
+
+    try {
+      const scriptPath = join(dir, "script.json");
+      const researchMdPath = join(dir, "research.md");
+
+      if (!existsSync(scriptPath)) {
+        throw new Error(
+          "script.json not found in " +
+            dir +
+            ". Run 'video-script script' first.",
+        );
+      }
+
+      if (!existsSync(researchMdPath)) {
+        throw new Error(
+          "research.md not found in " +
+            dir +
+            ". Run 'video-script research' first.",
+        );
+      }
+
+      console.log(chalk.blue("\n🎨 Generating visual plan..."));
+      console.log(chalk.gray("  Input: " + scriptPath));
+
+      // Read script.json and research.md
+      const scriptContent = readFileSync(scriptPath, "utf-8");
+      const script = JSON.parse(scriptContent);
+      const researchMd = readFileSync(researchMdPath, "utf-8");
+
+      spinner.start("🎨 Running visual agent...");
+
+      const result = await visualAgent.generate(
+        [
+          {
+            role: "user",
+            content: generateVisualPrompt(script, researchMd),
+          },
+        ],
+        { modelSettings: { maxOutputTokens: 16000 } },
+      );
+
+      const textContent =
+        typeof result.text === "string"
+          ? result.text
+          : JSON.stringify(result.text);
+
+      // Try to find JSON in code blocks first, then try raw JSON with brace balancing
+      let parsed: unknown;
+      let bestScore = 0;
+
+      // First try code blocks
+      const codeBlockPattern = /```(?:json)?\s*([\s\S]*?)```/g;
+      let match;
+      while ((match = codeBlockPattern.exec(textContent)) !== null) {
+        const jsonStr = match[1].trim();
+        if (!jsonStr) continue;
+        try {
+          const candidate = JSON.parse(jsonStr);
+          const score = (candidate.scenes?.length || 0) * 100;
+          if (score > bestScore) {
+            bestScore = score;
+            parsed = candidate;
+          }
+        } catch {
+          // Try to fix truncated JSON by finding balanced braces
+          let braceCount = 0;
+          let endIdx = 0;
+          for (let i = 0; i < jsonStr.length; i++) {
+            if (jsonStr[i] === "{") braceCount++;
+            else if (jsonStr[i] === "}") {
+              braceCount--;
+              if (braceCount === 0) {
+                endIdx = i + 1;
+                break;
+              }
+            }
+          }
+          if (endIdx > 0) {
+            try {
+              const fixed = jsonStr.substring(0, endIdx);
+              const candidate = JSON.parse(fixed);
+              const score = (candidate.scenes?.length || 0) * 100;
+              if (score > bestScore) {
+                bestScore = score;
+                parsed = candidate;
+              }
+            } catch {
+              // Still can't parse, skip
+            }
+          }
+        }
+      }
+
+      // If no valid JSON from code blocks, try finding JSON directly in text
+      if (!parsed) {
+        // Find the first { and try to build a balanced JSON
+        const firstBrace = textContent.indexOf("{");
+        if (firstBrace !== -1) {
+          const truncated = textContent.substring(firstBrace);
+          let braceCount = 0;
+          let endIdx = 0;
+          for (let i = 0; i < truncated.length; i++) {
+            if (truncated[i] === "{") braceCount++;
+            else if (truncated[i] === "}") {
+              braceCount--;
+              if (braceCount === 0) {
+                endIdx = i + 1;
+                break;
+              }
+            }
+          }
+          if (endIdx > 0) {
+            try {
+              const jsonStr = truncated.substring(0, endIdx);
+              const candidate = JSON.parse(jsonStr);
+              if (candidate.scenes?.length > 0) {
+                parsed = candidate;
+              }
+            } catch {
+              // Failed to parse
+            }
+          }
+        }
+      }
+
+      if (!parsed) {
+        throw new Error("No valid JSON found in agent response");
+      }
+
+      spinner.text = "💾 Saving visual.json...";
+
+      const visualPath = join(dir, "visual.json");
+      writeFileSync(visualPath, JSON.stringify(parsed, null, 2));
+
+      spinner.succeed("✅ Visual plan generated!");
+
+      console.log(chalk.green("\n🎨 Visual Plan Output:\n"));
+      const visualData = parsed as { scenes?: Array<{ sceneId?: string; layoutTemplate?: string }> };
+      if (visualData.scenes) {
+        console.log(chalk.gray("  Scenes: " + visualData.scenes.length));
+        visualData.scenes.slice(0, 5).forEach((scene, index) => {
+          console.log(
+            chalk.gray(
+              "  📐 Scene " +
+                (scene.sceneId || String(index + 1)) +
+                ": " +
+                (scene.layoutTemplate || "unknown"),
+            ),
+          );
+        });
+        if (visualData.scenes.length > 5) {
+          console.log(chalk.gray("  ... and " + (visualData.scenes.length - 5) + " more"));
+        }
+      }
+
+      console.log(chalk.blue("\n📁 Output: " + visualPath));
+      console.log(
+        chalk.gray("\nNext step: Run `video-script screenshot <dir>`"),
+      );
+    } catch (error) {
+      spinner.fail("❌ Visual generation failed");
       if (error instanceof Error) {
         console.error(chalk.red("\n❌ Error: " + error.message + "\n"));
         if (error.stack) {
