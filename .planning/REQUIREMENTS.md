@@ -9,7 +9,7 @@
 
 - [x] **RES-01**: Research agent performs deep content analysis — not placeholder links
 - [x] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
-- [ ] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
+- [x] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
 
 ### Visual Annotations
 
@@ -32,8 +32,8 @@
 
 ### Content Quality
 
-- [ ] **SCR-01**: Script generates content with depth — thorough explanations
-- [ ] **SCR-02**: Scene narration is engaging, not generic summaries
+- [x] **SCR-01**: Script generates content with depth — thorough explanations
+- [x] **SCR-02**: Scene narration is engaging, not generic summaries
 
 ### Composition
 
@@ -69,9 +69,9 @@
 | VIS-07 | Phase 2 | Complete |
 | RES-01 | Phase 3 | Complete |
 | RES-02 | Phase 3 | Complete |
-| RES-03 | Phase 3 | Pending |
-| SCR-01 | Phase 3 | Pending |
-| SCR-02 | Phase 3 | Pending |
+| RES-03 | Phase 3 | Complete |
+| SCR-01 | Phase 3 | Complete |
+| SCR-02 | Phase 3 | Complete |
 | VIS-08 | Phase 4 | Pending |
 | VIS-09 | Phase 4 | Pending |
 | VIS-10 | Phase 4 | Pending |

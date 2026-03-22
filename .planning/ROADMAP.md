@@ -69,7 +69,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md — Upgrade web-fetch with Turndown + Readability, add input validation, update research schema
 - [x] 03-02-PLAN.md — Create quality evaluation agent (non-blocking)
-- [ ] 03-03-PLAN.md — Update research agent with relationship tags, update script agent for depth
+- [x] 03-03-PLAN.md — Update research agent with relationship tags, update script agent for depth
 
 ### Phase 4: Transitions
 **Goal**: Users see smooth animated transitions between scenes

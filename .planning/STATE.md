@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-22T11:51:22.004Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-03-22T11:58:28.455Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -49,6 +49,7 @@ Plan: 3 of 3
 | Phase phase-2 P02-01 | 2 | 3 tasks | 4 files |
 | Phase 02 P02 | 3 | 2 tasks | 2 files |
 | Phase 03 P02 | 120 | 4 tasks | 3 files |
+| Phase 03 P03 | 13 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ From research (2026-03-22):
 - [Phase phase-3]: Add relationship tags (原因/对比/示例/注意事项) to research segments per D-02
 - [Phase phase-3]: Create input-validator.ts with word count, placeholder, and HTML structure checks per D-10
 - [Phase 03]: Non-blocking evaluation pattern: quality agent runs asynchronously with callbacks, warns at threshold but never blocks pipeline per D-11
+- [Phase 03]: Relationship tags: 原因 (cause), 对比 (comparison), 示例 (example), 注意事项 (warnings) - allows script agent to reconstruct narrative logic
+- [Phase 03]: Tutorial-friendly narration: explain WHY not just WHAT, use analogies, anticipate viewer questions
+- [Phase 03]: Topic splitting: each link processed independently, not batched - enables parallel processing
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:51:14.386Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-22T11:58:28.454Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None
