@@ -64,7 +64,12 @@ Plans:
   2. Research uses Turndown + Readability to crawl actual article content (not placeholder links)
   3. Scripts contain thorough explanations, not generic summaries
   4. Scene narration is engaging and tutorial-appropriate
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Upgrade web-fetch with Turndown + Readability, add input validation, update research schema
+- [ ] 03-02-PLAN.md — Create quality evaluation agent (non-blocking)
+- [ ] 03-03-PLAN.md — Update research agent with relationship tags, update script agent for depth
 
 ### Phase 4: Transitions
 **Goal**: Users see smooth animated transitions between scenes
@@ -92,7 +97,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
 | 2. Layout System | 5/5 | Complete   | 2026-03-22 |
-| 3. Research & Content | 0/4 | Not started | - |
+| 3. Research & Content | 0/3 | Not started | - |
 | 4. Transitions | 0/3 | Not started | - |
 | 5. Composition | 0/3 | Not started | - |
 
