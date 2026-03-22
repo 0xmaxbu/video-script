@@ -56,6 +56,7 @@ const GenerateProjectInputSchema = z.object({
           )
           .optional(),
         transition: z.any().optional(),
+        annotations: z.array(z.any()).optional(),
       }),
     ),
   }),
@@ -360,6 +361,26 @@ const clockWipe = require("@remotion/transitions/clock-wipe").clockWipe;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const iris = require("@remotion/transitions/iris").iris;
 import { Scene } from "./Scene";
+import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
+
+interface Annotation {
+  type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
+  target: {
+    type: "text" | "region" | "code-line";
+    textMatch?: string;
+    lineNumber?: number;
+    region?: "top-left" | "top-right" | "center" | "bottom-left" | "bottom-right";
+  };
+  style: {
+    color: "attention" | "highlight" | "info" | "success";
+    size: "small" | "medium" | "large";
+  };
+  narrationBinding: {
+    triggerText: string;
+    segmentIndex: number;
+    appearAt: number;
+  };
+}
 
 export interface VideoCompositionProps {
   script: {
@@ -382,6 +403,7 @@ export interface VideoCompositionProps {
         content: string;
         animation: any;
       }>;
+      annotations?: Annotation[];
       }>;
   };
   images?: Record<string, string>;
@@ -441,7 +463,7 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
           return (
             <React.Fragment key={scene.id}>
               <TransitionSeries.Sequence durationInFrames={durationInFrames}>
-                <Scene scene={scene} imagePaths={images} />
+                <Scene scene={scene} imagePaths={images} annotations={scene.annotations} />
               </TransitionSeries.Sequence>
               {nextScene && transition && transition.type !== "none" && (
                 <TransitionSeries.Transition
@@ -465,6 +487,26 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
     const sceneContent = `import React from "react";
 import { AbsoluteFill, Img, interpolate, useCurrentFrame } from "remotion";
 import { Subtitle } from "./Subtitle";
+import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
+
+interface Annotation {
+  type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
+  target: {
+    type: "text" | "region" | "code-line";
+    textMatch?: string;
+    lineNumber?: number;
+    region?: "top-left" | "top-right" | "center" | "bottom-left" | "bottom-right";
+  };
+  style: {
+    color: "attention" | "highlight" | "info" | "success";
+    size: "small" | "medium" | "large";
+  };
+  narrationBinding: {
+    triggerText: string;
+    segmentIndex: number;
+    appearAt: number;
+  };
+}
 
 interface VisualLayer {
   id: string;
@@ -492,11 +534,13 @@ interface SceneData {
   narration: string;
   duration: number;
   visualLayers?: VisualLayer[];
+  annotations?: Annotation[];
 }
 
 interface SceneProps {
   scene: SceneData;
   imagePaths?: Record<string, string>;
+  annotations?: Annotation[];
 }
 
 const getPositionStyle = (pos: VisualLayer["position"]) => {
@@ -588,7 +632,7 @@ const AnimatedLayer: React.FC<{ layer: VisualLayer; imagePath?: string }> = ({ l
   return null;
 };
 
-export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
+export const Scene: React.FC<SceneProps> = ({ scene, imagePaths, annotations }) => {
   const { type, title, narration, visualLayers } = scene;
 
   const containerStyle: React.CSSProperties = {
@@ -617,6 +661,9 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
       <AbsoluteFill style={containerStyle}>
         <h1 style={titleStyle}>{title}</h1>
         <Subtitle text={narration} />
+        {annotations && annotations.length > 0 && (
+          <AnnotationRenderer annotations={annotations} />
+        )}
       </AbsoluteFill>
     );
   }
@@ -636,6 +683,9 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths }) => {
       })}
       <h1 style={{ ...titleStyle, fontSize: 60 }}>{title}</h1>
       <Subtitle text={narration} />
+      {annotations && annotations.length > 0 && (
+        <AnnotationRenderer annotations={annotations} />
+      )}
     </AbsoluteFill>
   );
 };
