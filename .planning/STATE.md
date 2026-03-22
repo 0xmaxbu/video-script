@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-transitions-02-PLAN.md
-last_updated: "2026-03-22T13:05:20.594Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-22T13:05:55.886Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -51,6 +51,7 @@ Plan: 2 of 2
 | Phase 03 P02 | 120 | 4 tasks | 3 files |
 | Phase 03 P03 | 13 | 3 tasks | 3 files |
 | Phase 04-transitions P02 | 8min | 1 tasks | 1 files |
+| Phase 04-transitions P01 | 3 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ From research (2026-03-22):
 - [Phase 04-transitions]: D-09: Camera zoom/pan effect using Remotion interpolate instead of CSS scroll
 - [Phase 04-transitions]: D-10: Line highlighting delayed until code is fully revealed for cleaner presentation
 - [Phase 04-transitions]: D-11: 30-frame settling buffer recommended for spring animations in final render
+- [Phase 04-transitions]: Transition duration by scene type: intro/outro 45 frames, feature/code 30 frames (D-03)
+- [Phase 04-transitions]: Slide direction alternates: odd scenes from-left, even scenes from-right (D-04)
+- [Phase 04-transitions]: First/last scene handling: no enter transition for first, no exit transition for last (D-05, D-06)
 
 ### Pending Todos
 
@@ -92,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T13:05:04.157Z
-Stopped at: Completed 04-transitions-02-PLAN.md
+Last session: 2026-03-22T13:05:55.885Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
