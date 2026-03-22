@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-03-22T15:00:12.500Z"
+stopped_at: Completed 05-02 plan - resolution config and annotation integration
+last_updated: "2026-03-22T15:04:54.296Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 17
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -53,6 +53,7 @@ Plan: 3 of 3
 | Phase 04-transitions P02 | 8min | 1 tasks | 1 files |
 | Phase 04-transitions P01 | 3 | 1 tasks | 1 files |
 | Phase 05 P05-01 | 5 | 4 tasks | 2 files |
+| Phase 05 P05-02 | 6min | 5 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,7 @@ From research (2026-03-22):
 - [Phase 04-transitions]: First/last scene handling: no enter transition for first, no exit transition for last (D-05, D-06)
 - [Phase 05]: CRF 20 for high-quality H.264 encoding in both Remotion CLI and FFmpeg stitch
 - [Phase 05]: deviceScaleFactor 2 for Retina-quality screenshot capture at 2x resolution
+- [Phase 05]: D-01: Dynamic resolution via validated.width/height enables dual 16:9 + 9:16 output
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T15:00:12.497Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-03-22T15:04:54.294Z
+Stopped at: Completed 05-02 plan - resolution config and annotation integration
 Resume file: None
