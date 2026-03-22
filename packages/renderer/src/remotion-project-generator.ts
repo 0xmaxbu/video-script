@@ -91,7 +91,7 @@ export async function generateRemotionProject(
 ): Promise<GenerateProjectOutput> {
   try {
     const validated = GenerateProjectInputSchema.parse(input);
-    const { script, screenshotResources, outputPath } = validated;
+    const { script, screenshotResources, outputPath, width, height } = validated;
 
     const projectPath = resolve(outputPath);
     const srcPath = join(projectPath, "src");
@@ -722,7 +722,7 @@ Resolution: 1920x1080 (16:9)
       mainComponentPath: join(srcPath, "index.ts"),
       scenesCount: script.scenes.length,
       videoConfig: {
-        resolution: "1920x1080",
+        resolution: `${width}x${height}`,
         fps: 30,
         duration: totalDuration,
       },
