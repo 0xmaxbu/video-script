@@ -29,7 +29,13 @@ v1.0 established the core video generation pipeline. v1.1 focuses on elevating v
   2. Spring animations play smoothly with correct damping and stiffness
   3. All interpolate values are clamped to prevent extrapolation artifacts
   4. Annotations layer correctly over screenshots and code blocks
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create Underline, Arrow, Box, Highlight annotation components
+- [ ] 01-02-PLAN.md — Create Number annotation component (circle with number inside)
+- [ ] 01-03-PLAN.md — Create AnnotationRenderer orchestrator and update index.ts exports
+- [ ] 01-04-PLAN.md — Update Scene.tsx with annotations prop and AnnotationRenderer rendering
 
 ### Phase 2: Layout System
 **Goal**: Users see professional PPT-style layouts with proper visual hierarchy
