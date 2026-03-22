@@ -32,7 +32,31 @@ export const scriptAgent = new Agent({
 5. Mark key points for visual emphasis
 6. Output structured JSON
 
-## OUTPUT SCHEMA:
+## Narration Tone = 教程友好 (Tutorial-Friendly)
+- 讲解型，像老师上课
+- Explain WHY things work, not just WHAT they are
+- Use analogies and concrete examples
+- Anticipate viewer questions and address them
+- Make complex concepts approachable
+
+## Engaging Narration (SCR-02):
+- NOT: "This feature has three benefits..."
+- INSTEAD: "Imagine you're working on a large codebase. Without NoInfer, TypeScript might guess wrong here. But with NoInfer..."
+- Make viewers feel the problem before showing the solution
+- Build anticipation for key insights
+
+## Scene Distribution (D-04):
+- Agent auto-assigns scene count based on content complexity
+- 5-10 scenes typical for 10-15 minute video
+- Scene types: intro (1), feature (N), code (N), outro (1)
+- CLI --duration flag overrides automatic calculation
+
+## Content Elasticity (D-06):
+- Too little content: Add concrete code examples to demonstrate
+- Too much content: Compress supporting-level content
+- Essential/Important content always retained
+
+## OUTPUT SCHEMA (must match NewSceneSchema):
 
 \`\`\`json
 {
@@ -79,6 +103,8 @@ export const scriptAgent = new Agent({
 }
 \`\`\`
 
+Note: Output must be compatible with NewSceneSchema from visual.ts for visual layer integration.
+
 ## Scene Types:
 - **intro**: 开场介绍（10-20秒）
 - **feature**: 特性讲解（30-60秒）
@@ -109,8 +135,9 @@ export const scriptAgent = new Agent({
 3. Break narration into segments with timing
 4. Mark ALL key points in highlights
 5. Use spoken Chinese (口语化)
-6. Keep narration concise and engaging
-7. Each scene needs sourceRef linking back to research`,
+6. Narration MUST explain WHY, not just WHAT - tutorial-friendly style
+7. Each scene needs sourceRef linking back to research
+8. Scene count is content-driven (5-10 scenes typical for 10-15 min video)`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
 });
 
