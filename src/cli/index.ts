@@ -20,9 +20,7 @@ import {
   researchAgent,
   scriptAgent,
   screenshotAgent,
-  generateStructurePrompt,
-  generateVisualLayersPrompt,
-  type SceneForVisualLayers,
+  generateScriptPrompt,
 } from "../mastra/agents/index.js";
 import { convertResearchMdToJson } from "./phase8-cli-integration.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
@@ -34,7 +32,7 @@ import {
   workflowStateManager,
   generateRunId,
 } from "../utils/index.js";
-import type { ResearchInput, VisualLayer } from "../types/index.js";
+import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
   type ResearchOutput,
@@ -173,6 +171,10 @@ program
               ? result.text
               : JSON.stringify(result.text);
 
+          // Save raw research output (Markdown) to research.md
+          const researchMdPath = join(outputDir, "research.md");
+          writeFileSync(researchMdPath, textContent, "utf-8");
+
           // Try to parse as JSON first
           const jsonMatch = textContent.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
@@ -280,28 +282,27 @@ program
     gracefulShutdown.setSpinner(spinner);
 
     try {
-      const researchPath = join(dir, "research.json");
+      // Read research.md directly (Markdown format)
+      const researchMdPath = join(dir, "research.md");
 
-      if (!existsSync(researchPath)) {
+      if (!existsSync(researchMdPath)) {
         throw new Error(
-          "research.json not found in " +
+          "research.md not found in " +
             dir +
             ". Run 'video-script research' first.",
         );
       }
 
-      console.log(chalk.blue("\n📝 Generating script from research..."));
-      console.log(chalk.gray("  Input: " + researchPath));
+      console.log(chalk.blue("\n📝 Generating script from research.md..."));
+      console.log(chalk.gray("  Input: " + researchMdPath));
 
-      const researchContent = readFileSync(researchPath, "utf-8");
-      const research: ResearchOutput = ResearchOutputSchema.parse(
-        JSON.parse(researchContent),
-      );
+      // Read the raw Markdown content
+      const researchMd = readFileSync(researchMdPath, "utf-8");
 
       // ========================================
-      // Phase 1: Generate scene structure only
+      // Generate scene structure only
       // ========================================
-      spinner.start("📝 Phase 1: Generating scene structure...");
+      spinner.start("📝 Generating scene structure...");
 
       const MAX_RETRIES = 3;
       let lastError: Error | undefined;
@@ -313,7 +314,7 @@ program
             [
               {
                 role: "user",
-                content: generateStructurePrompt(research),
+                content: generateScriptPrompt(researchMd),
               },
             ],
             { modelSettings: { maxOutputTokens: 16000 } },
@@ -402,128 +403,14 @@ program
       }
 
       // ========================================
-      // Phase 2: Generate visualLayers for each scene
+      // Skip visual layers generation - handled by separate Visual Agent
       // ========================================
-      spinner.start("📝 Phase 2: Generating visualLayers...");
 
       const scriptOutput: ScriptOutput = {
         title: structureOutput.title,
         totalDuration: structureOutput.totalDuration,
-        scenes: [],
+        scenes: structureOutput.scenes,
       };
-
-      for (let i = 0; i < structureOutput.scenes.length; i++) {
-        const scene = structureOutput.scenes[i];
-        spinner.text = chalk.gray(
-          `  Processing scene ${i + 1}/${structureOutput.scenes.length}: ${scene.title}`,
-        );
-
-        let sceneWithLayers = scene;
-
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-          try {
-            const sceneInfo: SceneForVisualLayers = {
-              id: scene.id,
-              type: scene.type,
-              title: scene.title,
-              narration: scene.narration,
-              duration: scene.duration,
-            };
-
-            const result = await scriptAgent.generate(
-              [
-                {
-                  role: "user",
-                  content: generateVisualLayersPrompt(sceneInfo, research),
-                },
-              ],
-              { modelSettings: { maxOutputTokens: 16000 } },
-            );
-
-            const textContent =
-              typeof result.text === "string"
-                ? result.text
-                : JSON.stringify(result.text);
-
-            const jsonBlocks = textContent.split(/```json\s*/).slice(1);
-
-            let parsedScene: Record<string, unknown> | undefined;
-
-            for (const block of jsonBlocks) {
-              const jsonStr = block.split("```")[0].trim();
-              if (!jsonStr) continue;
-
-              try {
-                const candidate = JSON.parse(jsonStr);
-                if (
-                  candidate.visualLayers &&
-                  Array.isArray(candidate.visualLayers)
-                ) {
-                  parsedScene = candidate;
-                  break;
-                }
-              } catch {
-                // Try balanced brace fix
-                let braceCount = 0;
-                let endIdx = 0;
-                for (let j = 0; j < jsonStr.length; j++) {
-                  if (jsonStr[j] === "{") braceCount++;
-                  else if (jsonStr[j] === "}") {
-                    braceCount--;
-                    if (braceCount === 0) {
-                      endIdx = j + 1;
-                      break;
-                    }
-                  }
-                }
-                if (endIdx > 0) {
-                  try {
-                    const fixed = jsonStr.substring(0, endIdx);
-                    const candidate = JSON.parse(fixed);
-                    if (
-                      candidate.visualLayers &&
-                      Array.isArray(candidate.visualLayers)
-                    ) {
-                      parsedScene = candidate;
-                      break;
-                    }
-                  } catch {
-                    // Still invalid
-                  }
-                }
-              }
-            }
-
-            if (!parsedScene) {
-              throw new Error("No visualLayers found in agent response");
-            }
-
-            // Merge: keep original scene fields, add visualLayers
-            sceneWithLayers = {
-              ...scene,
-              visualLayers: parsedScene.visualLayers as VisualLayer[],
-            };
-            break;
-          } catch (error) {
-            if (attempt < MAX_RETRIES - 1) {
-              spinner.text = chalk.yellow(
-                `  Retrying scene ${scene.id}... (${attempt + 1}/${MAX_RETRIES})`,
-              );
-            }
-          }
-        }
-
-        if (!sceneWithLayers.visualLayers) {
-          console.warn(
-            chalk.yellow(
-              `  Warning: Could not generate visualLayers for scene ${scene.id}, skipping`,
-            ),
-          );
-          sceneWithLayers.visualLayers = [];
-        }
-
-        scriptOutput.scenes.push(sceneWithLayers);
-      }
 
       spinner.text = "📝 Processing script output...";
 
@@ -961,6 +848,10 @@ program
               ? result.text
               : JSON.stringify(result.text);
 
+          // Save raw research output (Markdown) to research.md
+          const researchMdPath = join(outputDir, "research.md");
+          writeFileSync(researchMdPath, textContent, "utf-8");
+
           // Try to parse as JSON first
           const jsonMatch = textContent.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
@@ -1018,10 +909,11 @@ program
         throw lastError || new Error("Research failed after retries");
       }
 
-      // Save research output
+      // Save research output (both JSON and MD)
       const researchPath = join(outputDir, "research.json");
+      const researchMdPath = join(outputDir, "research.md");
       writeFileSync(researchPath, JSON.stringify(researchOutput, null, 2));
-      workflowStateManager.completeStep("research", { researchPath });
+      workflowStateManager.completeStep("research", { researchPath, researchMdPath });
 
       spinner.text = "📝 Processing research output...";
       spinner.succeed("✅ Research completed!");
@@ -1031,11 +923,14 @@ program
       console.log(chalk.gray("  Segments: " + researchOutput.segments.length));
 
       // ========================================
-      // Phase 1: Generate scene structure only (without visualLayers)
+      // Generate scene structure only (without visualLayers)
       // ========================================
-      spinner.start("📝 Phase 1: Generating scene structure...");
+      spinner.start("📝 Generating scene structure...");
 
       workflowStateManager.startStep("script");
+
+      // Read the raw Markdown content for script generation
+      const researchMd = readFileSync(researchMdPath, "utf-8");
 
       let structureOutput: ScriptOutput | undefined;
 
@@ -1045,7 +940,7 @@ program
             [
               {
                 role: "user",
-                content: generateStructurePrompt(researchOutput),
+                content: generateScriptPrompt(researchMd),
               },
             ],
             { modelSettings: { maxOutputTokens: 16000 } },
@@ -1138,131 +1033,14 @@ program
       }
 
       // ========================================
-      // Phase 2: Generate visualLayers for each scene
+      // Skip visual layers generation - handled by separate Visual Agent
       // ========================================
-      spinner.start("📝 Phase 2: Generating visualLayers...");
 
       const scriptOutput: ScriptOutput = {
         title: structureOutput.title,
         totalDuration: structureOutput.totalDuration,
-        scenes: [],
+        scenes: structureOutput.scenes,
       };
-
-      for (let i = 0; i < structureOutput.scenes.length; i++) {
-        const scene = structureOutput.scenes[i];
-        spinner.text = chalk.gray(
-          `  Processing scene ${i + 1}/${structureOutput.scenes.length}: ${scene.title}`,
-        );
-
-        let sceneWithLayers = scene;
-
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-          try {
-            const sceneInfo: SceneForVisualLayers = {
-              id: scene.id,
-              type: scene.type,
-              title: scene.title,
-              narration: scene.narration,
-              duration: scene.duration,
-            };
-
-            const result = await scriptAgent.generate(
-              [
-                {
-                  role: "user",
-                  content: generateVisualLayersPrompt(
-                    sceneInfo,
-                    researchOutput,
-                  ),
-                },
-              ],
-              { modelSettings: { maxOutputTokens: 16000 } },
-            );
-
-            const textContent =
-              typeof result.text === "string"
-                ? result.text
-                : JSON.stringify(result.text);
-
-            const jsonBlocks = textContent.split(/```json\s*/).slice(1);
-
-            let parsedScene: Record<string, unknown> | undefined;
-
-            for (const block of jsonBlocks) {
-              const jsonStr = block.split("```")[0].trim();
-              if (!jsonStr) continue;
-
-              try {
-                const candidate = JSON.parse(jsonStr);
-                if (
-                  candidate.visualLayers &&
-                  Array.isArray(candidate.visualLayers)
-                ) {
-                  parsedScene = candidate;
-                  break;
-                }
-              } catch {
-                // Try balanced brace fix
-                let braceCount = 0;
-                let endIdx = 0;
-                for (let j = 0; j < jsonStr.length; j++) {
-                  if (jsonStr[j] === "{") braceCount++;
-                  else if (jsonStr[j] === "}") {
-                    braceCount--;
-                    if (braceCount === 0) {
-                      endIdx = j + 1;
-                      break;
-                    }
-                  }
-                }
-                if (endIdx > 0) {
-                  try {
-                    const fixed = jsonStr.substring(0, endIdx);
-                    const candidate = JSON.parse(fixed);
-                    if (
-                      candidate.visualLayers &&
-                      Array.isArray(candidate.visualLayers)
-                    ) {
-                      parsedScene = candidate;
-                      break;
-                    }
-                  } catch {
-                    // Still invalid
-                  }
-                }
-              }
-            }
-
-            if (!parsedScene) {
-              throw new Error("No visualLayers found in agent response");
-            }
-
-            // Merge: keep original scene fields, add visualLayers
-            sceneWithLayers = {
-              ...scene,
-              visualLayers: parsedScene.visualLayers as VisualLayer[],
-            };
-            break;
-          } catch (error) {
-            if (attempt < MAX_RETRIES - 1) {
-              spinner.text = chalk.yellow(
-                `  Retrying scene ${scene.id}... (${attempt + 1}/${MAX_RETRIES})`,
-              );
-            }
-          }
-        }
-
-        if (!sceneWithLayers.visualLayers) {
-          console.warn(
-            chalk.yellow(
-              `  Warning: Could not generate visualLayers for scene ${scene.id}, skipping`,
-            ),
-          );
-          sceneWithLayers.visualLayers = [];
-        }
-
-        scriptOutput.scenes.push(sceneWithLayers);
-      }
 
       spinner.text = "📝 Processing script output...";
 

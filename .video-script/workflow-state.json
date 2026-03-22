@@ -1,27 +1,20 @@
 {
-  "runId": "66fe720da5d5691a",
+  "runId": "5db4df5065ad42cb",
   "workflowId": "video-generation",
-  "status": "suspended",
+  "status": "failed",
   "steps": [
     {
       "stepId": "research",
-      "status": "completed",
+      "status": "failed",
       "retryCount": 0,
-      "startedAt": "2026-03-21T14:08:41.540Z",
-      "completedAt": "2026-03-21T14:09:08.551Z",
-      "output": {
-        "researchPath": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript/research.json"
-      }
+      "startedAt": "2026-03-22T03:45:00.795Z",
+      "error": "Expected property name or '}' in JSON at position 4 (line 2 column 3)",
+      "completedAt": "2026-03-22T03:47:20.667Z"
     },
     {
       "stepId": "script",
-      "status": "completed",
-      "retryCount": 0,
-      "startedAt": "2026-03-21T14:09:08.551Z",
-      "completedAt": "2026-03-21T14:14:52.352Z",
-      "output": {
-        "scriptPath": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript/script.json"
-      }
+      "status": "pending",
+      "retryCount": 0
     },
     {
       "stepId": "screenshot",
@@ -35,11 +28,12 @@
     }
   ],
   "input": {
-    "title": "Hello World in JavaScript",
-    "outputDir": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript",
+    "title": "TypeScript 5.4 新特性",
+    "outputDir": "./.video-script/test-run",
     "aspectRatio": "16:9"
   },
-  "createdAt": "2026-03-21T14:08:41.538Z",
-  "updatedAt": "2026-03-21T14:14:52.358Z",
-  "currentStep": "script"
+  "createdAt": "2026-03-22T03:45:00.793Z",
+  "updatedAt": "2026-03-22T03:47:20.670Z",
+  "currentStep": "research",
+  "error": "Expected property name or '}' in JSON at position 4 (line 2 column 3)"
 }
