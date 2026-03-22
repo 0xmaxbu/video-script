@@ -49,7 +49,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Create Grid, FrostedCard, and grid-utils foundation
+- [x] 02-01-PLAN.md — Create Grid, FrostedCard, and grid-utils foundation
 - [ ] 02-02-PLAN.md — Refactor HeroFullscreen and SplitVertical layouts
 - [ ] 02-03-PLAN.md — Refactor SplitHorizontal and TextOverImage layouts
 - [ ] 02-04-PLAN.md — Refactor CodeFocus and Comparison layouts
@@ -91,7 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
-| 2. Layout System | 0/5 | Not started | - |
+| 2. Layout System | 1/5 | In Progress|  |
 | 3. Research & Content | 0/4 | Not started | - |
 | 4. Transitions | 0/3 | Not started | - |
 | 5. Composition | 0/3 | Not started | - |
