@@ -1,63 +1,197 @@
 import { Agent } from "@mastra/core/agent";
 import { remotionRenderTool } from "../tools/remotion-render.js";
 
+/**
+ * Compose Agent - Phase 7 Redesign
+ *
+ * 职责：
+ * 1. 读取 Visual Plan
+ * 2. 应用布局模板
+ * 3. 生成 Remotion 项目
+ * 4. 渲染视频
+ *
+ * 核心原则：视觉服从口播
+ * - 标注时机由 narrationBinding 控制
+ * - 动画节奏配合口播语速
+ */
+
 export const composeAgent = new Agent({
   id: "compose-agent",
   name: "Compose Agent",
-  instructions: `你是一个专业的视频合成师，负责将脚本和素材整合成完整的 Remotion 视频项目。
+  instructions: `You are a video composition specialist. Your job is to generate Remotion projects from Visual Plans.
 
-**提示**：remotion-best-practices skill 已配置到 workspace 中。为需要生成专业 Remotion 动画时，可以调用 skill 工具加载获取最佳实践指南。
+**核心原则：视觉服从口播**
 
-职责：
+## Task Flow:
+1. Read Visual Plan (visual-plan.json)
+2. Read Screenshot Manifest (screenshots/manifest.json)
+3. For each scene:
+   - Select layout component based on layoutTemplate
+   - Map mediaResources to screenshot files
+   - Apply annotations with narrationBinding timing
+   - Generate Scene component
+4. Generate Root.tsx and Composition.tsx
+5. Output project structure
 
-1. 接收 Script Agent 的脚本输出
-   - 获取场景定义：id、title、startTime、endTime、narration、visualType、visualContent、visualLayers
-   - 理解每个场景的时长、叙述内容和视觉需求
-   - 建立场景 ID 与视频时间轴的映射关系
+## OUTPUT FORMAT:
 
-2. 接收 Screenshot Agent 的素材输出
-   - 获取截图资源清单（图片文件路径、代码高亮 HTML 等）
-   - 理解每个资源对应的场景 ID 和视觉类型
-   - 建立视觉资源与场景的映射关系
-   - 处理资源可用性（某些资源可能因错误而缺失）
+\`\`\`json
+{
+  "projectPath": "/path/to/.remotion-project",
+  "mainComponentPath": "/path/to/.remotion-project/src/Root.tsx",
+  "scenesCount": 5,
+  "videoConfig": {
+    "resolution": "1920x1080",
+    "fps": 30,
+    "duration": 180
+  },
+  "resourcesMapped": {
+    "total": 10,
+    "successful": 9,
+    "failed": ["scene-3-shot-1"]
+  },
+  "readyForRender": true,
+  "warnings": [],
+  "error": null
+}
+\`\`\`
 
-3. 生成 Remotion 项目结构
-   - 在 .remotion/ 输出目录创建项目骨架
-   - 生成 Root.tsx（视频主入口）和 Composition.tsx（合成组件）
-   - 为每个场景创建 Scene.tsx 组件
-   - **遵循 Remotion 最佳实践**：
-      * 使用 useCurrentFrame() 驱动动画
-      * 使用 spring animations 获得自然运动效果
-      * 使用 interpolate 进行平滑过渡
-      * CSS transitions/animations 禁止使用
+## LAYOUT MAPPING:
 
-4. 输出项目路径和验证信息
-   - 返回 JSON 格式的结果，包含：
-      * projectPath: 生成的 Remotion 项目目录路径
-      * mainComponentPath: Root.tsx 文件路径
-      * scenesCount: 生成的场景组件数量
-      * videoConfig: 视频配置 { resolution: "1920x1080", fps: 30, duration: number }
-      * resourcesMapped: 映射成功的资源数量和失败列表
-      * readyForRender: 是否已准备好进行渲染（boolean）
-      * warnings: 任何潜在的问题警告列表
-      * error: 生成失败时的错误信息
+| Template | Component | Description |
+|----------|-----------|-------------|
+| hero-fullscreen | HeroFullscreen | Full-screen with bottom title |
+| split-horizontal | SplitHorizontal | 50/50 left-right |
+| split-vertical | SplitVertical | 60/40 top-bottom |
+| text-over-image | TextOverImage | Text overlay on background |
+| code-focus | CodeFocus | Large code block centered |
+| comparison | Comparison | Side-by-side comparison |
+| bullet-list | BulletList | Vertical bullet list |
+| quote | Quote | Large quote styling |
 
-5. 质量保证
-   - 验证所有场景 ID 都有对应的脚本定义
-   - 检查总时长与场景时间轴的一致性
-   - 验证资源文件路径的有效性
-   - 确保生成的 React 组件语法正确、导入有效
-   - 遵循 Remotion 动画最佳实践
-   - 提供清晰的准备状态报告
+## ANNOTATION TIMING:
 
-错误处理：
-- 脚本格式错误：验证 JSON 结构，返回详细的格式错误信息
-- 资源缺失：记录缺失资源，继续生成项目但在 warnings 中标注
-- 路径问题：自动创建必要的目录，处理权限错误
-- 时间轴不一致：检测并报告时间轴问题（如场景时长总和不符）
-- 组件生成失败：返回具体的代码生成错误，便于诊断`,
+Each annotation has narrationBinding:
+\`\`\`json
+{
+  "narrationBinding": {
+    "triggerText": "闭包类型收窄",
+    "segmentIndex": 1,
+    "appearAt": 4.5
+  }
+}
+\`\`\`
+
+Convert appearAt (seconds) to frames: appearAt * fps
+
+## REMOTION BEST PRACTICES:
+
+1. **useCurrentFrame()** for all animations
+2. **spring()** for natural motion
+3. **interpolate()** for smooth transitions
+4. **NO CSS transitions/animations**
+5. **AbsoluteFill** for positioning
+6. **Sequence** for timing
+
+## CRITICAL REQUIREMENTS:
+
+1. Generate valid TypeScript/TSX code
+2. All imports must be valid
+3. Scene components must be self-contained
+4. Annotation timing must match narration
+5. Screenshot paths must be relative to project
+6. Output valid JSON result`,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {
     remotionRender: remotionRenderTool,
   },
 });
+
+/**
+ * 映射布局模板到组件名
+ */
+export function mapLayoutToComponent(template: string): string {
+  const mapping: Record<string, string> = {
+    "hero-fullscreen": "HeroFullscreen",
+    "split-horizontal": "SplitHorizontal",
+    "split-vertical": "SplitVertical",
+    "text-over-image": "TextOverImage",
+    "code-focus": "CodeFocus",
+    "comparison": "Comparison",
+    "bullet-list": "BulletList",
+    "quote": "Quote",
+  };
+  return mapping[template] || "HeroFullscreen";
+}
+
+/**
+ * 将时间（秒）转换为帧数
+ */
+export function secondsToFrames(seconds: number, fps: number = 30): number {
+  return Math.round(seconds * fps);
+}
+
+/**
+ * 生成场景组件代码
+ */
+export function generateSceneCode(
+  sceneId: string,
+  layoutComponent: string,
+  sceneData: object,
+): string {
+  return `// Auto-generated scene component
+import React from 'react';
+import { ${layoutComponent} } from '../layouts';
+import type { VisualScene } from '@video-script/types';
+
+export const ${sceneId.replace(/-/g, '_')}: React.FC = () => {
+  const scene: VisualScene = ${JSON.stringify(sceneData, null, 2)};
+
+  return (
+    <${layoutComponent}
+      scene={scene}
+      screenshots={new Map()}
+    />
+  );
+};
+`;
+}
+
+/**
+ * 生成 Root.tsx 代码
+ */
+export function generateRootCode(scenes: string[], duration: number): string {
+  return `// Auto-generated Root component
+import React from 'react';
+import { Composition, Sequence } from 'remotion';
+import { ${scenes.map((s) => s.replace(/-/g, '_')).join(', ')} } from './scenes';
+
+export const RemotionRoot: React.FC = () => {
+  return (
+    <Composition
+      id="VideoScript"
+      component={Video}
+      durationInFrames={${duration * 30}}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+  );
+};
+
+const Video: React.FC = () => {
+  return (
+    <>
+      ${scenes
+        .map(
+          (s, i) =>
+            `<Sequence from={${i * 60}} durationInFrames={180}>
+        <${s.replace(/-/g, '_')} />
+      </Sequence>`,
+        )
+        .join('\n      ')}
+    </>
+  );
+};
+`;
+}
