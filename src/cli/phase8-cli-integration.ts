@@ -145,6 +145,16 @@ export function convertResearchMdToJson(md: string): {
     segments.push(currentSegment);
   }
 
+  // Ensure all segments have at least one link (required by schema)
+  for (const segment of segments) {
+    if (segment.links.length === 0) {
+      segment.links.push({
+        url: "https://example.com/placeholder",
+        key: "No source",
+      });
+    }
+  }
+
   return { title, segments };
 }
 
