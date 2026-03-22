@@ -34,6 +34,9 @@
 
 - [ ] **SCR-01**: Script generates content with depth — thorough explanations
 - [ ] **SCR-02**: Scene narration is engaging, not generic summaries
+
+### Composition
+
 - [ ] **COMP-01**: Final video matches visual plan — all annotations render
 - [ ] **COMP-02**: Video quality feels polished and professional
 
@@ -57,9 +60,6 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RES-01 | Phase 1 | Pending |
-| RES-02 | Phase 1 | Pending |
-| RES-03 | Phase 3 | Pending |
 | VIS-01 | Phase 1 | Pending |
 | VIS-02 | Phase 1 | Pending |
 | VIS-03 | Phase 1 | Pending |
@@ -67,19 +67,22 @@
 | VIS-05 | Phase 2 | Pending |
 | VIS-06 | Phase 2 | Pending |
 | VIS-07 | Phase 2 | Pending |
+| RES-01 | Phase 3 | Pending |
+| RES-02 | Phase 3 | Pending |
+| RES-03 | Phase 3 | Pending |
+| SCR-01 | Phase 3 | Pending |
+| SCR-02 | Phase 3 | Pending |
 | VIS-08 | Phase 4 | Pending |
 | VIS-09 | Phase 4 | Pending |
 | VIS-10 | Phase 4 | Pending |
-| SCR-01 | Phase 3 | Pending |
-| SCR-02 | Phase 3 | Pending |
 | COMP-01 | Phase 5 | Pending |
 | COMP-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 16 total
 - Mapped to phases: 16
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after initial definition*
+*Last updated: 2026-03-22 after v1.1 roadmap creation*
