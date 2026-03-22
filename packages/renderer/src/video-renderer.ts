@@ -21,6 +21,7 @@ async function spawnRenderProcess(
   videoOutputPath: string,
   fps: number,
   scenes: z.infer<typeof SceneScriptSchema>[],
+  compositionId: string = "Video",
 ): Promise<RenderResult> {
   const { existsSync } = await import("fs");
 
@@ -45,12 +46,14 @@ async function spawnRenderProcess(
     remotionScript,
     "render",
     "src/index.tsx",
-    "Video",
+    compositionId,
     videoOutputPath,
     "--codec",
     "h264",
     "--fps",
     fps.toString(),
+    "--crf",
+    "20",
     "--quiet",
   ];
 
@@ -109,6 +112,7 @@ export const RenderVideoInputSchema = z.object({
   screenshotResources: z.record(z.string(), z.string()),
   outputDir: z.string().optional(),
   videoFileName: z.string().optional(),
+  compositionId: z.string().default("Video"),
   onProgress: z.function().optional(),
 });
 
@@ -117,6 +121,7 @@ export interface RenderVideoInput {
   screenshotResources: Record<string, string>;
   outputDir?: string;
   videoFileName?: string;
+  compositionId?: string;
   onProgress?: (progress: number) => void;
 }
 
@@ -196,6 +201,7 @@ export async function renderVideo(
       videoOutputPath,
       projectResult.videoConfig.fps,
       script.scenes,
+      input.compositionId ?? "Video",
     );
 
     onProgress?.(80);

@@ -311,7 +311,7 @@ async function stitchFramesWithFFmpeg(
       "-preset",
       "medium",
       "-crf",
-      "23",
+      "20",
       "-pix_fmt",
       "yuv420p",
       "-movflags",
@@ -468,7 +468,7 @@ export async function renderVideoWithPuppeteer(
 
     context = await browser.newContext({
       viewport: { width, height },
-      deviceScaleFactor: 1,
+      deviceScaleFactor: 2,
     });
 
     page = await context.newPage();
