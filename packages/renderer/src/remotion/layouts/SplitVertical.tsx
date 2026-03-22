@@ -1,5 +1,8 @@
 import React from "react";
-import { AbsoluteFill, Img, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
+import { Img, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
+import { Grid } from "./Grid.js";
+import { FrostedCard } from "./FrostedCard.js";
+import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -27,18 +30,20 @@ export const SplitVertical: React.FC<LayoutProps> = ({
   const bottomProgress = spring({ frame: Math.max(0, frame - 10), fps, config: { damping: 100, stiffness: 200 } });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a", display: "flex", flexDirection: "column" }}>
-      {/* 上部分 - 60% */}
-      <div
+    <Grid>
+      {/* 上部分 - 60% - FrostedCard */}
+      <FrostedCard
         style={{
-          height: "60%",
-          width: "100%",
+          position: "absolute",
+          top: 80,
+          left: 120,
+          width: "calc(100% - 240px)",
+          height: "calc(60% - 80px)",
           opacity: topProgress,
           transform: `translateY(${interpolate(topProgress, [0, 1], [-30, 0])}px)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "1.5rem",
         }}
       >
         {primaryScreenshot && (
@@ -51,21 +56,23 @@ export const SplitVertical: React.FC<LayoutProps> = ({
             }}
           />
         )}
-      </div>
+      </FrostedCard>
 
-      {/* 下部分 - 40% */}
-      <div
+      {/* 下部分 - 40% - FrostedCard */}
+      <FrostedCard
         style={{
-          height: "40%",
-          width: "100%",
-          backgroundColor: "#1a1a1a",
+          position: "absolute",
+          bottom: 80,
+          left: 120,
+          width: "calc(100% - 240px)",
+          height: "calc(40% - 80px)",
           opacity: bottomProgress,
           transform: `translateY(${interpolate(bottomProgress, [0, 1], [30, 0])}px)`,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "1.5rem",
+          color: "rgba(0,0,0,",
           borderTop: "1px solid rgba(255,255,255,0.1)",
         }}
       >
@@ -81,11 +88,18 @@ export const SplitVertical: React.FC<LayoutProps> = ({
           />
         )}
         {titleElement && (
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "600", color: "white", textAlign: "center" }}>
+          <h2
+            style={{
+              fontSize: TYPOGRAPHY.title.section,
+              fontWeight: "600",
+              color: "white",
+              textAlign: "center",
+            }}
+          >
             {titleElement.content}
           </h2>
         )}
-      </div>
-    </AbsoluteFill>
+      </FrostedCard>
+    </Grid>
   );
 };
