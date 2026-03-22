@@ -29,8 +29,8 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 - [ ] **VIS-02**: Visual annotations render correctly: highlight, underline, circle, number
 - [ ] **VIS-03**: Animation transitions work: fade, slideIn, typewriter effects
 - [ ] **VIS-04**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
-- [ ] **COMP-01**: Final video matches visual plan — all annotations and animations render
-- [ ] **COMP-02**: Video quality feels polished and professional
+- [x] **COMP-01**: Final video matches visual plan — all annotations render (Phase 05: annotation wiring complete)
+- [x] **COMP-02**: Video quality feels polished and professional (Phase 05: CRF 20, Retina, dual resolution)
 
 ### Out of Scope
 
