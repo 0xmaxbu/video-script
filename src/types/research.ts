@@ -7,10 +7,18 @@ export const ResearchLinkSchema = z.object({
 
 export type ResearchLink = z.infer<typeof ResearchLinkSchema>;
 
+export const RelationshipTagEnum = z.enum(['原因', '对比', '示例', '注意事项']);
+export type RelationshipTag = z.infer<typeof RelationshipTagEnum>;
+
 export const ResearchSegmentSchema = z.object({
   order: z.number().int().positive(),
   sentence: z.string().min(1),
-  keyContent: z.record(z.string(), z.string()),
+  keyContent: z.object({
+    concept: z.string(),
+    // relationship tags per D-02
+    relationships: z.array(RelationshipTagEnum).optional(),
+    relationshipNotes: z.record(z.string(), z.string()).optional(),
+  }),
   links: z.array(ResearchLinkSchema).min(1),
 });
 
