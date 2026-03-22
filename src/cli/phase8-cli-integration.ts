@@ -10,7 +10,6 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import chalk from "chalk";
-import ora from "ora";
 import * as readline from "readline";
 
 /**
@@ -48,7 +47,7 @@ export async function waitForUserConfirmation(
  */
 export function saveResearchMarkdown(
   outputDir: string,
-  title: string,
+  _title: string, // 保留参数以便未来使用
   content: string,
 ): string {
   const mdPath = join(outputDir, "research.md");

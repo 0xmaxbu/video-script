@@ -431,24 +431,18 @@ describe("Pipeline Schema Validation", () => {
       const pipelineData = {
         research: {
           title: "TypeScript Generics",
-          overview: "Understanding TypeScript generics",
-          keyPoints: [
-            { title: "Basics", description: "Generic basics" },
-            { title: "Advanced", description: "Advanced patterns" },
-          ],
-          scenes: [
+          segments: [
             {
-              sceneTitle: "Intro",
-              duration: 10,
-              description: "Intro",
-              screenshotSubjects: ["tslang.org"],
+              order: 1,
+              sentence: "TypeScript generics allow you to create reusable components",
+              keyContent: { concept: "Generics basics" },
+              links: [{ url: "https://typescriptlang.org", key: "TS Docs" }],
             },
-          ],
-          sources: [
             {
-              url: "https://typescriptlang.org",
-              title: "TS Docs",
-              keyContent: "Generics",
+              order: 2,
+              sentence: "Advanced patterns include conditional types and mapped types",
+              keyContent: { concept: "Advanced patterns" },
+              links: [{ url: "https://typescriptlang.org", key: "TS Docs" }],
             },
           ],
         },

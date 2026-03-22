@@ -1,0 +1,45 @@
+{
+  "runId": "66fe720da5d5691a",
+  "workflowId": "video-generation",
+  "status": "suspended",
+  "steps": [
+    {
+      "stepId": "research",
+      "status": "completed",
+      "retryCount": 0,
+      "startedAt": "2026-03-21T14:08:41.540Z",
+      "completedAt": "2026-03-21T14:09:08.551Z",
+      "output": {
+        "researchPath": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript/research.json"
+      }
+    },
+    {
+      "stepId": "script",
+      "status": "completed",
+      "retryCount": 0,
+      "startedAt": "2026-03-21T14:09:08.551Z",
+      "completedAt": "2026-03-21T14:14:52.352Z",
+      "output": {
+        "scriptPath": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript/script.json"
+      }
+    },
+    {
+      "stepId": "screenshot",
+      "status": "pending",
+      "retryCount": 0
+    },
+    {
+      "stepId": "compose",
+      "status": "pending",
+      "retryCount": 0
+    }
+  ],
+  "input": {
+    "title": "Hello World in JavaScript",
+    "outputDir": "/Users/max/simple-videos/2026/12-3_16-3_22/hello-world-in-javascript",
+    "aspectRatio": "16:9"
+  },
+  "createdAt": "2026-03-21T14:08:41.538Z",
+  "updatedAt": "2026-03-21T14:14:52.358Z",
+  "currentStep": "script"
+}

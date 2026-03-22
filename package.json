@@ -7,10 +7,13 @@
   "bin": {
     "video-script": "./dist/cli/index.js"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "mastra dev -d src/mastra",
     "dev:cli": "tsx watch src/cli/index.ts",
-    "studio": "mastra studio",
+    "studio": "npm run dev --workspace=@video-script/studio",
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",

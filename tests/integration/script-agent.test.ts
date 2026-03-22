@@ -190,14 +190,21 @@ ${JSON.stringify(minimalResearch, null, 2)}
 
       const parsed = JSON.parse(jsonMatch![0]);
 
+      // 新架构：Script Agent 输出 narration 和 highlights，不再输出 visualLayers
+      // visualLayers 由 Visual Agent 生成
       for (const scene of parsed.scenes || []) {
-        if (scene.visualLayers && scene.visualLayers.length > 0) {
-          for (const layer of scene.visualLayers) {
-            expect(layer).toHaveProperty("id");
-            expect(layer).toHaveProperty("type");
-            expect(layer).toHaveProperty("position");
-            expect(layer).toHaveProperty("content");
-            expect(layer).toHaveProperty("animation");
+        // 验证场景有 narration
+        expect(scene).toHaveProperty("narration");
+        expect(scene).toHaveProperty("duration");
+        expect(scene).toHaveProperty("id");
+        expect(scene).toHaveProperty("type");
+
+        // 如果有 highlights，验证结构
+        if (scene.highlights && scene.highlights.length > 0) {
+          for (const highlight of scene.highlights) {
+            expect(highlight).toHaveProperty("text");
+            expect(highlight).toHaveProperty("importance");
+            expect(highlight).toHaveProperty("timeInScene");
           }
         }
       }

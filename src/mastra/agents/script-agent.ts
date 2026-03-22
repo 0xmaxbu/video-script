@@ -197,8 +197,38 @@ export function extractKeyTerms(text: string): string[] {
 
 /**
  * 生成 Script Agent 的 prompt
+ * @param research - 可以是 Markdown 字符串或 ResearchOutput 对象
  */
-export function generateScriptPrompt(researchMd: string): string {
+export function generateScriptPrompt(research: string | Record<string, unknown>): string {
+  let researchMd: string;
+
+  if (typeof research === "string") {
+    researchMd = research;
+  } else {
+    // 将 ResearchOutput 对象转换为 Markdown
+    const obj = research;
+    const title = String(obj.title || "Research");
+    const segments = Array.isArray(obj.segments) ? obj.segments : [];
+
+    researchMd = `# ${title}\n\n`;
+    for (const seg of segments) {
+      const segment = seg as Record<string, unknown>;
+      const sentence = String(segment.sentence || "");
+      const keyContent = segment.keyContent as Record<string, string> | undefined;
+      const concept = keyContent?.concept || "Segment";
+
+      researchMd += `## ${sentence || concept}\n\n`;
+      researchMd += `${sentence}\n\n`;
+
+      if (segment.links && Array.isArray(segment.links)) {
+        for (const link of segment.links as Array<Record<string, unknown>>) {
+          researchMd += `[${String(link.key || "Source")}] ${String(link.url || "")}\n`;
+        }
+        researchMd += "\n";
+      }
+    }
+  }
+
   return `根据以下研究文档生成口播脚本。
 
 **只处理标记为 [priority: essential] 或 [priority: important] 的内容。**
@@ -214,4 +244,32 @@ ${researchMd}
 3. 每个场景的 narration 必须包含 segments 数组
 4. 标记所有需要视觉强调的重点
 5. 代码场景要标记 codeHighlights`;
+}
+
+/**
+ * @deprecated Use generateScriptPrompt instead
+ */
+export const generateStructurePrompt = generateScriptPrompt;
+
+/**
+ * 场景信息接口（用于 Visual Agent）
+ * @deprecated Visual Agent 现在使用 VisualPlanSchema
+ */
+export interface SceneForVisualLayers {
+  id: string;
+  type: string;
+  title: string;
+  narration: string;
+  duration: number;
+}
+
+/**
+ * 生成 Visual Layers 的 prompt（向后兼容）
+ * @deprecated Visual Agent 现在独立工作
+ */
+export function generateVisualLayersPrompt(
+  _scene: SceneForVisualLayers,
+  _researchData?: unknown,
+): string {
+  return `Visual Agent 现在独立处理视觉编排。请使用 visualAgent 和 generateVisualPrompt()。`;
 }

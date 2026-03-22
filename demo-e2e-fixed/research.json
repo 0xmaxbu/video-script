@@ -1,0 +1,135 @@
+{
+  "title": "TypeScript Generics 入门",
+  "segments": [
+    {
+      "order": 1,
+      "sentence": "TypeScript Generics 是创建可重用组件的核心工具，它允许组件不仅能在当前数据类型上工作，还能在未来的数据类型上工作，实现了类型安全和灵活性的平衡。",
+      "keyContent": {
+        "concept": "泛型的核心价值：构建可跨多种类型工作而非单一类型的可复用组件"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html",
+          "key": "TypeScript Generics 官方文档"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "sentence": "类型变量（Type Variable）是泛型的核心概念，它是一种特殊的变量，作用于类型而非值，例如 function identity<Type>(arg: Type): Type 中的 Type 能够捕获用户提供的类型信息。",
+      "keyContent": {
+        "concept": "类型变量：捕获和传递类型信息的特殊变量"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#hello-world-of-generics",
+          "key": "Hello World of Generics"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "sentence": "调用泛型函数有两种方式：显式传递类型参数如 identity<string>(\"myString\")，或使用类型推断让编译器自动根据参数类型设置类型变量。",
+      "keyContent": {
+        "concept": "类型参数传递：显式传递 vs 类型推断"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#hello-world-of-generics",
+          "key": "类型推断机制"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "sentence": "使用泛型类型变量时，必须假设它代表任何和所有类型，因此在函数体中使用这些参数时需要遵循类型安全原则，不能直接访问不确定存在的成员属性。",
+      "keyContent": {
+        "concept": "泛型类型变量的约束：必须假设它可以是任何类型"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#working-with-generic-type-variables",
+          "key": "Working with Generic Type Variables"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "sentence": "可以通过 Array<Type> 或 Type[] 语法来限制泛型函数处理数组类型，从而安全地访问数组的 length 等成员属性。",
+      "keyContent": {
+        "concept": "数组泛型语法：Type[] 与 Array<Type> 等效"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#working-with-generic-type-variables",
+          "key": "泛型数组处理"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "sentence": "泛型接口允许将类型参数放在接口级别，使类型参数对所有成员可见，这比将类型参数直接放在调用签名上提供了更清晰的类型可见性。",
+      "keyContent": {
+        "concept": "泛型接口：接口级别的类型参数声明"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-types",
+          "key": "Generic Types"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "sentence": "泛型类与泛型接口类似，在类名后使用尖括号声明类型参数列表，但泛型类只能在其实例端使用泛型，静态成员不能使用类的类型参数。",
+      "keyContent": {
+        "concept": "泛型类：类级别类型参数及其限制"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-classes",
+          "key": "Generic Classes"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "sentence": "使用 extends 关键字创建泛型约束（Generic Constraints）可以限制类型参数必须具有特定属性，例如 interface Lengthwise { length: number } 来约束函数必须能访问 .length 属性。",
+      "keyContent": {
+        "concept": "泛型约束：使用 extends 限制类型参数必须具有的属性"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-constraints",
+          "key": "Generic Constraints"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "sentence": "泛型参数默认值（Generic Parameter Defaults）通过 Type = DefaultType 语法使类型参数变为可选，这可以简化函数重载并提供更简洁的 API 设计。",
+      "keyContent": {
+        "concept": "泛型默认参数：使类型参数变为可选"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-parameter-defaults",
+          "key": "Generic Parameter Defaults"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "sentence": "方差注解（Variance Annotations）使用 in 和 out 关键字标记泛型类型参数的协变和逆变关系，这是高级特性，仅在 TypeScript 自动推断不准确且确实需要时才应使用。",
+      "keyContent": {
+        "concept": "方差注解：协变（out）、逆变（in）和不变（in out）的类型关系"
+      },
+      "links": [
+        {
+          "url": "https://www.typescriptlang.org/docs/handbook/2/generics.html#variance-annotations",
+          "key": "Variance Annotations"
+        }
+      ]
+    }
+  ]
+}

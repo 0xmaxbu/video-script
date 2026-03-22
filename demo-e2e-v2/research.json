@@ -1,0 +1,149 @@
+{
+  "title": "React Hooks 教程",
+  "segments": [
+    {
+      "order": 1,
+      "sentence": "Hooks是React的核心功能，它允许你在组件中使用各种React特性，通过组合内置Hooks或构建自定义Hooks来实现模块化和代码复用。",
+      "keyContent": {
+        "concept": "Hooks简介和核心作用"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/hooks",
+          "key": "React官方Hooks文档"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "sentence": "State Hooks（useState和useReducer）让组件能够记住信息，如用户输入或选中状态，其中useState用于直接更新状态变量，useReducer则将状态逻辑封装在reducer函数中。",
+      "keyContent": {
+        "concept": "状态管理Hooks"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useState",
+          "key": "useState API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useReducer",
+          "key": "useReducer API文档"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "sentence": "Context Hooks（useContext）允许组件从遥远的父组件接收信息，而无需通过props层层传递，适用于在应用顶层组件向下传递主题等全局配置的场景。",
+      "keyContent": {
+        "concept": "上下文Hooks实现跨组件数据传递"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useContext",
+          "key": "useContext API文档"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "sentence": "Ref Hooks（useRef和useImperativeHandle）让组件持有不用于渲染的信息，如DOM节点引用或超时ID，与状态不同，更新ref不会触发组件重新渲染，是连接React与非React系统的出口。",
+      "keyContent": {
+        "concept": "Refs用于访问DOM和非React系统"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useRef",
+          "key": "useRef API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useImperativeHandle",
+          "key": "useImperativeHandle API文档"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "sentence": "Effect Hooks（useEffect、useLayoutEffect、useInsertionEffect）让组件连接和同步外部系统，包括网络请求、浏览器DOM、动画和使用其他UI库编写的组件，其中useLayoutEffect在浏览器重绘前触发，useInsertionEffect在DOM变更前触发供CSS-in-JS库使用。",
+      "keyContent": {
+        "concept": "副作用处理和外部系统同步"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useEffect",
+          "key": "useEffect API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useLayoutEffect",
+          "key": "useLayoutEffect API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useInsertionEffect",
+          "key": "useInsertionEffect API文档"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "sentence": "Performance Hooks包括useMemo（缓存昂贵计算结果）、useCallback（缓存函数定义）、useTransition（将状态转换标记为非阻塞）和useDeferredValue（延迟更新非关键UI部分），用于优化重渲染性能。",
+      "keyContent": {
+        "concept": "性能优化Hooks"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useMemo",
+          "key": "useMemo API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useCallback",
+          "key": "useCallback API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useTransition",
+          "key": "useTransition API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useDeferredValue",
+          "key": "useDeferredValue API文档"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "sentence": "Other Hooks包括useDebugValue（自定义DevTools显示标签）、useId（生成唯一ID用于无障碍API）、useSyncExternalStore（订阅外部store）、useActionState（管理操作状态）和useOptimistic（乐观更新），主要用于库作者。",
+      "keyContent": {
+        "concept": "其他特殊用途Hooks"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/reference/react/useDebugValue",
+          "key": "useDebugValue API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useId",
+          "key": "useId API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useActionState",
+          "key": "useActionState API文档"
+        },
+        {
+          "url": "https://react.dev/reference/react/useOptimistic",
+          "key": "useOptimistic API文档"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "sentence": "开发者可以通过创建JavaScript函数来定义自定义Hooks，从而复用组件逻辑，实现更高层次的抽象和代码共享。",
+      "keyContent": {
+        "concept": "自定义Hooks的实现方法"
+      },
+      "links": [
+        {
+          "url": "https://react.dev/learn/reusing-logic-with-custom-hooks",
+          "key": "自定义Hooks教程"
+        }
+      ]
+    }
+  ]
+}
