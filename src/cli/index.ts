@@ -24,6 +24,7 @@ import {
   generateVisualLayersPrompt,
   type SceneForVisualLayers,
 } from "../mastra/agents/index.js";
+import { convertResearchMdToJson } from "./phase8-cli-integration.js";
 import { gracefulShutdown } from "../utils/graceful-shutdown.js";
 import { loadConfig, maskSensitiveConfig } from "../utils/config.js";
 import { generateOutputDirectory } from "../utils/output-directory.js";
@@ -172,38 +173,42 @@ program
               ? result.text
               : JSON.stringify(result.text);
 
+          // Try to parse as JSON first
           const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-          if (!jsonMatch) {
-            throw new Error("No JSON found in agent response");
+          if (jsonMatch) {
+            // JSON format - parse normally
+            const parsed = JSON.parse(jsonMatch[0]);
+
+            researchOutput = {
+              title: parsed.title || input.title,
+              segments:
+                parsed.segments ||
+                parsed.keyPoints?.map(
+                  (
+                    kp: { title: string; description: string },
+                    index: number,
+                  ) => ({
+                    order: index + 1,
+                    sentence: kp.description || kp.title,
+                    keyContent: { concept: kp.title },
+                    links:
+                      parsed.sources?.map(
+                        (s: { url: string; title: string }) => ({
+                          url: s.url,
+                          key: s.title,
+                        }),
+                      ) || [],
+                  }),
+                ) ||
+                [],
+            };
+
+            researchOutput = ResearchOutputSchema.parse(researchOutput);
+          } else {
+            // Markdown format - convert to JSON using convertResearchMdToJson
+            researchOutput = convertResearchMdToJson(textContent);
+            researchOutput = ResearchOutputSchema.parse(researchOutput);
           }
-
-          const parsed = JSON.parse(jsonMatch[0]);
-
-          researchOutput = {
-            title: parsed.title || input.title,
-            segments:
-              parsed.segments ||
-              parsed.keyPoints?.map(
-                (
-                  kp: { title: string; description: string },
-                  index: number,
-                ) => ({
-                  order: index + 1,
-                  sentence: kp.description || kp.title,
-                  keyContent: { concept: kp.title },
-                  links:
-                    parsed.sources?.map(
-                      (s: { url: string; title: string }) => ({
-                        url: s.url,
-                        key: s.title,
-                      }),
-                    ) || [],
-                }),
-              ) ||
-              [],
-          };
-
-          researchOutput = ResearchOutputSchema.parse(researchOutput);
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
@@ -956,38 +961,42 @@ program
               ? result.text
               : JSON.stringify(result.text);
 
+          // Try to parse as JSON first
           const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-          if (!jsonMatch) {
-            throw new Error("No JSON found in agent response");
+          if (jsonMatch) {
+            // JSON format - parse normally
+            const parsed = JSON.parse(jsonMatch[0]);
+
+            researchOutput = {
+              title: parsed.title || input.title,
+              segments:
+                parsed.segments ||
+                parsed.keyPoints?.map(
+                  (
+                    kp: { title: string; description: string },
+                    index: number,
+                  ) => ({
+                    order: index + 1,
+                    sentence: kp.description || kp.title,
+                    keyContent: { concept: kp.title },
+                    links:
+                      parsed.sources?.map(
+                        (s: { url: string; title: string }) => ({
+                          url: s.url,
+                          key: s.title,
+                        }),
+                      ) || [],
+                  }),
+                ) ||
+                [],
+            };
+
+            researchOutput = ResearchOutputSchema.parse(researchOutput);
+          } else {
+            // Markdown format - convert to JSON using convertResearchMdToJson
+            researchOutput = convertResearchMdToJson(textContent);
+            researchOutput = ResearchOutputSchema.parse(researchOutput);
           }
-
-          const parsed = JSON.parse(jsonMatch[0]);
-
-          researchOutput = {
-            title: parsed.title || input.title,
-            segments:
-              parsed.segments ||
-              parsed.keyPoints?.map(
-                (
-                  kp: { title: string; description: string },
-                  index: number,
-                ) => ({
-                  order: index + 1,
-                  sentence: kp.description || kp.title,
-                  keyContent: { concept: kp.title },
-                  links:
-                    parsed.sources?.map(
-                      (s: { url: string; title: string }) => ({
-                        url: s.url,
-                        key: s.title,
-                      }),
-                    ) || [],
-                }),
-              ) ||
-              [],
-          };
-
-          researchOutput = ResearchOutputSchema.parse(researchOutput);
           break;
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
