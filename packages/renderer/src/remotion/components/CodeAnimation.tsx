@@ -7,34 +7,113 @@ import {
   spring,
 } from "remotion";
 
+/**
+ * Zoom/Pan keyframe for camera-style code animation.
+ * Defines scale and pan values at a specific frame.
+ */
+interface ZoomPanKeyframe {
+  frame: number;
+  scale: number;
+  panX: number;
+  panY: number;
+}
+
 interface CodeAnimationProps {
   code: string;
   highlightLines?: number[];
-  typewriterSpeed?: number;
-  scrollSpeed?: number;
+  typewriterSpeed?: number; // Will be overridden by dynamic calculation if sceneDuration provided
   showLineNumbers?: boolean;
   title?: string;
+  sceneDuration?: number; // For dynamic typewriter speed calculation (in seconds)
+  zoomPanKeyframes?: ZoomPanKeyframe[]; // Camera zoom/pan data
 }
+
+/**
+ * Calculate typewriter speed dynamically based on code length and scene duration.
+ * Ensures all code is revealed within scene bounds with 20% buffer for settling.
+ * Per D-08: Speed = chars per frame, minimum 1
+ *
+ * @param codeLength - Total characters in code
+ * @param sceneDurationFrames - Scene duration in frames
+ * @returns Characters to reveal per frame
+ */
+const calculateTypewriterSpeed = (
+  codeLength: number,
+  sceneDurationFrames: number,
+): number => {
+  // Reserve 20% of scene for settling/pause after reveal
+  const effectiveFrames = sceneDurationFrames * 0.8;
+  // Speed = chars per frame, minimum 1
+  return Math.max(1, Math.ceil(codeLength / effectiveFrames));
+};
 
 export const CodeAnimation: React.FC<CodeAnimationProps> = ({
   code,
   highlightLines = [],
-  typewriterSpeed = 2,
-  scrollSpeed = 1,
+  typewriterSpeed: fixedSpeed,
   showLineNumbers = true,
   title,
+  sceneDuration,
+  zoomPanKeyframes = [], // Default: no zoom/pan
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
   const lines = code.split("\n");
   const totalChars = code.length;
 
+  // Calculate dynamic speed if sceneDuration provided, else use fixed
+  const sceneFrames = sceneDuration
+    ? Math.ceil(sceneDuration * fps)
+    : durationInFrames;
+  const speed = fixedSpeed || calculateTypewriterSpeed(totalChars, sceneFrames);
+
+  // Zoom/pan interpolation with defaults
+  const defaultScale = 1.0;
+  const defaultPanX = 0;
+  const defaultPanY = 0;
+
+  // Interpolate scale from keyframes
+  const scale =
+    zoomPanKeyframes.length > 0
+      ? interpolate(
+          frame,
+          zoomPanKeyframes.map((k) => k.frame),
+          zoomPanKeyframes.map((k) => k.scale),
+          { extrapolateRight: "clamp", extrapolateLeft: "clamp" },
+        )
+      : defaultScale;
+
+  // Interpolate panX from keyframes
+  const panX =
+    zoomPanKeyframes.length > 0
+      ? interpolate(
+          frame,
+          zoomPanKeyframes.map((k) => k.frame),
+          zoomPanKeyframes.map((k) => k.panX),
+          { extrapolateRight: "clamp", extrapolateLeft: "clamp" },
+        )
+      : defaultPanX;
+
+  // Interpolate panY from keyframes
+  const panY =
+    zoomPanKeyframes.length > 0
+      ? interpolate(
+          frame,
+          zoomPanKeyframes.map((k) => k.frame),
+          zoomPanKeyframes.map((k) => k.panY),
+          { extrapolateRight: "clamp", extrapolateLeft: "clamp" },
+        )
+      : defaultPanY;
+
   const charsRevealed = Math.floor(
-    interpolate(frame, [0, totalChars * typewriterSpeed], [0, totalChars], {
+    interpolate(frame, [0, totalChars * speed], [0, totalChars], {
       extrapolateRight: "clamp",
     }),
   );
+
+  // Track if code is fully revealed for delayed highlighting (D-10)
+  const isCodeFullyRevealed = charsRevealed >= totalChars;
 
   const getVisibleCode = () => {
     let charCount = 0;
@@ -67,13 +146,6 @@ export const CodeAnimation: React.FC<CodeAnimationProps> = ({
 
   const visibleLines = getVisibleCode();
 
-  const scrollY = interpolate(
-    frame,
-    [0, lines.length * scrollSpeed * fps * 0.5],
-    [0, Math.max(0, (lines.length - 15) * 28)],
-    { extrapolateRight: "clamp" },
-  );
-
   const containerStyle: React.CSSProperties = {
     backgroundColor: "#1e1e1e",
     fontFamily: "'Fira Code', 'Monaco', 'Consolas', monospace",
@@ -87,9 +159,12 @@ export const CodeAnimation: React.FC<CodeAnimationProps> = ({
     position: "relative",
   };
 
+  // Camera zoom/pan transform using Remotion interpolate (no CSS transition)
+  // Per D-09: zoom/pan creates camera-style effect
   const codeContainerStyle: React.CSSProperties = {
-    transform: `translateY(-${scrollY}px)`,
-    transition: "transform 0.1s ease-out",
+    transform: `scale(${scale}) translate(${panX}px, ${panY}px)`,
+    // NOTE: Spring animations may need 30-frame settling buffer for final render
+    // Parent component should extend scene duration by 30 frames if needed (D-11)
   };
 
   const lineStyle = (isHighlighted: boolean): React.CSSProperties => ({
@@ -135,17 +210,22 @@ export const CodeAnimation: React.FC<CodeAnimationProps> = ({
       {title && <div style={titleStyle}>{title}</div>}
       <div style={codeContainerStyle}>
         {visibleLines.map(({ line, visibleChars, index }) => {
-          const isHighlighted = highlightLines.includes(index + 1);
+          // Per D-10: Line highlighting is delayed until after code fully reveals
+          const isHighlighted =
+            isCodeFullyRevealed && highlightLines.includes(index + 1);
           const lineNumber = index + 1;
 
-          const highlightSpring = spring({
-            frame: frame - index * typewriterSpeed,
-            fps,
-            config: {
-              damping: 12,
-              stiffness: 200,
-            },
-          });
+          // Highlight spring only triggers after full reveal (D-10)
+          const highlightSpring = isHighlighted
+            ? spring({
+                frame: frame - totalChars * speed, // Delay until after reveal
+                fps,
+                config: {
+                  damping: 100,
+                  stiffness: 200,
+                },
+              })
+            : 0;
 
           const highlightScale = isHighlighted
             ? interpolate(highlightSpring, [0, 1], [0.98, 1])
@@ -195,3 +275,6 @@ export const CodeAnimation: React.FC<CodeAnimationProps> = ({
     </AbsoluteFill>
   );
 };
+
+// Export ZoomPanKeyframe type for external use
+export type { ZoomPanKeyframe };
