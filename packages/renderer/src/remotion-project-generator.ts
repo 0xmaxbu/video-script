@@ -61,12 +61,16 @@ const GenerateProjectInputSchema = z.object({
   }),
   screenshotResources: z.record(z.string(), z.string()),
   outputPath: z.string().min(1),
+  width: z.number().int().positive().default(1920),
+  height: z.number().int().positive().default(1080),
 });
 
 export interface GenerateProjectInput {
   script: ScriptOutput;
   screenshotResources: Record<string, string>;
   outputPath: string;
+  width?: number;
+  height?: number;
 }
 
 export interface GenerateProjectOutput {
