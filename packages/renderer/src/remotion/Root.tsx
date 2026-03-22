@@ -1,8 +1,17 @@
 import React from "react";
 import { Composition } from "remotion";
+import { registerConfiguration } from "@remotion/cli/config";
 import { z } from "zod";
 import { VideoComposition } from "./Composition.js";
 import { ScriptOutputSchema } from "../types.js";
+
+// Configure default video settings
+registerConfiguration({
+  video: {
+    width: 1920,
+    height: 1080,
+  },
+});
 
 const compositionSchema = z.object({
   script: ScriptOutputSchema,
