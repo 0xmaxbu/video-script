@@ -1,11 +1,13 @@
 import React from "react";
 import {
-  AbsoluteFill,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
   spring,
 } from "remotion";
+import { Grid } from "./Grid.js";
+import { FrostedCard } from "./FrostedCard.js";
+import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -35,14 +37,7 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
   });
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: "#1e1e1e",
-        display: "flex",
-        flexDirection: "column",
-        padding: "3rem",
-      }}
-    >
+    <Grid style={{ backgroundColor: "#1e1e1e" }}>
       {/* 标题 */}
       {titleElement && (
         <div
@@ -54,7 +49,7 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
         >
           <h1
             style={{
-              fontSize: "2.5rem",
+              fontSize: TYPOGRAPHY.title.section,
               fontWeight: "bold",
               color: "white",
               margin: 0,
@@ -65,7 +60,7 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
           {subtitleElement && (
             <p
               style={{
-                fontSize: "1.25rem",
+                fontSize: TYPOGRAPHY.body.primary,
                 color: "rgba(255,255,255,0.7)",
                 marginTop: "0.5rem",
               }}
@@ -76,12 +71,14 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
         </div>
       )}
 
-      {/* 代码区域 - 实际代码由 Annotation 层渲染 */}
-      <div
+      {/* 代码区域 - 使用 FrostedCard 包装 */}
+      <FrostedCard
+        opacity={0.05}
+        blur={20}
+        radius={24}
         style={{
           flex: 1,
           backgroundColor: "#0d0d0d",
-          borderRadius: "0.75rem",
           padding: "2rem",
           opacity: codeProgress,
           transform: `scale(${interpolate(codeProgress, [0, 1], [0.95, 1])})`,
@@ -93,14 +90,14 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
         <div
           style={{
             fontFamily: "'Fira Code', monospace",
-            fontSize: "1.1rem",
+            fontSize: TYPOGRAPHY.body.caption,
             color: "#d4d4d4",
             lineHeight: 1.6,
           }}
         >
           {/* 代码内容将由 Screenshot 或 Annotation 组件渲染 */}
         </div>
-      </div>
-    </AbsoluteFill>
+      </FrostedCard>
+    </Grid>
   );
 };

@@ -8,6 +8,14 @@ import {
   spring,
 } from "remotion";
 import type { LayoutProps } from "./index.js";
+import { Grid } from "./Grid.js";
+import { FrostedCard } from "./FrostedCard.js";
+import {
+  GRID_CONSTANTS,
+  TYPOGRAPHY,
+  getGridColumnPx,
+  getGridSpanPx,
+} from "./grid-utils.js";
 
 /**
  * Split Horizontal Layout
@@ -51,73 +59,100 @@ export const SplitHorizontal: React.FC<LayoutProps> = ({
     config: { damping: 100, stiffness: 200 },
   });
 
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a", display: "flex" }}>
-      {/* 左侧 */}
-      <div
-        style={{
-          width: "50%",
-          height: "100%",
-          opacity: leftProgress,
-          transform: `translateX(${interpolate(leftProgress, [0, 1], [-50, 0])}px)`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}
-      >
-        {primaryScreenshot && (
-          <Img
-            src={primaryScreenshot}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-              borderRadius: "0.5rem",
-            }}
-          />
-        )}
-      </div>
+  // Grid positioning for 50/50 split (6 columns each)
+  const leftCardWidth = getGridSpanPx(6);
+  const rightCardWidth = getGridSpanPx(6);
+  const leftCardLeft = getGridColumnPx(1);
+  const rightCardLeft = getGridColumnPx(7);
+  const cardTop = 0;
+  const cardHeight =
+    GRID_CONSTANTS.height -
+    GRID_CONSTANTS.safeZone.top -
+    GRID_CONSTANTS.safeZone.bottom;
 
-      {/* 右侧 */}
-      <div
-        style={{
-          width: "50%",
-          height: "100%",
-          opacity: rightProgress,
-          transform: `translateX(${interpolate(rightProgress, [0, 1], [50, 0])}px)`,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "2rem",
-        }}
-      >
-        {secondaryScreenshot && (
-          <Img
-            src={secondaryScreenshot}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "60%",
-              objectFit: "contain",
-              borderRadius: "0.5rem",
-            }}
-          />
-        )}
-        {titleElement && (
-          <h2
-            style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              color: "white",
-              marginTop: "1rem",
-              textAlign: "center",
-            }}
-          >
-            {titleElement.content}
-          </h2>
-        )}
-      </div>
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+      <Grid>
+        {/* 左侧 FrostedCard */}
+        <FrostedCard
+          style={{
+            position: "absolute",
+            left: leftCardLeft,
+            top: cardTop,
+            width: leftCardWidth,
+            height: cardHeight,
+            opacity: leftProgress,
+            transform: `translateX(${interpolate(
+              leftProgress,
+              [0, 1],
+              [-50, 0],
+            )}px)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem",
+          }}
+        >
+          {primaryScreenshot && (
+            <Img
+              src={primaryScreenshot}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+                borderRadius: "0.5rem",
+              }}
+            />
+          )}
+        </FrostedCard>
+
+        {/* 右侧 FrostedCard */}
+        <FrostedCard
+          style={{
+            position: "absolute",
+            left: rightCardLeft,
+            top: cardTop,
+            width: rightCardWidth,
+            height: cardHeight,
+            opacity: rightProgress,
+            transform: `translateX(${interpolate(
+              rightProgress,
+              [0, 1],
+              [50, 0],
+            )}px)`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "2rem",
+          }}
+        >
+          {secondaryScreenshot && (
+            <Img
+              src={secondaryScreenshot}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "60%",
+                objectFit: "contain",
+                borderRadius: "0.5rem",
+              }}
+            />
+          )}
+          {titleElement && (
+            <h2
+              style={{
+                fontSize: TYPOGRAPHY.title.card,
+                fontWeight: "bold",
+                color: "white",
+                marginTop: "1rem",
+                textAlign: "center",
+              }}
+            >
+              {titleElement.content}
+            </h2>
+          )}
+        </FrostedCard>
+      </Grid>
     </AbsoluteFill>
   );
 };

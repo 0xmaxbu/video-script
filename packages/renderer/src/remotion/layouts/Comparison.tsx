@@ -1,12 +1,13 @@
 import React from "react";
 import {
-  AbsoluteFill,
   Img,
   useCurrentFrame,
   useVideoConfig,
-  interpolate,
   spring,
 } from "remotion";
+import { Grid } from "./Grid.js";
+import { FrostedCard } from "./FrostedCard.js";
+import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -35,25 +36,26 @@ export const Comparison: React.FC<LayoutProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
+  const leftSrc = resources[0] ? screenshots.get(resources[0].id) : undefined;
+  const rightSrc = resources[1] ? screenshots.get(resources[1].id) : undefined;
+
   return (
-    <AbsoluteFill
-      style={{ backgroundColor: "#0a0a0a", display: "flex", flexDirection: "column" }}
-    >
+    <Grid style={{ backgroundColor: "#0a0a0a" }}>
       {/* 标题 */}
       {titleElement && (
         <div
           style={{
-            padding: "2rem 4rem",
+            paddingBottom: "1.5rem",
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "white", margin: 0 }}>
+          <h1 style={{ fontSize: TYPOGRAPHY.title.section, fontWeight: "bold", color: "white", margin: 0 }}>
             {titleElement.content}
           </h1>
         </div>
       )}
 
-      {/* 对比区域 */}
+      {/* 对比区域 - 使用 Grid 定位 */}
       <div
         style={{
           flex: 1,
@@ -61,51 +63,63 @@ export const Comparison: React.FC<LayoutProps> = ({
           alignItems: "center",
           justifyContent: "center",
           gap: "2rem",
-          padding: "2rem",
         }}
       >
         {/* 左侧 - Before */}
-        {resources[0] && screenshots.get(resources[0].id) && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.6)", marginBottom: "0.5rem" }}>
+        {leftSrc && (
+          <FrostedCard
+            opacity={0.1}
+            blur={20}
+            radius={24}
+            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "1.5rem" }}
+          >
+            <span style={{ fontSize: TYPOGRAPHY.body.secondary, color: "rgba(255,255,255,0.6)", marginBottom: "0.75rem" }}>
               Before
             </span>
             <Img
-              src={screenshots.get(resources[0].id)}
+              src={leftSrc}
               style={{ maxWidth: "100%", maxHeight: "400px", objectFit: "contain", borderRadius: "0.5rem" }}
             />
-          </div>
+          </FrostedCard>
         )}
 
         {/* VS */}
-        <div
+        <FrostedCard
+          opacity={0.3}
+          blur={25}
+          radius={32}
           style={{
-            fontSize: "2rem",
-            fontWeight: "bold",
-            color: "white",
-            backgroundColor: "#333",
-            padding: "0.75rem 1.5rem",
-            borderRadius: "0.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             opacity: vsProgress,
             transform: `scale(${vsProgress})`,
+            padding: "1rem 2rem",
           }}
         >
-          VS
-        </div>
+          <span style={{ fontSize: TYPOGRAPHY.title.section, fontWeight: "bold", color: "white" }}>
+            VS
+          </span>
+        </FrostedCard>
 
         {/* 右侧 - After */}
-        {resources[1] && screenshots.get(resources[1].id) && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ fontSize: "1rem", color: "rgba(255,255,255,0.6)", marginBottom: "0.5rem" }}>
+        {rightSrc && (
+          <FrostedCard
+            opacity={0.1}
+            blur={20}
+            radius={24}
+            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "1.5rem" }}
+          >
+            <span style={{ fontSize: TYPOGRAPHY.body.secondary, color: "rgba(255,255,255,0.6)", marginBottom: "0.75rem" }}>
               After
             </span>
             <Img
-              src={screenshots.get(resources[1].id)}
+              src={rightSrc}
               style={{ maxWidth: "100%", maxHeight: "400px", objectFit: "contain", borderRadius: "0.5rem" }}
             />
-          </div>
+          </FrostedCard>
         )}
       </div>
-    </AbsoluteFill>
+    </Grid>
   );
 };
