@@ -48,20 +48,16 @@ describe("ResearchInputSchema", () => {
 });
 
 describe("ResearchOutputSchema", () => {
+  // Current schema uses segments format
   const valid = {
     title: "Research Title",
-    overview: "Overview text",
-    keyPoints: [{ title: "Key Point 1", description: "Description" }],
-    scenes: [
+    segments: [
       {
-        sceneTitle: "Intro",
-        duration: 10,
-        description: "Scene desc",
-        screenshotSubjects: ["subject"],
+        order: 1,
+        sentence: "A sentence",
+        keyContent: { concept: "test" },
+        links: [{ url: "https://example.com", key: "Source" }],
       },
-    ],
-    sources: [
-      { url: "https://example.com", title: "Source", keyContent: "Content" },
     ],
   };
 
@@ -69,13 +65,8 @@ describe("ResearchOutputSchema", () => {
     expect(ResearchOutputSchema.safeParse(valid).success).toBe(true);
   });
 
-  it("should require keyPoints array", () => {
-    const { keyPoints: _, ...without } = valid;
-    expect(ResearchOutputSchema.safeParse(without).success).toBe(false);
-  });
-
-  it("should require scenes array", () => {
-    const { scenes: _, ...without } = valid;
+  it("should require segments array", () => {
+    const { segments: _, ...without } = valid;
     expect(ResearchOutputSchema.safeParse(without).success).toBe(false);
   });
 });

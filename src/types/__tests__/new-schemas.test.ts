@@ -307,11 +307,20 @@ describe("SceneScriptSchema", () => {
     expect(SceneScriptSchema.safeParse(validScene).success).toBe(true);
   });
 
-  it("should reject invalid transition type", () => {
+  it("should accept flip transition type (newly added)", () => {
     expect(
       SceneScriptSchema.safeParse({
         ...validScene,
-        transition: { type: "flip" as any, duration: 0.5 },
+        transition: { type: "flip", duration: 0.5 },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should reject truly invalid transition type", () => {
+    expect(
+      SceneScriptSchema.safeParse({
+        ...validScene,
+        transition: { type: "spin" as any, duration: 0.5 },
       }).success,
     ).toBe(false);
   });

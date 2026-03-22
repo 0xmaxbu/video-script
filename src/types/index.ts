@@ -153,3 +153,116 @@ export function validateScriptOutput(input: unknown) {
 export function validateVisualLayer(input: unknown) {
   return VisualLayerSchema.safeParse(input);
 }
+
+// ============================================================================
+// 新架构类型 (Visual Architecture Redesign)
+// ============================================================================
+
+import {
+  // 信息重要性
+  InfoPriorityEnum,
+  type InfoPriority,
+
+  // 截图类型
+  ScreenshotTypeEnum,
+  type ScreenshotType,
+  ScreenshotResourceSchema,
+  type ScreenshotResource,
+
+  // 标注系统
+  AnnotationTypeEnum,
+  type AnnotationType,
+  AnnotationColorEnum,
+  type AnnotationColor,
+  AnnotationTargetSchema,
+  type AnnotationTarget,
+  AnnotationSchema,
+  type Annotation,
+  ANNOTATION_COLORS,
+  type AnnotationColorValue,
+
+  // 布局模板
+  LayoutTemplateEnum,
+  type LayoutTemplate,
+
+  // 动画预设
+  AnimationPresetEnum,
+  type AnimationPreset,
+
+  // 新的 Script 输出
+  NarrationSegmentSchema,
+  type NarrationSegment,
+  SceneHighlightSchema,
+  type SceneHighlight,
+  CodeHighlightSchema,
+  type CodeHighlight,
+  NewSceneSchema,
+  type NewScene,
+  NewScriptOutputSchema,
+  type NewScriptOutput,
+
+  // Visual Plan 输出
+  NarrationBindingSchema,
+  type NarrationBinding,
+  TextElementSchema,
+  type TextElement,
+  NarrationTimelineSchema,
+  type NarrationTimeline,
+  VisualSceneSchema,
+  type VisualScene,
+  VisualPlanSchema,
+  type VisualPlan,
+} from "./visual.js";
+
+// 重新导出
+export {
+  InfoPriorityEnum,
+  type InfoPriority,
+  ScreenshotTypeEnum,
+  type ScreenshotType,
+  ScreenshotResourceSchema,
+  type ScreenshotResource,
+  AnnotationTypeEnum,
+  type AnnotationType,
+  AnnotationColorEnum,
+  type AnnotationColor,
+  AnnotationTargetSchema,
+  type AnnotationTarget,
+  AnnotationSchema,
+  type Annotation,
+  ANNOTATION_COLORS,
+  type AnnotationColorValue,
+  LayoutTemplateEnum,
+  type LayoutTemplate,
+  AnimationPresetEnum,
+  type AnimationPreset,
+  NarrationSegmentSchema,
+  type NarrationSegment,
+  SceneHighlightSchema,
+  type SceneHighlight,
+  CodeHighlightSchema,
+  type CodeHighlight,
+  NewSceneSchema,
+  type NewScene,
+  NewScriptOutputSchema,
+  type NewScriptOutput,
+  NarrationBindingSchema,
+  type NarrationBinding,
+  TextElementSchema,
+  type TextElement,
+  NarrationTimelineSchema,
+  type NarrationTimeline,
+  VisualSceneSchema,
+  type VisualScene,
+  VisualPlanSchema,
+  type VisualPlan,
+};
+
+// 新的验证函数
+export function validateVisualPlan(input: unknown) {
+  return VisualPlanSchema.safeParse(input);
+}
+
+export function validateNewScriptOutput(input: unknown) {
+  return NewScriptOutputSchema.safeParse(input);
+}
