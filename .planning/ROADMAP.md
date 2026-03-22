@@ -100,7 +100,7 @@ Plans:
 | 3. Research & Content | 3/3 | ✅ Complete | 2026-03-22 |
 | 4. Transitions | 2/2 | ✅ Complete | 2026-03-22 |
 | 5. Composition | 3/3 | ✅ Complete | 2026-03-22 |
-| 6. Type Package + Schema | 0/? | Gap Closure | - |
+| 6. Type Package + Schema | 3/3 | Gap Closure | - |
 | 7. Wire Layouts | 0/? | Gap Closure | - |
 | 8. Verification Docs | 0/? | Gap Closure | - |
 
@@ -113,6 +113,12 @@ Plans:
 **Depends on**: Phase 5
 **Requirements**: VIS-01, VIS-02, VIS-03, RES-01, RES-03, SCR-01, SCR-02, COMP-01
 **Gap Closure:** Closes blocking gaps from v1.0 audit
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Create @video-script/types package with unified schemas
+- [ ] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
+- [ ] 06-03-PLAN.md — Verify type unification and compilation
 
 ### Phase 7: Wire Layouts to Composition
 **Goal:** Connect orphaned Phase 2 layouts (Grid, FrostedCard, 8 templates) to generated Scene.tsx
@@ -129,3 +135,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-03-22*
+*Last updated: 2026-03-23*
