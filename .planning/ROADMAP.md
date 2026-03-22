@@ -13,7 +13,7 @@ v1.0 established the core video generation pipeline. v1.1 focuses on elevating v
 ## Phases
 
 - [x] **Phase 1: Annotation Renderer** - SVG-based animated annotations
-- [ ] **Phase 2: Layout System** - Grid-based layouts with safe zones and frosted glass
+- [x] **Phase 2: Layout System** - Grid-based layouts with safe zones and frosted glass (completed 2026-03-22)
 - [ ] **Phase 3: Research & Content** - Deep content extraction and engaging scripts
 - [ ] **Phase 4: Transitions** - Scene transitions and text animations
 - [ ] **Phase 5: Composition** - Final polish and quality integration
@@ -50,9 +50,9 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Create Grid, FrostedCard, and grid-utils foundation
-- [ ] 02-02-PLAN.md — Refactor HeroFullscreen and SplitVertical layouts
-- [ ] 02-03-PLAN.md — Refactor SplitHorizontal and TextOverImage layouts
-- [ ] 02-04-PLAN.md — Refactor CodeFocus and Comparison layouts
+- [x] 02-02-PLAN.md — Refactor HeroFullscreen and SplitVertical layouts
+- [x] 02-03-PLAN.md — Refactor SplitHorizontal and TextOverImage layouts
+- [x] 02-04-PLAN.md — Refactor CodeFocus and Comparison layouts
 - [x] 02-05-PLAN.md — Refactor BulletList and Quote layouts
 
 ### Phase 3: Research & Content
@@ -91,7 +91,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
-| 2. Layout System | 2/5 | In Progress|  |
+| 2. Layout System | 5/5 | Complete   | 2026-03-22 |
 | 3. Research & Content | 0/4 | Not started | - |
 | 4. Transitions | 0/3 | Not started | - |
 | 5. Composition | 0/3 | Not started | - |
