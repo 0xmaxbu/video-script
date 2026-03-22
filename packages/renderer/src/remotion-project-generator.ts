@@ -316,8 +316,8 @@ export const RemotionRoot: React.FC = () => {
         component={VideoComposition as any}
         durationInFrames={Math.ceil(totalDuration * 30)}
         fps={30}
-        width={1920}
-        height={1080}
+        width={${validated.width}}
+        height={${validated.height}}
         schema={compositionSchema}
         defaultProps={{
           script,
