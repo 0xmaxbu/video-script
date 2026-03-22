@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { QualityScoreSchema, MINIMUM_QUALITY_THRESHOLD } from "../quality/quality-schemas.js";
+import { QualityScoreSchema, QualityScore, MINIMUM_QUALITY_THRESHOLD } from "../quality/quality-schemas.js";
 import { buildQualityPrompt } from "../quality/quality-prompt.js";
 
 export const qualityAgent = new Agent({
@@ -28,10 +28,10 @@ export function evaluateQualityAsync(
   const prompt = buildQualityPrompt(content);
 
   qualityAgent
-    .run(prompt)
-    .then((result) => {
+    .generate(prompt)
+    .then((result: { text: string }) => {
       try {
-        const parsed = JSON.parse(result.text());
+        const parsed = JSON.parse(result.text);
         const validated = QualityScoreSchema.parse(parsed);
 
         if (validated.qualityScore < MINIMUM_QUALITY_THRESHOLD) {
@@ -45,7 +45,7 @@ export function evaluateQualityAsync(
         onError?.(err instanceof Error ? err : new Error(String(err)));
       }
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       onError?.(err instanceof Error ? err : new Error(String(err)));
     });
 }
