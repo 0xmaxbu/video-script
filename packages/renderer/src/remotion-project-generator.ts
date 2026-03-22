@@ -297,6 +297,7 @@ const compositionSchema = z.object({
     ),
   }),
   images: z.record(z.string(), z.string()).optional(),
+  compositionId: z.enum(["Video", "VideoPortrait"]).optional(),
 });
 
 export const RemotionRoot: React.FC = () => {
@@ -313,6 +314,19 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+        schema={compositionSchema}
+        defaultProps={{
+          script,
+          images,
+        }}
+      />
+      <Composition
+        id="VideoPortrait"
+        component={VideoComposition as any}
+        durationInFrames={Math.ceil(totalDuration * 30)}
+        fps={30}
+        width={1080}
+        height={1920}
         schema={compositionSchema}
         defaultProps={{
           script,
