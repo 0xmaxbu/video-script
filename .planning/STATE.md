@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 03 context gathered
-last_updated: "2026-03-22T11:19:50.723Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-22T11:50:28.685Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Polished technical tutorial videos that feel professional and engaging
-**Current focus:** Phase 02 — layout-system
+**Current focus:** Phase 03 — research-content
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 03 (research-content) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -66,6 +66,10 @@ From research (2026-03-22):
 - [Phase phase-2]: CodeFocus: FrostedCard wraps code area with 0.05 opacity for dark theme; title 60pt, code text 16pt caption
 - [Phase phase-2]: Comparison: Before/After panels use FrostedCards (0.1 opacity); VS badge centered in FrostedCard at 60pt for maximum visual impact
 - [Phase 02]: HeroFullscreen and SplitVertical refactored to use Grid + FrostedCard with 80pt/60pt typography
+- [Phase phase-3]: Replace regex-based htmlToMarkdown with Turndown + Readability for proper article extraction
+- [Phase phase-3]: Use linkedom to provide DOM parsing required by Readability in Node.js environment
+- [Phase phase-3]: Add relationship tags (原因/对比/示例/注意事项) to research segments per D-02
+- [Phase phase-3]: Create input-validator.ts with word count, placeholder, and HTML structure checks per D-10
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:19:50.720Z
-Stopped at: Phase 03 context gathered
-Resume file: .planning/phases/03-research-content/03-CONTEXT.md
+Last session: 2026-03-22T11:50:22.378Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

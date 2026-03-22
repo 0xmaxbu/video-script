@@ -7,8 +7,8 @@
 
 ### Research Quality
 
-- [ ] **RES-01**: Research agent performs deep content analysis — not placeholder links
-- [ ] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
+- [x] **RES-01**: Research agent performs deep content analysis — not placeholder links
+- [x] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
 - [ ] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
 
 ### Visual Annotations
@@ -67,8 +67,8 @@
 | VIS-05 | Phase 2 | Complete |
 | VIS-06 | Phase 2 | Complete |
 | VIS-07 | Phase 2 | Complete |
-| RES-01 | Phase 3 | Pending |
-| RES-02 | Phase 3 | Pending |
+| RES-01 | Phase 3 | Complete |
+| RES-02 | Phase 3 | Complete |
 | RES-03 | Phase 3 | Pending |
 | SCR-01 | Phase 3 | Pending |
 | SCR-02 | Phase 3 | Pending |

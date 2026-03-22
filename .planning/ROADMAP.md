@@ -67,7 +67,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Upgrade web-fetch with Turndown + Readability, add input validation, update research schema
+- [x] 03-01-PLAN.md — Upgrade web-fetch with Turndown + Readability, add input validation, update research schema
 - [ ] 03-02-PLAN.md — Create quality evaluation agent (non-blocking)
 - [ ] 03-03-PLAN.md — Update research agent with relationship tags, update script agent for depth
 
