@@ -102,7 +102,7 @@ Plans:
 | 5. Composition | 3/3 | Complete | 2026-03-22 |
 | 6. Type Package + Schema | 3/3 | Complete | 2026-03-23 |
 | 7. Wire Layouts | 2/2 | Complete | 2026-03-23 |
-| 8. Verification Docs | 2/3 | In Progress|  |
+| 8. Verification Docs | 3/3 | Complete   | 2026-03-23 |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -136,12 +136,12 @@ Plans:
 **Depends on**: Phase 7
 **Requirements**: (documentation + cleanup)
 **Gap Closure:** Closes nice-to-have gaps from v1.0 audit
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 08-01-PLAN.md — Create Phase 1 verification and UAT documentation
 - [x] 08-02-PLAN.md — Create Phase 4 verification and UAT documentation
-- [ ] 08-03-PLAN.md — Remove dead exports from renderer index.ts
+- [x] 08-03-PLAN.md — Remove dead exports from renderer index.ts
 
 ---
 
