@@ -19,10 +19,10 @@
 
 ### Layout System
 
-- [ ] **VIS-04**: Grid-based layout system with safe zones (12-column)
-- [ ] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
-- [ ] **VIS-06**: PPT-style visual hierarchy (headlines 72pt+, body 18-24pt)
-- [ ] **VIS-07**: Frosted glass cards with backdrop-filter effects
+- [x] **VIS-04**: Grid-based layout system with safe zones (12-column)
+- [x] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
+- [x] **VIS-06**: PPT-style visual hierarchy (headlines 72pt+, body 18-24pt)
+- [x] **VIS-07**: Frosted glass cards with backdrop-filter effects
 
 ### Animation Transitions
 
@@ -63,10 +63,10 @@
 | VIS-01 | Phase 6 | Complete |
 | VIS-02 | Phase 6 | Complete |
 | VIS-03 | Phase 6 | Complete |
-| VIS-04 | Phase 7 | Pending |
-| VIS-05 | Phase 7 | Pending |
-| VIS-06 | Phase 7 | Pending |
-| VIS-07 | Phase 7 | Pending |
+| VIS-04 | Phase 7 | Complete |
+| VIS-05 | Phase 7 | Complete |
+| VIS-06 | Phase 7 | Complete |
+| VIS-07 | Phase 7 | Complete |
 | RES-01 | Phase 6 | Complete |
 | RES-02 | Phase 3 | Complete |
 | RES-03 | Phase 6 | Complete |
