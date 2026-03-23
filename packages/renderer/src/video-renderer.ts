@@ -39,10 +39,16 @@ async function spawnRenderProcess(
     "remotion-cli.js",
   );
 
+  const entryPoint = join(
+    process.cwd(),
+    "packages/renderer",
+    "src/remotion/Root.tsx",
+  );
+
   const args = [
     remotionCli,
     "render",
-    "src/remotion/Root.tsx", // Entry point is packages/renderer
+    entryPoint,
     compositionId,
     videoOutputPath,
     "--props",
