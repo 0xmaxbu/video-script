@@ -118,6 +118,7 @@ Plans:
 | 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
 | 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
 | 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
+| 11. Screenshot Quality   | TBD            | Planned  | -          |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -194,6 +195,19 @@ Plans:
 Plans:
 
 - [x] 10-01-PLAN.md — Wire Phase 2 layouts into render pipeline
+
+### Phase 11: Screenshot Quality
+
+**Goal:** Fix ORB blocking, improve CSS selectors, and capture more content-relevant screenshots
+**Depends on**: Phase 10
+**Requirements**: (deferred from Phase 10)
+**Gap Closure:** Closes screenshot quality gap from v1.0 audit
+
+- Issue: ORB blocks remote URLs in browser, preventing screenshot capture
+- Issue: CSS selectors are generic, not content-specific
+- Issue: Screenshots often miss the actual relevant content
+
+**Plans:** TBD
 
 ---
 
