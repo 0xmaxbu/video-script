@@ -8,7 +8,7 @@
 ### Research Quality
 
 - [x] **RES-01**: Research agent performs deep content analysis — not placeholder links
-- [ ] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
+- [x] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
 - [x] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
 
 ### Visual Annotations
@@ -19,10 +19,10 @@
 
 ### Layout System
 
-- [ ] **VIS-04**: Grid-based layout system with safe zones (12-column)
-- [ ] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
-- [ ] **VIS-06**: PPT-style visual hierarchy (headlines 72pt+, body 18-24pt)
-- [ ] **VIS-07**: Frosted glass cards with backdrop-filter effects
+- [x] **VIS-04**: Grid-based layout system with safe zones (12-column)
+- [x] **VIS-05**: Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
+- [x] **VIS-06**: PPT-style visual hierarchy (headlines 72pt+, body 18-24pt)
+- [x] **VIS-07**: Frosted glass cards with backdrop-filter effects
 
 ### Animation Transitions
 
@@ -49,41 +49,43 @@
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Audio narration/voice-over | Future phase — needs voice synthesis |
-| Interactive/branching video | Linear video only for now |
-| Batch processing multiple topics | Single video at a time |
-| 3D transforms or drawing animations | Over-engineering, avoid |
+| Feature                             | Reason                               |
+| ----------------------------------- | ------------------------------------ |
+| Audio narration/voice-over          | Future phase — needs voice synthesis |
+| Interactive/branching video         | Linear video only for now            |
+| Batch processing multiple topics    | Single video at a time               |
+| 3D transforms or drawing animations | Over-engineering, avoid              |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| VIS-01 | Phase 6 | Complete |
-| VIS-02 | Phase 6 | Complete |
-| VIS-03 | Phase 6 | Complete |
-| VIS-04 | Phase 10 | Pending |
-| VIS-05 | Phase 10 | Pending |
-| VIS-06 | Phase 10 | Pending |
-| VIS-07 | Phase 10 | Pending |
-| RES-01 | Phase 9 | Complete |
-| RES-02 | Phase 3 | Complete |
-| RES-03 | Phase 9 | Complete |
-| SCR-01 | Phase 9 | Complete |
-| SCR-02 | Phase 9 | Complete |
-| VIS-08 | Phase 4 | Complete |
-| VIS-09 | Phase 4 | Complete |
-| VIS-10 | Phase 4 | Complete |
-| COMP-01 | Phase 6 | Complete |
-| COMP-02 | Phase 5 | Complete |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| VIS-01      | Phase 6  | Complete |
+| VIS-02      | Phase 6  | Complete |
+| VIS-03      | Phase 6  | Complete |
+| VIS-04      | Phase 12 | Complete |
+| VIS-05      | Phase 12 | Complete |
+| VIS-06      | Phase 12 | Complete |
+| VIS-07      | Phase 12 | Complete |
+| RES-01      | Phase 9  | Complete |
+| RES-02      | Phase 3  | Complete |
+| RES-03      | Phase 9  | Complete |
+| SCR-01      | Phase 9  | Complete |
+| SCR-02      | Phase 9  | Complete |
+| VIS-08      | Phase 4  | Complete |
+| VIS-09      | Phase 4  | Complete |
+| VIS-10      | Phase 4  | Complete |
+| COMP-01     | Phase 6  | Complete |
+| COMP-02     | Phase 5  | Complete |
 
 **Coverage:**
+
 - v1 requirements: 16 total
 - Mapped to phases: 16
 - Unmapped: 0
-- Gap closure: 9 requirements in phases 6-7
+- Gap closure: 13 requirements in phases 6-12
 
 ---
-*Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after v1.1 roadmap creation*
+
+_Requirements defined: 2026-03-22_
+_Last updated: 2026-03-22 after v1.1 roadmap creation_

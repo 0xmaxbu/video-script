@@ -106,20 +106,21 @@ Plans:
 
 ## Progress
 
-| Phase                    | Plans Complete | Status   | Completed  |
-| ------------------------ | -------------- | -------- | ---------- |
-| 1. Annotation Renderer   | 4/4            | Complete | 2026-03-22 |
-| 2. Layout System         | 5/5            | Complete | 2026-03-22 |
-| 3. Research & Content    | 3/3            | Complete | 2026-03-22 |
-| 4. Transitions           | 2/2            | Complete | 2026-03-22 |
-| 5. Composition           | 3/3            | Complete | 2026-03-22 |
-| 6. Type Package + Schema | 3/3            | Complete | 2026-03-23 |
-| 7. Wire Layouts          | 2/2            | Complete | 2026-03-23 |
-| 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
-| 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
-| 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
-| 11. Screenshot Quality   | 0/3            | Planned  | -          |
-| 12. Fix Layout Rendering | 1/2 | In Progress|  |
+| Phase                    | Plans Complete | Status      | Completed  |
+| ------------------------ | -------------- | ----------- | ---------- |
+| 1. Annotation Renderer   | 4/4            | Complete    | 2026-03-22 |
+| 2. Layout System         | 5/5            | Complete    | 2026-03-22 |
+| 3. Research & Content    | 3/3            | Complete    | 2026-03-22 |
+| 4. Transitions           | 2/2            | Complete    | 2026-03-22 |
+| 5. Composition           | 3/3            | Complete    | 2026-03-22 |
+| 6. Type Package + Schema | 3/3            | Complete    | 2026-03-23 |
+| 7. Wire Layouts          | 2/2            | Complete    | 2026-03-23 |
+| 8. Verification Docs     | 3/3            | Complete    | 2026-03-23 |
+| 9. Fix Types + Adapter   | 2/2            | Complete    | 2026-03-23 |
+| 10. Wire Layouts to Comp | 1/1            | Complete    | 2026-03-23 |
+| 11. Screenshot Quality   | 3/3            | Complete    | 2026-03-23 |
+| 12. Fix Layout Rendering | 2/2            | Complete    | 2026-03-23 |
+| 13. Fix Issues + Tests   | 0/3            | In Progress | -          |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -175,12 +176,12 @@ Plans:
 
 - Issue: @video-script/types not in renderer node_modules
 - Issue: visualLayers empty — highlights/codeHighlights never converted to visualLayers
-  **Plans:** 1/2 plans executed
+  **Plans:** 2/2 plans executed
 
 Plans:
 
 - [x] 09-01-PLAN.md — Create scene-adapter.ts + add @video-script/types to renderer deps
-- [ ] 09-02-PLAN.md — Wire adapter into compose CLI step + E2E verification
+- [x] 09-02-PLAN.md — Wire adapter into compose CLI step + E2E verification
 
 ### Phase 10: Wire Phase 2 Layouts into Composition
 
@@ -212,9 +213,9 @@ Plans:
 
 Plans:
 
-- [ ] 11-01-PLAN.md — AI-guided selector generation
-- [ ] 11-02-PLAN.md — Intelligent retry with AI refinement + ORB mitigation
-- [ ] 11-03-PLAN.md — Content-type-specific screenshot strategies
+- [x] 11-01-PLAN.md — AI-guided selector generation
+- [x] 11-02-PLAN.md — Intelligent retry with AI refinement + ORB mitigation
+- [x] 11-03-PLAN.md — Content-type-specific screenshot strategies
 
 ### Phase 12: Fix Layout Rendering
 
@@ -228,10 +229,10 @@ Plans:
 - Issue: All layouts aligned to top instead of proper content positioning
 - Issue: Layout components ignore visualLayers data
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 
 - [x] 12-01-PLAN.md — Fix FrostedCard z-index and SplitVertical flexbox centering (VIS-04, VIS-05)
-- [ ] 12-02-PLAN.md — Fix visualLayer content mapping in layouts (VIS-06, VIS-07)
+- [x] 12-02-PLAN.md — Fix visualLayer content mapping in layouts (VIS-06, VIS-07)
 
 _Roadmap created: 2026-03-22_
 _Last updated: 2026-03-23_
