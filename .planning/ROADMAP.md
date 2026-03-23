@@ -118,7 +118,7 @@ Plans:
 | 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
 | 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
 | 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
-| 11. Screenshot Quality   | TBD            | Planned  | -          |
+| 11. Screenshot Quality   | 0/3            | Planned  | -          |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -207,7 +207,13 @@ Plans:
 - Issue: CSS selectors are generic, not content-specific
 - Issue: Screenshots often miss the actual relevant content
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 11-01-PLAN.md — AI-guided selector generation
+- [ ] 11-02-PLAN.md — Intelligent retry with AI refinement + ORB mitigation
+- [ ] 11-03-PLAN.md — Content-type-specific screenshot strategies
 
 ---
 
