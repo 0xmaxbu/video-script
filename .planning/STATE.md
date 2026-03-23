@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v1.2
+milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-23T14:39:31.321Z"
+stopped_at: Phase 14 context gathered
+last_updated: "2026-03-23T16:34:15.920Z"
 progress:
-  total_phases: 12
+  total_phases: 16
   completed_phases: 12
   total_plans: 33
   completed_plans: 35
@@ -120,6 +120,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T12:57:34.851Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-fix-layout-rendering/12-CONTEXT.md
+Last session: 2026-03-23T16:34:15.906Z
+Stopped at: Phase 14 context gathered
+Resume file: .planning/phases/14-animation-engine/14-CONTEXT.md
