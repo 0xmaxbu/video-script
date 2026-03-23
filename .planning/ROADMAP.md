@@ -150,10 +150,10 @@ Plans:
 **Gap Closure:** Closes blocking gaps from v1.0 audit
 - Issue: @video-script/types not in renderer node_modules
 - Issue: visualLayers empty — highlights/codeHighlights never converted to visualLayers
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 09-01-PLAN.md — Create scene-adapter.ts + add @video-script/types to renderer deps
+- [x] 09-01-PLAN.md — Create scene-adapter.ts + add @video-script/types to renderer deps
 - [ ] 09-02-PLAN.md — Wire adapter into compose CLI step + E2E verification
 
 ### Phase 10: Wire Phase 2 Layouts into Composition

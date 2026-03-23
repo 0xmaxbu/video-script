@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-23T04:25:02.727Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-23T07:25:24.378Z"
 progress:
-  total_phases: 8
+  total_phases: 10
   completed_phases: 8
-  total_plans: 25
-  completed_plans: 27
+  total_plans: 27
+  completed_plans: 28
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Polished technical tutorial videos that feel professional and engaging
-**Current focus:** Phase 08 — verification-cleanup
+**Current focus:** Phase 09 — types-schema-fix
 
 ## Current Position
 
-Phase: 08
-Plan: Not started
+Phase: 09 (types-schema-fix) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Plan: Not started
 | Phase 07-wire-layouts P01 | 3min | 1 tasks | 1 files |
 | Phase 07-wire-layouts P02 | 7min | 2 tasks | 2 files |
 | Phase 8 P1 | 2 | 2 tasks | 2 files |
+| Phase 09-types-schema-fix P01 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ From research (2026-03-22):
 - [Phase 07-wire-layouts]: D-01: Scene adapter converts SceneScript to VisualScene format for layout compatibility
 - [Phase 07-wire-layouts]: D-03: Scene.tsx routes to layout components when layoutTemplate is set, falls back to inline rendering
 - [Phase ?]: VERIFICATION.md format established: frontmatter (phase, verified, status, score, re_verification, gaps) + Observable Truths + Required Artifacts + Key Link Verification + Requirements Coverage + Anti-Patterns
+- [Phase 09-types-schema-fix]: Scene adapter: adaptScriptForRenderer returns title, totalDuration, and scenes for compose step compatibility
+- [Phase 09-types-schema-fix]: Scene adapter: visualLayers only populated when highlights/codeHighlights exist (preserves existing layers)
 
 ### Pending Todos
 
@@ -115,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T04:19:01.963Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-23T07:25:24.376Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

@@ -7,13 +7,13 @@
 
 ### Research Quality
 
-- [ ] **RES-01**: Research agent performs deep content analysis — not placeholder links
+- [x] **RES-01**: Research agent performs deep content analysis — not placeholder links
 - [ ] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
-- [ ] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
+- [x] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
 
 ### Visual Annotations
 
-- [ ] **VIS-01**: Annotation renderer component renders highlight, underline, circle, number effects
+- [x] **VIS-01**: Annotation renderer component renders highlight, underline, circle, number effects
 - [x] **VIS-02**: Annotations animate correctly using spring/interpolate
 - [x] **VIS-03**: Animation extrapolation properly clamped (no values beyond intended range)
 
@@ -32,8 +32,8 @@
 
 ### Content Quality
 
-- [ ] **SCR-01**: Script generates content with depth — thorough explanations
-- [ ] **SCR-02**: Scene narration is engaging, not generic summaries
+- [x] **SCR-01**: Script generates content with depth — thorough explanations
+- [x] **SCR-02**: Scene narration is engaging, not generic summaries
 
 ### Composition
 
@@ -67,11 +67,11 @@
 | VIS-05 | Phase 10 | Pending |
 | VIS-06 | Phase 10 | Pending |
 | VIS-07 | Phase 10 | Pending |
-| RES-01 | Phase 9 | Pending |
+| RES-01 | Phase 9 | Complete |
 | RES-02 | Phase 3 | Complete |
-| RES-03 | Phase 9 | Pending |
-| SCR-01 | Phase 9 | Pending |
-| SCR-02 | Phase 9 | Pending |
+| RES-03 | Phase 9 | Complete |
+| SCR-01 | Phase 9 | Complete |
+| SCR-02 | Phase 9 | Complete |
 | VIS-08 | Phase 4 | Complete |
 | VIS-09 | Phase 4 | Complete |
 | VIS-10 | Phase 4 | Complete |
