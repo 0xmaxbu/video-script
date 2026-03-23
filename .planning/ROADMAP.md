@@ -119,6 +119,7 @@ Plans:
 | 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
 | 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
 | 11. Screenshot Quality   | 0/3            | Planned  | -          |
+| 12. Fix Layout Rendering | 0/1            | Planned  | -          |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -214,6 +215,20 @@ Plans:
 - [ ] 11-01-PLAN.md — AI-guided selector generation
 - [ ] 11-02-PLAN.md — Intelligent retry with AI refinement + ORB mitigation
 - [ ] 11-03-PLAN.md — Content-type-specific screenshot strategies
+
+### Phase 12: Fix Layout Rendering
+
+**Goal:** Fix layout template rendering issues — layouts must show proper split, positioning, Z-index, and visual hierarchy
+**Depends on**: Phase 10
+**Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
+**Gap Closure:** Closes visual quality gap — layouts exist but render incorrectly
+
+- Issue: split-vertical shows text stacking at top, bottom content missing
+- Issue: Frosted glass Z-index above text causes text blur
+- Issue: All layouts aligned to top instead of proper content positioning
+- Issue: Layout components ignore visualLayers data
+
+**Plans:** 1 plan (TBD)
 
 ---
 
