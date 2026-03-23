@@ -34,6 +34,7 @@ import {
   workflowStateManager,
   generateRunId,
 } from "../utils/index.js";
+import { adaptScriptForRenderer } from "../utils/scene-adapter.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -848,6 +849,9 @@ program
         JSON.parse(scriptContent),
       );
 
+      // Phase 9: Adapt script to renderer format - convert highlights/codeHighlights to visualLayers
+      const adaptedScript = adaptScriptForRenderer(script);
+
       const screenshotResources: Record<string, string> = {};
       script.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
@@ -887,12 +891,9 @@ program
       const videoResult = await spawnRenderer(
         {
           script: {
-            title: script.title,
-            totalDuration: script.scenes.reduce(
-              (sum, s) => sum + s.duration,
-              0,
-            ),
-            scenes: script.scenes.map((scene) => ({
+            title: adaptedScript.title,
+            totalDuration: adaptedScript.totalDuration,
+            scenes: adaptedScript.scenes.map((scene) => ({
               id: scene.id,
               type: scene.type,
               title: scene.title,
