@@ -1,0 +1,22 @@
+{
+  "name": "@video-script/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types and zod schemas for video-script",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "zod": "^4.3.6"
+  },
+  "files": ["dist"]
+}
