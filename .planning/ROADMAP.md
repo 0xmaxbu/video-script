@@ -95,13 +95,13 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Annotation Renderer | 4/4 | ✅ Complete | 2026-03-22 |
-| 2. Layout System | 5/5 | ✅ Complete | 2026-03-22 |
-| 3. Research & Content | 3/3 | ✅ Complete | 2026-03-22 |
-| 4. Transitions | 2/2 | ✅ Complete | 2026-03-22 |
-| 5. Composition | 3/3 | ✅ Complete | 2026-03-22 |
-| 6. Type Package + Schema | 3/3 | Gap Closure | - |
-| 7. Wire Layouts | 0/? | Gap Closure | - |
+| 1. Annotation Renderer | 4/4 | Complete | 2026-03-22 |
+| 2. Layout System | 5/5 | Complete | 2026-03-22 |
+| 3. Research & Content | 3/3 | Complete | 2026-03-22 |
+| 4. Transitions | 2/2 | Complete | 2026-03-22 |
+| 5. Composition | 3/3 | Complete | 2026-03-22 |
+| 6. Type Package + Schema | 3/3 | Complete | 2026-03-23 |
+| 7. Wire Layouts | 0/2 | Ready | - |
 | 8. Verification Docs | 0/? | Gap Closure | - |
 
 **Coverage:** 16/16 v1 requirements mapped
@@ -118,13 +118,18 @@ Plans:
 Plans:
 - [x] 06-01-PLAN.md — Create @video-script/types package with unified schemas
 - [x] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
-- [ ] 06-03-PLAN.md — Verify type unification and compilation
+- [x] 06-03-PLAN.md — Verify type unification and compilation
 
 ### Phase 7: Wire Layouts to Composition
 **Goal:** Connect orphaned Phase 2 layouts (Grid, FrostedCard, 8 templates) to generated Scene.tsx
 **Depends on**: Phase 6
 **Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
 **Gap Closure:** Closes major integration gap — layouts created but never used
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Add layoutTemplate field to SceneScriptSchema
+- [ ] 07-02-PLAN.md — Create sceneAdapter and modify Scene.tsx for layout routing
 
 ### Phase 8: Verification Docs + Cleanup
 **Goal:** Document Phase 01 and 04 verification, remove orphaned exports
