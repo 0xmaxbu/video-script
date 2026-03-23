@@ -56,10 +56,10 @@ async function spawnRenderProcess(
     "--quiet",
   ];
 
-  // Run from packages/renderer directory (cwd = process.cwd())
+  // Run from packages/renderer directory
   const renderProcess = spawn(process.execPath, args, {
     stdio: ["pipe", "pipe", "pipe"],
-    cwd: process.cwd(),
+    cwd: join(process.cwd(), "packages/renderer"),
   });
 
   let stderrParts: string[] = [];
