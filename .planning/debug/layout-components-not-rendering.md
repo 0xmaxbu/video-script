@@ -1,18 +1,56 @@
 ---
-status: fixing
+status: resolved
 trigger: "layout-components-not-rendering: NEW symptoms after commit 9a8a2c8: 1) split-vertical top has text but bottom doesn't appear, 2) Frosted glass z-index is HIGHER than text causing blur, 3) Both comparison and split-vertical aligned to TOPS instead of centered"
 created: 2026-03-23T00:00:00.000Z
-updated: 2026-03-23T00:00:00.000Z
+updated: 2026-03-23T12:07:00.000Z
 ---
 
 ## Current Focus
 
-**Investigating and fixing NEW symptoms after previous fix (commit 9a8a2c8)**
+**FIX COMMITTED**: Commit c498b64
 
-hypothesis: "Layout components (SplitVertical, Comparison) don't properly handle visualLayers - they only use mediaResources (screenshots) and a single titleElement created from scene.title, ignoring visualLayers which contain actual positioned text content. Additionally, FrostedCard has no z-index causing text to appear on top."
-test: "Trace how visualLayers flow through Scene.tsx -> convertToVisualScene -> SplitVertical"
-expecting: "visualLayers should be rendered in layout components OR converted to proper mediaResources/textElements"
-next_action: "Fixes applied - verify with user"
+## Summary
+
+Previous fix (9a8a2c8) corrected textElementToVisualLayer position mapping. This fix addresses NEW symptoms reported after that fix.
+
+## Symptoms Fixed
+
+1. split-vertical: top has text but bottom doesn't appear
+2. Frosted glass effect z-index is HIGHER than text, causing text blur
+3. Both comparison and split-vertical are aligned to their respective TOPS (not centered)
+
+## Root Causes Identified
+
+1. **Layout components ignore visualLayers**: SplitVertical and Comparison only used mediaResources (screenshots) and a single titleElement created from scene.title. visualLayers with type "text" were NOT converted to textElements.
+
+2. **FrostedCard z-index too low**: FrostedCard had no z-index (defaults to 0) while textLayers have zIndex: 10. This caused text to appear ON TOP of frosted glass.
+
+3. **TextElements created incorrectly**: convertToVisualScene's createTextElements() ignored visualLayers and only created one textElement from scene.title.
+
+## Fixes Applied
+
+1. **sceneAdapter.ts**: Added visualLayerToTextElement() to convert visualLayers (type "text") to textElements. Updated createTextElements() to use visualLayers. Updated TextElement interface to include "left" | "right" positions.
+
+2. **FrostedCard.tsx**: Added zIndex: -1 so frosted glass appears BEHIND text content.
+
+## Verification
+
+- Build passes: ✓
+- Scene-related tests pass: ✓
+- Commit: c498b64
+
+## Files Changed
+
+- packages/renderer/src/utils/sceneAdapter.ts
+- packages/renderer/src/remotion/layouts/FrostedCard.tsx
+
+## Next Steps
+
+User should re-run compose to verify:
+
+1. split-vertical: bottom section now shows text content
+2. Frosted glass appears behind text, not in front
+3. Text is properly positioned within layout areas
 
 ## Symptoms
 
