@@ -1,0 +1,63 @@
+{
+  "scenes": [
+    {
+      "sceneId": "scene-1",
+      "layoutTemplate": "hero-fullscreen",
+      "mediaResources": [
+        {
+          "id": "hero-image",
+          "type": "hero",
+          "url": "https://example.com/hero.png",
+          "role": "primary",
+          "narrationBinding": {
+            "triggerText": "welcome",
+            "segmentIndex": 0,
+            "appearAt": 0
+          }
+        }
+      ],
+      "textElements": [
+        {
+          "content": "Welcome",
+          "role": "title",
+          "position": "top",
+          "narrationBinding": {
+            "triggerText": "welcome",
+            "segmentIndex": 0,
+            "appearAt": 0
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "sceneId": "scene-2",
+      "layoutTemplate": "split-vertical",
+      "mediaResources": [
+        {
+          "id": "article-image",
+          "type": "article",
+          "url": "https://example.com/article.png",
+          "role": "primary",
+          "narrationBinding": {
+            "triggerText": "feature",
+            "segmentIndex": 0,
+            "appearAt": 2
+          }
+        }
+      ],
+      "textElements": [
+        {
+          "content": "Bullet point 1",
+          "role": "bullet",
+          "position": "bottom",
+          "narrationBinding": {
+            "triggerText": "cool",
+            "segmentIndex": 0,
+            "appearAt": 3
+          }
+        }
+      ]
+    }
+  ]
+}

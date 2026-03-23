@@ -1,5 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { remotionRenderTool } from "../tools/remotion-render.js";
+export { mapLayoutToComponent, secondsToFrames } from "./compose-helpers.js";
 
 /**
  * Compose Agent - Phase 7 Redesign
@@ -108,30 +109,6 @@ Convert appearAt (seconds) to frames: appearAt * fps
 });
 
 /**
- * 映射布局模板到组件名
- */
-export function mapLayoutToComponent(template: string): string {
-  const mapping: Record<string, string> = {
-    "hero-fullscreen": "HeroFullscreen",
-    "split-horizontal": "SplitHorizontal",
-    "split-vertical": "SplitVertical",
-    "text-over-image": "TextOverImage",
-    "code-focus": "CodeFocus",
-    "comparison": "Comparison",
-    "bullet-list": "BulletList",
-    "quote": "Quote",
-  };
-  return mapping[template] || "HeroFullscreen";
-}
-
-/**
- * 将时间（秒）转换为帧数
- */
-export function secondsToFrames(seconds: number, fps: number = 30): number {
-  return Math.round(seconds * fps);
-}
-
-/**
  * 生成场景组件代码
  */
 export function generateSceneCode(
@@ -144,7 +121,7 @@ import React from 'react';
 import { ${layoutComponent} } from '../layouts';
 import type { VisualScene } from '@video-script/types';
 
-export const ${sceneId.replace(/-/g, '_')}: React.FC = () => {
+export const ${sceneId.replace(/-/g, "_")}: React.FC = () => {
   const scene: VisualScene = ${JSON.stringify(sceneData, null, 2)};
 
   return (
@@ -164,7 +141,7 @@ export function generateRootCode(scenes: string[], duration: number): string {
   return `// Auto-generated Root component
 import React from 'react';
 import { Composition, Sequence } from 'remotion';
-import { ${scenes.map((s) => s.replace(/-/g, '_')).join(', ')} } from './scenes';
+import { ${scenes.map((s) => s.replace(/-/g, "_")).join(", ")} } from './scenes';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -186,10 +163,10 @@ const Video: React.FC = () => {
         .map(
           (s, i) =>
             `<Sequence from={${i * 60}} durationInFrames={180}>
-        <${s.replace(/-/g, '_')} />
+        <${s.replace(/-/g, "_")} />
       </Sequence>`,
         )
-        .join('\n      ')}
+        .join("\n      ")}
     </>
   );
 };

@@ -1,0 +1,22 @@
+{
+  "title": "Test Video",
+  "totalDuration": 20,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "type": "intro",
+      "title": "Introduction",
+      "narration": "Welcome to this test video.",
+      "duration": 10,
+      "visualLayers": []
+    },
+    {
+      "id": "scene-2",
+      "type": "feature",
+      "title": "Feature Demo",
+      "narration": "Here is a cool feature.",
+      "duration": 10,
+      "visualLayers": []
+    }
+  ]
+}
