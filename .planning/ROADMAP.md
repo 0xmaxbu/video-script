@@ -129,7 +129,7 @@ Plans:
 
 Plans:
 - [x] 07-01-PLAN.md — Add layoutTemplate field to SceneScriptSchema
-- [ ] 07-02-PLAN.md — Create sceneAdapter and modify Scene.tsx for layout routing
+- [x] 07-02-PLAN.md — Create sceneAdapter and modify Scene.tsx for layout routing
 
 ### Phase 8: Verification Docs + Cleanup
 **Goal:** Document Phase 01 and 04 verification, remove orphaned exports
