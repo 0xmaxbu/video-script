@@ -7,6 +7,7 @@ interface FrostedCardProps {
   blur?: number; // default 25
   radius?: number; // default 32
   color?: string; // default "rgba(255,255,255," (light theme)
+  zIndex?: number; // default 10 (per D-01)
 }
 
 export const FrostedCard: React.FC<FrostedCardProps> = ({
@@ -15,6 +16,7 @@ export const FrostedCard: React.FC<FrostedCardProps> = ({
   blur = 25,
   radius = 32,
   color = "rgba(255,255,255,",
+  zIndex = 10,
   style,
   ...props
 }) => (
@@ -26,8 +28,7 @@ export const FrostedCard: React.FC<FrostedCardProps> = ({
       borderRadius: radius,
       border: "1px solid rgba(255,255,255,0.1)",
       overflow: "hidden",
-      // Ensure frosted glass appears BEHIND text content (textLayers have zIndex: 10)
-      zIndex: -1,
+      zIndex: zIndex,
       ...style,
     }}
     {...props}
