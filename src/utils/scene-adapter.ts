@@ -24,7 +24,15 @@ import type { VisualLayer } from "@video-script/types";
 
 interface MediaResource {
   id: string;
-  type: "hero" | "ambient" | "headline" | "article" | "documentation" | "codeSnippet" | "changelog" | "feature";
+  type:
+    | "hero"
+    | "ambient"
+    | "headline"
+    | "article"
+    | "documentation"
+    | "codeSnippet"
+    | "changelog"
+    | "feature";
   url: string;
   selector?: string;
   role: "primary" | "secondary" | "background";
@@ -86,13 +94,21 @@ function mediaResourceToVisualLayer(resource: MediaResource): VisualLayer {
 /**
  * Converts a TextElement to a VisualLayer with type: "text".
  */
-function textElementToVisualLayer(element: TextElement, index: number): VisualLayer {
+function textElementToVisualLayer(
+  element: TextElement,
+  index: number,
+): VisualLayer {
   return {
     id: `text-${index}`,
     type: "text",
     position: {
       x: "center",
-      y: element.position === "top" ? "top" : element.position === "center" ? "center" : "bottom",
+      y:
+        element.position === "top"
+          ? "top"
+          : element.position === "center"
+            ? "center"
+            : "bottom",
       width: "auto",
       height: "auto",
       zIndex: 10,
@@ -109,7 +125,9 @@ function textElementToVisualLayer(element: TextElement, index: number): VisualLa
 /**
  * Creates a map of sceneId -> visual scene data from visualPlan.
  */
-function buildVisualPlanMap(visualPlan: VisualPlan): Map<string, VisualPlan["scenes"][0]> {
+function buildVisualPlanMap(
+  visualPlan: VisualPlan,
+): Map<string, VisualPlan["scenes"][0]> {
   const map = new Map<string, VisualPlan["scenes"][0]>();
   if (visualPlan.scenes) {
     for (const scene of visualPlan.scenes) {
@@ -140,13 +158,19 @@ export function adaptSceneForRenderer(
   // Convert textElements to text visualLayers
   if (visualScene?.textElements && visualScene.textElements.length > 0) {
     for (let i = 0; i < visualScene.textElements.length; i++) {
-      visualLayers.push(textElementToVisualLayer(visualScene.textElements[i], i));
+      visualLayers.push(
+        textElementToVisualLayer(visualScene.textElements[i], i),
+      );
     }
   }
+
+  // Preserve layoutTemplate from visualScene if present
+  const layoutTemplate = visualScene?.layoutTemplate;
 
   // Use merged visualLayers if we have any, otherwise fall back to existing
   return {
     ...scene,
+    layoutTemplate,
     visualLayers: visualLayers.length > 0 ? visualLayers : scene.visualLayers,
   };
 }

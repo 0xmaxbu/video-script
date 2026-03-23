@@ -55,6 +55,8 @@ export const SceneScriptSchema = z.object({
   highlights: z.array(SceneHighlightSchema).optional(),
   codeHighlights: z.array(CodeHighlightSchema).optional(),
   sourceRef: z.string().optional(),
+  // Layout template selection (optional - falls back to inline if absent)
+  layoutTemplate: z.string().optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 
