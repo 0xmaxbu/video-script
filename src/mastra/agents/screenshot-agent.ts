@@ -1,5 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { playwrightScreenshotTool } from "../tools/playwright-screenshot.js";
+import { analyzePageStructure } from "../tools/playwright-screenshot.js";
 
 /**
  * Screenshot Agent - Phase 5 Redesign
@@ -19,7 +20,7 @@ export const screenshotAgent = new Agent({
 1. Receive Visual Plan with mediaResources
 2. For each resource:
    - If type is decorative (hero/ambient): capture full page
-   - If type is informational: use selector to capture specific region
+   - If type is informational: use AI-generated selector for precise capture
 3. Save screenshots with consistent naming
 4. Output screenshot manifest
 
@@ -29,13 +30,21 @@ export const screenshotAgent = new Agent({
 - **hero**: Full page screenshot, 1920x1080 viewport
 - **ambient**: Full page screenshot, may use smaller viewport
 
-### Informational (With Selector):
-- **headline**: Capture title area (selector: h1, .headline, .title, header)
-- **article**: Capture article content (selector: article, .content, .post-body, main)
-- **documentation**: Capture docs content (selector: .docs-content, .markdown-body, article)
-- **codeSnippet**: Capture code blocks (selector: pre, code, .highlight, .code-block)
-- **changelog**: Capture release notes (selector: .changelog, .release-notes, #releases)
-- **feature**: Capture feature list (selector: .features, .feature-list, ul.features)
+### Informational (With AI-Guided Selector):
+- **IMPORTANT**: Always prefer AI-generated selectors over DEFAULT_SELECTORS when available
+- **headline**: Capture title area - AI analyzes page and generates precise selector
+- **article**: Capture article content - AI selects best semantic region
+- **documentation**: Capture docs content - AI finds relevant documentation sections
+- **codeSnippet**: Capture code blocks - AI identifies syntax-highlighted regions
+- **changelog**: Capture release notes - AI locates changelog sections
+- **feature**: Capture feature list - AI detects feature showcases
+
+## AI-Guided Selector Generation:
+
+For informational screenshots:
+1. Call generateAISelector({ url, contentHint: type, narrationContext })
+2. Use the returned selector when calling playwrightScreenshotTool
+3. If AI selector fails, fall back to DEFAULT_SELECTORS
 
 ## Tool Usage:
 
@@ -43,7 +52,7 @@ For each screenshot, call playwrightScreenshotTool with:
 \`\`\`json
 {
   "url": "https://example.com",
-  "selector": "h1, .headline",  // optional, for informational screenshots
+  "selector": "h1, .headline",  // AI-generated or fallback
   "viewport": { "width": 1920, "height": 1080 },
   "outputDir": "/path/to/output",
   "filename": "scene-1-shot-1.png"
@@ -60,6 +69,7 @@ For each screenshot, call playwrightScreenshotTool with:
       "resourceId": "shot-1",
       "filename": "scene-1-shot-1.png",
       "type": "headline",
+      "selectorUsed": "article.docs-content",
       "success": true,
       "dimensions": { "width": 1920, "height": 600 },
       "capturedAt": "2024-03-22T10:30:00Z"
@@ -69,6 +79,8 @@ For each screenshot, call playwrightScreenshotTool with:
     "total": 5,
     "successful": 4,
     "failed": 1,
+    "aiSelectorSuccess": 3,
+    "fallbackUsed": 1,
     "errors": [
       { "sceneId": "scene-3", "error": "Timeout waiting for selector" }
     ]
@@ -78,7 +90,7 @@ For each screenshot, call playwrightScreenshotTool with:
 
 ## CRITICAL REQUIREMENTS:
 1. **ALWAYS** call playwrightScreenshotTool for EVERY mediaResource
-2. For informational screenshots, generate appropriate selector
+2. For informational screenshots, call generateAISelector first
 3. Handle errors gracefully - don't fail the entire batch
 4. Use consistent naming: {sceneId}-{resourceId}.png
 5. Return valid JSON only (no markdown blocks)
@@ -111,7 +123,13 @@ export const DEFAULT_SELECTORS: Record<string, string[]> = {
     "main",
     ".content",
   ],
-  codeSnippet: ["pre", "code", ".highlight", ".code-block", ".syntax-highlight"],
+  codeSnippet: [
+    "pre",
+    "code",
+    ".highlight",
+    ".code-block",
+    ".syntax-highlight",
+  ],
   changelog: [
     ".changelog",
     ".release-notes",
@@ -119,14 +137,119 @@ export const DEFAULT_SELECTORS: Record<string, string[]> = {
     "article",
     ".version-history",
   ],
-  feature: [
-    ".features",
-    ".feature-list",
-    "ul.features",
-    ".grid",
-    ".cards",
-  ],
+  feature: [".features", ".feature-list", "ul.features", ".grid", ".cards"],
 };
+
+export interface GenerateAISelectorInput {
+  url: string;
+  contentHint: string;
+  narrationContext: string;
+}
+
+export interface GenerateAISelectorResult {
+  selector: string;
+  reasoning: string;
+  usedFallback: boolean;
+}
+
+/**
+ * AI-guided selector generation
+ * Analyzes page structure and generates precise CSS selector based on context
+ */
+export async function generateAISelector(
+  input: GenerateAISelectorInput,
+): Promise<GenerateAISelectorResult> {
+  const { url, contentHint, narrationContext } = input;
+
+  try {
+    const pageStructure = await analyzePageStructure(
+      url,
+      contentHint as "documentation" | "code" | "article",
+    );
+
+    if (
+      !pageStructure.semanticRegions ||
+      pageStructure.semanticRegions.length === 0
+    ) {
+      return {
+        selector: getDefaultSelectorForType(contentHint),
+        reasoning: "No semantic regions found, using default selector",
+        usedFallback: true,
+      };
+    }
+
+    const relevantRegion = selectBestRegion(
+      pageStructure.semanticRegions,
+      contentHint,
+      narrationContext,
+      pageStructure.headings,
+    );
+
+    return {
+      selector: relevantRegion.selector,
+      reasoning: relevantRegion.reasoning,
+      usedFallback: false,
+    };
+  } catch (error) {
+    console.error(`AI selector generation failed: ${error}`);
+    return {
+      selector: getDefaultSelectorForType(contentHint),
+      reasoning: `AI analysis failed (${error}), using default selector`,
+      usedFallback: true,
+    };
+  }
+}
+
+function selectBestRegion(
+  regions: Array<{ name: string; selector: string }>,
+  contentHint: string,
+  narrationContext: string,
+  headings: string[],
+): { selector: string; reasoning: string } {
+  const contextLower = narrationContext.toLowerCase();
+  const hintLower = contentHint.toLowerCase();
+
+  let bestRegion = regions[0];
+  let bestScore = 0;
+
+  for (const region of regions) {
+    let score = 0;
+    const regionLower = region.name.toLowerCase();
+
+    if (contextLower.includes(hintLower)) {
+      score += 2;
+    }
+
+    for (const heading of headings) {
+      const headingLower = heading.toLowerCase();
+      if (regionLower.includes(headingLower.substring(0, 20))) {
+        score += 1;
+      }
+    }
+
+    const contentWords = contextLower.split(/\s+/).filter((w) => w.length > 4);
+    for (const word of contentWords) {
+      if (regionLower.includes(word)) {
+        score += 0.5;
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestRegion = region;
+    }
+  }
+
+  return {
+    selector: bestRegion.selector,
+    reasoning: `Selected "${bestRegion.name}" based on content analysis (score: ${bestScore})`,
+  };
+}
+
+function getDefaultSelectorForType(type: string): string {
+  const selectors = DEFAULT_SELECTORS[type];
+  return selectors?.[0] || "article";
+}
 
 /**
  * 判断是否为信息性截图
@@ -140,10 +263,7 @@ export function isInformationalScreenshot(
 /**
  * 获取截图选择器
  */
-export function getSelectors(
-  type: string,
-  customSelector?: string,
-): string[] {
+export function getSelectors(type: string, customSelector?: string): string[] {
   if (customSelector) {
     return [customSelector];
   }
@@ -159,10 +279,7 @@ export function getSelectors(
 /**
  * 生成截图文件名
  */
-export function generateFilename(
-  sceneId: string,
-  resourceId: string,
-): string {
+export function generateFilename(sceneId: string, resourceId: string): string {
   return `${sceneId}-${resourceId}.png`;
 }
 

@@ -5,6 +5,20 @@ import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { withRetry } from "../../utils/retry.js";
 
+export interface SemanticRegion {
+  name: string;
+  selector: string;
+}
+
+export interface PageStructure {
+  headings: string[];
+  links: string[];
+  codeBlocks: string[];
+  semanticRegions: SemanticRegion[];
+}
+
+export type ContentTypeHint = "documentation" | "code" | "article";
+
 export const playwrightScreenshotTool = createTool({
   id: "playwright-screenshot",
   description: "Capture a screenshot of a webpage using Playwright",
@@ -100,3 +114,112 @@ export const playwrightScreenshotTool = createTool({
     );
   },
 });
+
+export async function analyzePageStructure(
+  url: string,
+  contentTypeHint?: ContentTypeHint,
+): Promise<PageStructure> {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1920, height: 1080 },
+    });
+    await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+
+    const structure = await page.evaluate((hint?: string) => {
+      const getTextContent = (el: Element | null): string => {
+        return el?.textContent?.trim() || "";
+      };
+
+      const headings: string[] = [];
+      document.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((h) => {
+        const text = getTextContent(h);
+        if (text) headings.push(text);
+      });
+
+      const links: string[] = [];
+      document.querySelectorAll("a[href]").forEach((a) => {
+        const href = a.getAttribute("href");
+        if (href && !href.startsWith("#") && !href.startsWith("javascript:")) {
+          links.push(href);
+        }
+      });
+
+      const codeBlocks: string[] = [];
+      document.querySelectorAll("pre, code").forEach((code) => {
+        const text = getTextContent(code);
+        if (text && text.length > 20) {
+          codeBlocks.push(text.substring(0, 200));
+        }
+      });
+
+      const semanticRegions: Array<{ name: string; selector: string }> = [];
+
+      const regionSelectors: Record<string, string[]> = {
+        documentation: [
+          "article",
+          ".content",
+          ".markdown-body",
+          ".docs-content",
+          "main",
+        ],
+        code: ["pre", "code", ".highlight", ".code-block", ".syntax-highlight"],
+        article: ["article", "main", ".content", ".post-body"],
+      };
+
+      const selectorsToTry =
+        hint && regionSelectors[hint]
+          ? regionSelectors[hint]
+          : [
+              "article",
+              "main",
+              ".content",
+              ".docs-content",
+              ".markdown-body",
+              "pre",
+              "code",
+            ];
+
+      for (const selector of selectorsToTry) {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach((el) => {
+          const text = getTextContent(el);
+          if (text && text.length > 100) {
+            semanticRegions.push({
+              name: `${selector}: ${text.substring(0, 50)}...`,
+              selector: selector,
+            });
+          }
+        });
+      }
+
+      return { headings, links, codeBlocks, semanticRegions };
+    }, contentTypeHint);
+
+    return {
+      headings: structure.headings || [],
+      links: structure.links || [],
+      codeBlocks: structure.codeBlocks || [],
+      semanticRegions:
+        structure.semanticRegions?.map(
+          (r: { name: string; selector: string }) => ({
+            name: r.name,
+            selector: r.selector,
+          }),
+        ) || [],
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes("net::ERR_NAME_NOT_RESOLVED")) {
+        throw new Error(`INVALID_URL: URL could not be resolved - ${url}`);
+      }
+      if (error.message.includes("Timeout")) {
+        throw new Error(`TIMEOUT: Page load exceeded 60 seconds for ${url}`);
+      }
+      throw new Error(`Failed to analyze page structure: ${error.message}`);
+    }
+    throw new Error("Failed to analyze page structure: Unknown error");
+  } finally {
+    await browser.close();
+  }
+}
