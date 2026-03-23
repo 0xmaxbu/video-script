@@ -116,6 +116,8 @@ Plans:
 | 6. Type Package + Schema | 3/3            | Complete | 2026-03-23 |
 | 7. Wire Layouts          | 2/2            | Complete | 2026-03-23 |
 | 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
+| 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
+| 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -191,7 +193,7 @@ Plans:
 
 Plans:
 
-- [ ] 10-01-PLAN.md — Wire Phase 2 layouts into render pipeline
+- [x] 10-01-PLAN.md — Wire Phase 2 layouts into render pipeline
 
 ---
 
