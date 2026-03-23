@@ -33,6 +33,7 @@ async function spawnRenderProcess(
   // Remotion CLI path from packages/renderer directory
   const remotionCli = join(
     process.cwd(),
+    "packages/renderer",
     "node_modules",
     "@remotion",
     "cli",
