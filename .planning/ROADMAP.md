@@ -144,13 +144,17 @@ Plans:
 - [x] 08-03-PLAN.md — Remove dead exports from renderer index.ts
 
 ### Phase 9: Fix @video-script/types + Schema Adapter
-**Goal:** Fix blocking integration issues — package installation and schema mismatch
+**Goal:** Fix blocking integration issues — package installation and visualLayers population
 **Depends on**: Phase 8
 **Requirements**: VIS-01, VIS-02, VIS-03, SCR-01, SCR-02, RES-01, RES-03
 **Gap Closure:** Closes blocking gaps from v1.0 audit
-- Issue: @video-script/types not installed/published
-- Issue: Schema mismatch — Script narration object vs Renderer narration string
-**Plans:** (pending)
+- Issue: @video-script/types not in renderer node_modules
+- Issue: visualLayers empty — highlights/codeHighlights never converted to visualLayers
+**Plans:** 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Create scene-adapter.ts + add @video-script/types to renderer deps
+- [ ] 09-02-PLAN.md — Wire adapter into compose CLI step + E2E verification
 
 ### Phase 10: Wire Phase 2 Layouts into Composition
 **Goal:** Connect orphaned Grid, FrostedCard, and 8 layout templates to generated Scene.tsx
