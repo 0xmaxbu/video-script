@@ -21,34 +21,40 @@ v1.0 established the core video generation pipeline. v1.1 focuses on elevating v
 ## Phase Details
 
 ### Phase 1: Annotation Renderer
+
 **Goal**: Users see animated annotation overlays on video elements
 **Depends on**: Nothing (first phase of v1.1)
 **Requirements**: VIS-01, VIS-02, VIS-03
 **Success Criteria** (what must be TRUE):
-  1. AnnotationRenderer renders all annotation types: circle, underline, arrow, box, highlight, number
-  2. Spring animations play smoothly with correct damping and stiffness
-  3. All interpolate values are clamped to prevent extrapolation artifacts
-  4. Annotations layer correctly over screenshots and code blocks
-**Plans**: 4 plans
+
+1. AnnotationRenderer renders all annotation types: circle, underline, arrow, box, highlight, number
+2. Spring animations play smoothly with correct damping and stiffness
+3. All interpolate values are clamped to prevent extrapolation artifacts
+4. Annotations layer correctly over screenshots and code blocks
+   **Plans**: 4 plans
 
 Plans:
+
 - [x] 01-01-PLAN.md — Create Underline, Arrow, Box, Highlight annotation components
 - [x] 01-02-PLAN.md — Create Number annotation component (circle with number inside)
 - [x] 01-03-PLAN.md — Create AnnotationRenderer orchestrator and update index.ts exports
 - [x] 01-04-PLAN.md — Update Scene.tsx with annotations prop and AnnotationRenderer rendering
 
 ### Phase 2: Layout System
+
 **Goal**: Users see professional PPT-style layouts with proper visual hierarchy
 **Depends on**: Phase 1
 **Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
 **Success Criteria** (what must be TRUE):
-  1. 12-column grid system with defined safe zones renders correctly
-  2. All layout templates function: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
-  3. Headlines render at 72pt+ and body text at 18-24pt
-  4. Frosted glass cards display with proper backdrop-filter blur effects
-**Plans**: 5 plans
+
+1. 12-column grid system with defined safe zones renders correctly
+2. All layout templates function: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
+3. Headlines render at 72pt+ and body text at 18-24pt
+4. Frosted glass cards display with proper backdrop-filter blur effects
+   **Plans**: 5 plans
 
 Plans:
+
 - [x] 02-01-PLAN.md — Create Grid, FrostedCard, and grid-utils foundation
 - [x] 02-02-PLAN.md — Refactor HeroFullscreen and SplitVertical layouts
 - [x] 02-03-PLAN.md — Refactor SplitHorizontal and TextOverImage layouts
@@ -56,59 +62,67 @@ Plans:
 - [x] 02-05-PLAN.md — Refactor BulletList and Quote layouts
 
 ### Phase 3: Research & Content
+
 **Goal**: Users receive in-depth research and engaging narration
 **Depends on**: Phase 2
 **Requirements**: RES-01, RES-02, RES-03, SCR-01, SCR-02
 **Success Criteria** (what must be TRUE):
-  1. Research agent extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
-  2. Research uses Turndown + Readability to crawl actual article content (not placeholder links)
-  3. Scripts contain thorough explanations, not generic summaries
-  4. Scene narration is engaging and tutorial-appropriate
-**Plans**: 3 plans
+
+1. Research agent extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
+2. Research uses Turndown + Readability to crawl actual article content (not placeholder links)
+3. Scripts contain thorough explanations, not generic summaries
+4. Scene narration is engaging and tutorial-appropriate
+   **Plans**: 3 plans
 
 Plans:
+
 - [x] 03-01-PLAN.md — Upgrade web-fetch with Turndown + Readability, add input validation, update research schema
 - [x] 03-02-PLAN.md — Create quality evaluation agent (non-blocking)
 - [x] 03-03-PLAN.md — Update research agent with relationship tags, update script agent for depth
 
 ### Phase 4: Transitions
+
 **Goal**: Users see smooth animated transitions between scenes
 **Depends on**: Phase 3
 **Requirements**: VIS-08, VIS-09, VIS-10
 **Success Criteria** (what must be TRUE):
-  1. Scene transitions (fade, slideIn) play correctly between scenes
-  2. Typewriter effect animates text in code scenes
-  3. Spring animations handle delays correctly (extra frames for settling)
-**Plans**: TBD
+
+1. Scene transitions (fade, slideIn) play correctly between scenes
+2. Typewriter effect animates text in code scenes
+3. Spring animations handle delays correctly (extra frames for settling)
+   **Plans**: TBD
 
 ### Phase 5: Composition
+
 **Goal**: Final videos match visual plans and feel polished
 **Depends on**: Phase 4
 **Requirements**: COMP-01, COMP-02
 **Success Criteria** (what must be TRUE):
-  1. All annotations render in final video output
-  2. All layouts display correctly in final video
-  3. Video quality feels polished and professional
-**Plans**: TBD
+
+1. All annotations render in final video output
+2. All layouts display correctly in final video
+3. Video quality feels polished and professional
+   **Plans**: TBD
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Annotation Renderer | 4/4 | Complete | 2026-03-22 |
-| 2. Layout System | 5/5 | Complete | 2026-03-22 |
-| 3. Research & Content | 3/3 | Complete | 2026-03-22 |
-| 4. Transitions | 2/2 | Complete | 2026-03-22 |
-| 5. Composition | 3/3 | Complete | 2026-03-22 |
-| 6. Type Package + Schema | 3/3 | Complete | 2026-03-23 |
-| 7. Wire Layouts | 2/2 | Complete | 2026-03-23 |
-| 8. Verification Docs | 3/3 | Complete   | 2026-03-23 |
+| Phase                    | Plans Complete | Status   | Completed  |
+| ------------------------ | -------------- | -------- | ---------- |
+| 1. Annotation Renderer   | 4/4            | Complete | 2026-03-22 |
+| 2. Layout System         | 5/5            | Complete | 2026-03-22 |
+| 3. Research & Content    | 3/3            | Complete | 2026-03-22 |
+| 4. Transitions           | 2/2            | Complete | 2026-03-22 |
+| 5. Composition           | 3/3            | Complete | 2026-03-22 |
+| 6. Type Package + Schema | 3/3            | Complete | 2026-03-23 |
+| 7. Wire Layouts          | 2/2            | Complete | 2026-03-23 |
+| 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
 
 **Coverage:** 16/16 v1 requirements mapped
 
 ## Gap Closure Phases
 
 ### Phase 6: Type Package + Schema Adapter
+
 **Goal:** Fix blocking integration issues — @video-script/types package and script→renderer schema mismatch
 **Depends on**: Phase 5
 **Requirements**: VIS-01, VIS-02, VIS-03, RES-01, RES-03, SCR-01, SCR-02, COMP-01
@@ -116,11 +130,13 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
+
 - [x] 06-01-PLAN.md — Create @video-script/types package with unified schemas
 - [x] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
 - [x] 06-03-PLAN.md — Verify type unification and compilation
 
 ### Phase 7: Wire Layouts to Composition
+
 **Goal:** Connect orphaned Phase 2 layouts (Grid, FrostedCard, 8 templates) to generated Scene.tsx
 **Depends on**: Phase 6
 **Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
@@ -128,10 +144,12 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
+
 - [x] 07-01-PLAN.md — Add layoutTemplate field to SceneScriptSchema
 - [x] 07-02-PLAN.md — Create sceneAdapter and modify Scene.tsx for layout routing
 
 ### Phase 8: Verification Docs + Cleanup
+
 **Goal:** Document Phase 01 and 04 verification, remove orphaned exports
 **Depends on**: Phase 7
 **Requirements**: (documentation + cleanup)
@@ -139,33 +157,43 @@ Plans:
 **Plans:** 3/3 plans complete
 
 Plans:
+
 - [x] 08-01-PLAN.md — Create Phase 1 verification and UAT documentation
 - [x] 08-02-PLAN.md — Create Phase 4 verification and UAT documentation
 - [x] 08-03-PLAN.md — Remove dead exports from renderer index.ts
 
 ### Phase 9: Fix @video-script/types + Schema Adapter
+
 **Goal:** Fix blocking integration issues — package installation and visualLayers population
 **Depends on**: Phase 8
 **Requirements**: VIS-01, VIS-02, VIS-03, SCR-01, SCR-02, RES-01, RES-03
 **Gap Closure:** Closes blocking gaps from v1.0 audit
+
 - Issue: @video-script/types not in renderer node_modules
 - Issue: visualLayers empty — highlights/codeHighlights never converted to visualLayers
-**Plans:** 1/2 plans executed
+  **Plans:** 1/2 plans executed
 
 Plans:
+
 - [x] 09-01-PLAN.md — Create scene-adapter.ts + add @video-script/types to renderer deps
 - [ ] 09-02-PLAN.md — Wire adapter into compose CLI step + E2E verification
 
 ### Phase 10: Wire Phase 2 Layouts into Composition
+
 **Goal:** Connect orphaned Grid, FrostedCard, and 8 layout templates to generated Scene.tsx
 **Depends on**: Phase 9
 **Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
 **Gap Closure:** Closes major integration gap from v1.0 audit
+
 - Issue: Phase 2 layouts (Grid, FrostedCard) not imported by remotion-project-generator.ts
 - Issue: Generated Scene.tsx uses hardcoded inline layouts instead of Phase 2 components
-**Plans:** (pending)
+  **Plans:** 1 plan
+
+Plans:
+
+- [ ] 10-01-PLAN.md — Wire Phase 2 layouts into render pipeline
 
 ---
 
-*Roadmap created: 2026-03-22*
-*Last updated: 2026-03-23*
+_Roadmap created: 2026-03-22_
+_Last updated: 2026-03-23_
