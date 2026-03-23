@@ -866,7 +866,7 @@ program
       const adaptedScript = adaptScriptForRenderer(script, visualPlan as Parameters<typeof adaptScriptForRenderer>[1]);
 
       const screenshotResources: Record<string, string> = {};
-      script.scenes.forEach((scene, sceneIndex) => {
+      adaptedScript.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
             const filepath = findScreenshotFile(
