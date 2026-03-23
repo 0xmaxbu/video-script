@@ -30,10 +30,9 @@ async function spawnRenderProcess(
   );
   await writeFile(propsFile, JSON.stringify(props), "utf-8");
 
-  // Remotion CLI path from packages/renderer directory
+  // Remotion CLI path from project root's node_modules (not packages/renderer's)
   const remotionCli = join(
     process.cwd(),
-    "packages/renderer",
     "node_modules",
     "@remotion",
     "cli",
@@ -43,7 +42,9 @@ async function spawnRenderProcess(
   const entryPoint = join(
     process.cwd(),
     "packages/renderer",
-    "src/remotion/Root.tsx",
+    "src",
+    "remotion",
+    "Root.tsx",
   );
 
   const args = [
