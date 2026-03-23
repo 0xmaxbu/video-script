@@ -143,6 +143,24 @@ Plans:
 - [x] 08-02-PLAN.md — Create Phase 4 verification and UAT documentation
 - [x] 08-03-PLAN.md — Remove dead exports from renderer index.ts
 
+### Phase 9: Fix @video-script/types + Schema Adapter
+**Goal:** Fix blocking integration issues — package installation and schema mismatch
+**Depends on**: Phase 8
+**Requirements**: VIS-01, VIS-02, VIS-03, SCR-01, SCR-02, RES-01, RES-03
+**Gap Closure:** Closes blocking gaps from v1.0 audit
+- Issue: @video-script/types not installed/published
+- Issue: Schema mismatch — Script narration object vs Renderer narration string
+**Plans:** (pending)
+
+### Phase 10: Wire Phase 2 Layouts into Composition
+**Goal:** Connect orphaned Grid, FrostedCard, and 8 layout templates to generated Scene.tsx
+**Depends on**: Phase 9
+**Requirements**: VIS-04, VIS-05, VIS-06, VIS-07
+**Gap Closure:** Closes major integration gap from v1.0 audit
+- Issue: Phase 2 layouts (Grid, FrostedCard) not imported by remotion-project-generator.ts
+- Issue: Generated Scene.tsx uses hardcoded inline layouts instead of Phase 2 components
+**Plans:** (pending)
+
 ---
 
 *Roadmap created: 2026-03-22*
