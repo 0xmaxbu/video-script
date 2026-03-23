@@ -117,7 +117,7 @@ Plans:
 
 Plans:
 - [x] 06-01-PLAN.md — Create @video-script/types package with unified schemas
-- [ ] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
+- [x] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
 - [ ] 06-03-PLAN.md — Verify type unification and compilation
 
 ### Phase 7: Wire Layouts to Composition

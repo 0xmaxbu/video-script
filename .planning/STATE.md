@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-23T01:08:29.795Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-23T01:25:39.186Z"
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 20
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 06 (type-schema) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -94,6 +94,9 @@ From research (2026-03-22):
 - [Phase 06-type-schema]: D-01: zod in devDependencies only - consumers bring their own zod version
 - [Phase 06-type-schema]: D-02: SceneScriptSchema includes optional highlights and codeHighlights fields for script-to-visual data flow
 - [Phase 06-type-schema]: D-03: ScreenshotConfigBaseSchema contains common fields only; renderer extends with maxLines, padding, theme
+- [Phase 06-type-schema]: D-05: Renderer uses local zod v3 schemas instead of importing from @video-script/types due to zod version conflict
+- [Phase 06-type-schema]: D-06: src/types/index.ts re-exports from @video-script/types for backward compatibility
+- [Phase 06-type-schema]: D-07: Generated Remotion projects use inline schema definitions matching @video-script/types structure
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T01:08:29.793Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-23T01:25:39.184Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
