@@ -7,15 +7,15 @@
 
 ### Research Quality
 
-- [ ] **RES-01**: Research agent performs deep content analysis — not placeholder links
+- [x] **RES-01**: Research agent performs deep content analysis — not placeholder links
 - [x] **RES-02**: Research crawls actual paper/article content using Turndown + Readability
-- [ ] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
+- [x] **RES-03**: Research extracts semantic chunks (problem/solution/code/caveats) preserving logical flow
 
 ### Visual Annotations
 
-- [ ] **VIS-01**: Annotation renderer component renders highlight, underline, circle, number effects
-- [ ] **VIS-02**: Annotations animate correctly using spring/interpolate
-- [ ] **VIS-03**: Animation extrapolation properly clamped (no values beyond intended range)
+- [x] **VIS-01**: Annotation renderer component renders highlight, underline, circle, number effects
+- [x] **VIS-02**: Annotations animate correctly using spring/interpolate
+- [x] **VIS-03**: Animation extrapolation properly clamped (no values beyond intended range)
 
 ### Layout System
 
@@ -32,12 +32,12 @@
 
 ### Content Quality
 
-- [ ] **SCR-01**: Script generates content with depth — thorough explanations
-- [ ] **SCR-02**: Scene narration is engaging, not generic summaries
+- [x] **SCR-01**: Script generates content with depth — thorough explanations
+- [x] **SCR-02**: Scene narration is engaging, not generic summaries
 
 ### Composition
 
-- [ ] **COMP-01**: Final video matches visual plan — all annotations render
+- [x] **COMP-01**: Final video matches visual plan — all annotations render
 - [x] **COMP-02**: Video quality feels polished and professional
 
 ## v2 Requirements
@@ -60,22 +60,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIS-01 | Phase 6 | Pending |
-| VIS-02 | Phase 6 | Pending |
-| VIS-03 | Phase 6 | Pending |
+| VIS-01 | Phase 6 | Complete |
+| VIS-02 | Phase 6 | Complete |
+| VIS-03 | Phase 6 | Complete |
 | VIS-04 | Phase 7 | Pending |
 | VIS-05 | Phase 7 | Pending |
 | VIS-06 | Phase 7 | Pending |
 | VIS-07 | Phase 7 | Pending |
-| RES-01 | Phase 6 | Pending |
+| RES-01 | Phase 6 | Complete |
 | RES-02 | Phase 3 | Complete |
-| RES-03 | Phase 6 | Pending |
-| SCR-01 | Phase 6 | Pending |
-| SCR-02 | Phase 6 | Pending |
+| RES-03 | Phase 6 | Complete |
+| SCR-01 | Phase 6 | Complete |
+| SCR-02 | Phase 6 | Complete |
 | VIS-08 | Phase 4 | Complete |
 | VIS-09 | Phase 4 | Complete |
 | VIS-10 | Phase 4 | Complete |
-| COMP-01 | Phase 6 | Pending |
+| COMP-01 | Phase 6 | Complete |
 | COMP-02 | Phase 5 | Complete |
 
 **Coverage:**

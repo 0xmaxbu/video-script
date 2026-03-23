@@ -116,7 +116,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Create @video-script/types package with unified schemas
+- [x] 06-01-PLAN.md — Create @video-script/types package with unified schemas
 - [ ] 06-02-PLAN.md — Update consumers (renderer, main) to use @video-script/types
 - [ ] 06-03-PLAN.md — Verify type unification and compilation
 
