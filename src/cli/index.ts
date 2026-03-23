@@ -35,6 +35,7 @@ import {
   generateRunId,
 } from "../utils/index.js";
 import { adaptScriptForRenderer } from "../utils/scene-adapter.js";
+import { findScreenshotFile } from "../utils/screenshot-finder.js";
 import type { ResearchInput } from "../types/index.js";
 import {
   ResearchOutputSchema,
@@ -53,42 +54,6 @@ const program = new Command();
 program.helpOption("-h, --help", "显示帮助信息").on("--help", () => {
   console.log(HELP_TEXT);
 });
-
-/**
- * Find screenshot file with flexible matching:
- * 1. First tries exact match: {layer.id}.png (e.g., layer-1.png)
- * 2. Then tries scene-prefixed match: scene-XXX-layer-Y.png (e.g., scene-001-layer-1.png)
- * 3. Falls back to any file in the scene directory
- */
-function findScreenshotFile(
-  screenshotsDir: string,
-  sceneIndex: number,
-  layerId: string,
-): string | null {
-  const files = readdirSync(screenshotsDir).filter((f) => f.endsWith(".png"));
-
-  // 1. Try exact match: layer-1.png
-  const exactPath = join(screenshotsDir, `${layerId}.png`);
-  if (existsSync(exactPath)) {
-    return exactPath;
-  }
-
-  // 2. Try scene-XXX-layer-Y.png format
-  const scenePrefix = `scene-${String(sceneIndex + 1).padStart(3, "0")}`;
-  const sceneLayerPattern = `${scenePrefix}-${layerId}.png`;
-  const sceneLayerMatch = files.find((f) => f === sceneLayerPattern);
-  if (sceneLayerMatch) {
-    return join(screenshotsDir, sceneLayerMatch);
-  }
-
-  // 3. Try any file starting with scene prefix (fallback for agent-generated names)
-  const scenePrefixMatch = files.find((f) => f.startsWith(scenePrefix));
-  if (scenePrefixMatch) {
-    return join(screenshotsDir, scenePrefixMatch);
-  }
-
-  return null;
-}
 
 program
   .name("video-script")
@@ -642,7 +607,9 @@ program
       spinner.succeed("✅ Visual plan generated!");
 
       console.log(chalk.green("\n🎨 Visual Plan Output:\n"));
-      const visualData = parsed as { scenes?: Array<{ sceneId?: string; layoutTemplate?: string }> };
+      const visualData = parsed as {
+        scenes?: Array<{ sceneId?: string; layoutTemplate?: string }>;
+      };
       if (visualData.scenes) {
         console.log(chalk.gray("  Scenes: " + visualData.scenes.length));
         visualData.scenes.slice(0, 5).forEach((scene, index) => {
@@ -656,7 +623,9 @@ program
           );
         });
         if (visualData.scenes.length > 5) {
-          console.log(chalk.gray("  ... and " + (visualData.scenes.length - 5) + " more"));
+          console.log(
+            chalk.gray("  ... and " + (visualData.scenes.length - 5) + " more"),
+          );
         }
       }
 
@@ -863,7 +832,10 @@ program
       }
 
       // Phase 9: Adapt script to renderer format - convert visual.json to visualLayers
-      const adaptedScript = adaptScriptForRenderer(script, visualPlan as Parameters<typeof adaptScriptForRenderer>[1]);
+      const adaptedScript = adaptScriptForRenderer(
+        script,
+        visualPlan as Parameters<typeof adaptScriptForRenderer>[1],
+      );
 
       const screenshotResources: Record<string, string> = {};
       adaptedScript.scenes.forEach((scene, sceneIndex) => {
@@ -1134,7 +1106,10 @@ program
       const researchPath = join(outputDir, "research.json");
       const researchMdPath = join(outputDir, "research.md");
       writeFileSync(researchPath, JSON.stringify(researchOutput, null, 2));
-      workflowStateManager.completeStep("research", { researchPath, researchMdPath });
+      workflowStateManager.completeStep("research", {
+        researchPath,
+        researchMdPath,
+      });
 
       spinner.text = "📝 Processing research output...";
       spinner.succeed("✅ Research completed!");

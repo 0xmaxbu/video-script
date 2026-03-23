@@ -52,3 +52,4 @@ export {
   adaptSceneForRenderer,
   adaptScriptForRenderer,
 } from "./scene-adapter.js";
+export { findScreenshotFile } from "./screenshot-finder.js";
