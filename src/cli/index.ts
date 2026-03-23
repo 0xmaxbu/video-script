@@ -177,11 +177,10 @@ program
           const researchMdPath = join(outputDir, "research.md");
           writeFileSync(researchMdPath, textContent, "utf-8");
 
-          // Try to parse as JSON first
-          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            // JSON format - parse normally
-            const parsed = JSON.parse(jsonMatch[0]);
+          // Try to parse as JSON first (only if text starts with '{')
+          const trimmed = textContent.trim();
+          if (trimmed.startsWith("{")) {
+            const parsed = JSON.parse(trimmed);
 
             researchOutput = {
               title: parsed.title || input.title,
@@ -1061,11 +1060,10 @@ program
           const researchMdPath = join(outputDir, "research.md");
           writeFileSync(researchMdPath, textContent, "utf-8");
 
-          // Try to parse as JSON first
-          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            // JSON format - parse normally
-            const parsed = JSON.parse(jsonMatch[0]);
+          // Try to parse as JSON first (only if text starts with '{')
+          const trimmed = textContent.trim();
+          if (trimmed.startsWith("{")) {
+            const parsed = JSON.parse(trimmed);
 
             researchOutput = {
               title: parsed.title || input.title,

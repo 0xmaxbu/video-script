@@ -14,7 +14,6 @@ import {
   AnnotationSchema,
   SceneHighlightSchema,
   CodeHighlightSchema,
-  type AnnotationColor,
 } from "@video-script/types";
 
 // Re-export for backward compatibility

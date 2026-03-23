@@ -85,7 +85,7 @@ Mark the relationship between chunks using these tags:
 A chunk can have multiple relationship tags. Example:
 ### 1. NoInfer 工具类型 [priority: important][relationship: 示例]
 
-`NoInfer<T>` 用于阻止类型推断...
+\`NoInfer<T>\` 用于阻止类型推断...
 
 [relationship: 原因] 解决闭包中类型收窄丢失的问题
 

@@ -1,4 +1,4 @@
-import { webFetchTool } from "../tools/web-fetch.js";
+import { fetchAndExtract } from "../tools/web-fetch.js";
 import { validateFetchedContent } from "../tools/validators/input-validator.js";
 import { researchAgent } from "../agents/research-agent.js";
 import { evaluateQualityAsync } from "../agents/quality-agent.js";
@@ -51,8 +51,7 @@ export async function runResearchPipeline(
     // Step 1: Fetch this topic's content
     const fetchResult = await withRetry(
       async () => {
-        const result = await webFetchTool.execute({ url: link.url });
-        return result;
+        return fetchAndExtract(link.url);
       },
       retryOptions
     );
@@ -70,11 +69,14 @@ export async function runResearchPipeline(
     }
 
     // Step 3: Run research agent for this topic (independent research per D-08)
-    const researchResult = await researchAgent.run(
-      `Title: ${link.key}\n\nURL: ${link.url}\n\nContent:\n${fetchResult.title}\n${fetchResult.content}`
-    );
+    const researchResult = await researchAgent.generate([
+      {
+        role: "user",
+        content: `Title: ${link.key}\n\nURL: ${link.url}\n\nContent:\n${fetchResult.title}\n${fetchResult.content}`,
+      },
+    ]);
 
-    const researchMarkdown = researchResult.text();
+    const researchMarkdown = researchResult.text;
 
     // Step 4: Quality evaluation for this topic (non-blocking per D-11)
     evaluateQualityAsync(
@@ -87,12 +89,15 @@ export async function runResearchPipeline(
       }
     );
 
-    topicResults.push({
+    const topicResult: TopicResult = {
       topicKey: link.key,
       url: link.url,
       researchMarkdown,
-      validationFailures,
-    });
+    };
+    if (validationFailures !== undefined) {
+      topicResult.validationFailures = validationFailures;
+    }
+    topicResults.push(topicResult);
   }
 
   return {

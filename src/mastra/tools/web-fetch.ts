@@ -21,7 +21,7 @@ function extractTitle(html: string): string {
   return "Untitled";
 }
 
-async function fetchAndExtract(url: string): Promise<{ content: string; title: string; url: string }> {
+export async function fetchAndExtract(url: string): Promise<{ content: string; title: string; url: string }> {
   const controller = new AbortController();
   const TIMEOUT_MS = 30000;
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -58,6 +58,9 @@ async function fetchAndExtract(url: string): Promise<{ content: string; title: s
     }
 
     // Convert to Markdown using Turndown
+    if (!article.content) {
+      throw new Error("READABILITY_FAILED: No content extracted");
+    }
     const markdown = td.turndown(article.content);
     const title = article.title || extractTitle(html);
 

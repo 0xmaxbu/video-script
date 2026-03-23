@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Img } from "remotion";
-import { Scene as SceneType } from "../types";
+import { SceneScript as SceneType } from "../types";
 import { Subtitle } from "./Subtitle";
 import { CodeAnimation } from "./components/CodeAnimation";
 

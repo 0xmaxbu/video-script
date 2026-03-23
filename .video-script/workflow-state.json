@@ -1,20 +1,28 @@
 {
-  "runId": "5db4df5065ad42cb",
+  "runId": "77781bc6d3b76f9c",
   "workflowId": "video-generation",
-  "status": "failed",
+  "status": "suspended",
   "steps": [
     {
       "stepId": "research",
-      "status": "failed",
+      "status": "completed",
       "retryCount": 0,
-      "startedAt": "2026-03-22T03:45:00.795Z",
-      "error": "Expected property name or '}' in JSON at position 4 (line 2 column 3)",
-      "completedAt": "2026-03-22T03:47:20.667Z"
+      "startedAt": "2026-03-23T05:07:57.236Z",
+      "completedAt": "2026-03-23T05:08:28.904Z",
+      "output": {
+        "researchPath": "/Users/max/simple-videos/2026/13-3_23-3_29/typescript-5-4-xin-te-xing/research.json",
+        "researchMdPath": "/Users/max/simple-videos/2026/13-3_23-3_29/typescript-5-4-xin-te-xing/research.md"
+      }
     },
     {
       "stepId": "script",
-      "status": "pending",
-      "retryCount": 0
+      "status": "completed",
+      "retryCount": 0,
+      "startedAt": "2026-03-23T05:08:28.906Z",
+      "completedAt": "2026-03-23T05:10:46.727Z",
+      "output": {
+        "scriptPath": "/Users/max/simple-videos/2026/13-3_23-3_29/typescript-5-4-xin-te-xing/script.json"
+      }
     },
     {
       "stepId": "screenshot",
@@ -29,11 +37,10 @@
   ],
   "input": {
     "title": "TypeScript 5.4 新特性",
-    "outputDir": "./.video-script/test-run",
+    "outputDir": "/Users/max/simple-videos/2026/13-3_23-3_29/typescript-5-4-xin-te-xing",
     "aspectRatio": "16:9"
   },
-  "createdAt": "2026-03-22T03:45:00.793Z",
-  "updatedAt": "2026-03-22T03:47:20.670Z",
-  "currentStep": "research",
-  "error": "Expected property name or '}' in JSON at position 4 (line 2 column 3)"
+  "createdAt": "2026-03-23T05:07:57.222Z",
+  "updatedAt": "2026-03-23T05:10:46.731Z",
+  "currentStep": "script"
 }
