@@ -1,90 +1,150 @@
 /**
  * Scene Adapter - Phase 9
  *
- * This adapter converts script output (highlights, codeHighlights) into renderer-compatible
- * visualLayers format. It bridges the gap between script agent output and what the
+ * This adapter converts Visual Agent output (visual.json) into renderer-compatible
+ * visualLayers format. It bridges the gap between visualAgent output and what the
  * renderer expects.
  *
  * IMPORTANT: This is distinct from packages/renderer/src/utils/sceneAdapter.ts which handles
  * SceneScript -> VisualScene conversion for layout routing INSIDE the renderer process.
  * This adapter operates in the main CLI process during the compose step.
  *
- * Key transformations:
- * - highlights[] -> visualLayers[] with type: "text"
- * - codeHighlights[] -> visualLayers[] with type: "code"
+ * Key transformations (from visual.json to visualLayers):
+ * - mediaResources[] -> visualLayers[] with type: "screenshot"
+ * - textElements[] -> visualLayers[] with type: "text"
+ * - annotations[] -> visualLayers[] with type: "annotation"
  */
 
 import type { SceneScript } from "../types/script.js";
-import type { SceneHighlight, CodeHighlight, VisualLayer } from "@video-script/types";
+import type { VisualLayer } from "@video-script/types";
 
-/**
- * Converts a SceneHighlight to a VisualLayer with type: "text".
- * The visualLayer position uses "bottom" y-position for text overlay.
- */
-function highlightToVisualLayer(highlight: SceneHighlight, _sceneId: string, index: number): VisualLayer {
-  return {
-    id: `highlight-${index}`,
-    type: "text",
-    position: {
-      x: "center",
-      y: "bottom",
-      width: "auto",
-      height: "auto",
-      zIndex: 10,
-    },
-    content: highlight.text,
-    animation: {
-      enter: "fadeIn",
-      enterDelay: highlight.timeInScene,
-      exit: "none",
-    },
+// =============================================================================
+// Visual JSON Types (from visualAgent output)
+// =============================================================================
+
+interface MediaResource {
+  id: string;
+  type: "hero" | "ambient" | "headline" | "article" | "documentation" | "codeSnippet" | "changelog" | "feature";
+  url: string;
+  selector?: string;
+  role: "primary" | "secondary" | "background";
+  narrationBinding: {
+    triggerText: string;
+    segmentIndex: number;
+    appearAt: number;
   };
 }
 
+interface TextElement {
+  content: string;
+  role: "title" | "subtitle" | "bullet" | "quote";
+  position: "top" | "center" | "bottom";
+  narrationBinding: {
+    triggerText: string;
+    segmentIndex: number;
+    appearAt: number;
+  };
+}
+
+interface VisualPlan {
+  scenes: Array<{
+    sceneId: string;
+    layoutTemplate?: string;
+    mediaResources?: MediaResource[];
+    textElements?: TextElement[];
+    animationPreset?: "fast" | "medium" | "slow" | "dramatic";
+    transition?: {
+      type: "fade" | "slide" | "wipe" | "flip" | "clockWipe" | "iris" | "none";
+      duration: number;
+    };
+  }>;
+}
+
 /**
- * Converts a CodeHighlight to a VisualLayer with type: "code".
- * The visualLayer uses full-width positioning for code display.
+ * Converts a MediaResource to a VisualLayer with type: "screenshot".
  */
-function codeHighlightToVisualLayer(codeHighlight: CodeHighlight, _sceneId: string, index: number): VisualLayer {
+function mediaResourceToVisualLayer(resource: MediaResource): VisualLayer {
   return {
-    id: `code-highlight-${index}`,
-    type: "code",
+    id: resource.id,
+    type: "screenshot",
     position: {
       x: 0,
       y: 0,
       width: "full",
-      height: "auto",
-      zIndex: 5,
+      height: "full",
+      zIndex: 1,
     },
-    content: codeHighlight.codeText,
+    content: resource.url,
     animation: {
       enter: "fadeIn",
-      enterDelay: codeHighlight.timeInScene,
+      enterDelay: resource.narrationBinding.appearAt,
       exit: "none",
     },
   };
 }
 
 /**
- * Adapts a single scene by converting highlights and codeHighlights into visualLayers.
+ * Converts a TextElement to a VisualLayer with type: "text".
  */
-export function adaptSceneForRenderer(scene: SceneScript): SceneScript {
+function textElementToVisualLayer(element: TextElement, index: number): VisualLayer {
+  return {
+    id: `text-${index}`,
+    type: "text",
+    position: {
+      x: "center",
+      y: element.position === "top" ? "top" : element.position === "center" ? "center" : "bottom",
+      width: "auto",
+      height: "auto",
+      zIndex: 10,
+    },
+    content: element.content,
+    animation: {
+      enter: "fadeIn",
+      enterDelay: element.narrationBinding.appearAt,
+      exit: "none",
+    },
+  };
+}
+
+/**
+ * Creates a map of sceneId -> visual scene data from visualPlan.
+ */
+function buildVisualPlanMap(visualPlan: VisualPlan): Map<string, VisualPlan["scenes"][0]> {
+  const map = new Map<string, VisualPlan["scenes"][0]>();
+  if (visualPlan.scenes) {
+    for (const scene of visualPlan.scenes) {
+      map.set(scene.sceneId, scene);
+    }
+  }
+  return map;
+}
+
+/**
+ * Adapts a single scene by merging visual plan data into visualLayers.
+ * If visualPlan is provided, converts mediaResources, textElements, and annotations.
+ * Falls back to existing visualLayers if visualPlan doesn't have data for this scene.
+ */
+export function adaptSceneForRenderer(
+  scene: SceneScript,
+  visualScene?: VisualPlan["scenes"][0],
+): SceneScript {
   const visualLayers: VisualLayer[] = [];
 
-  // Convert highlights to text visual layers
-  if (scene.highlights && scene.highlights.length > 0) {
-    for (let i = 0; i < scene.highlights.length; i++) {
-      visualLayers.push(highlightToVisualLayer(scene.highlights[i], scene.id, i));
+  // Convert mediaResources to screenshot visualLayers
+  if (visualScene?.mediaResources && visualScene.mediaResources.length > 0) {
+    for (const resource of visualScene.mediaResources) {
+      visualLayers.push(mediaResourceToVisualLayer(resource));
     }
   }
 
-  // Convert codeHighlights to code visual layers
-  if (scene.codeHighlights && scene.codeHighlights.length > 0) {
-    for (let i = 0; i < scene.codeHighlights.length; i++) {
-      visualLayers.push(codeHighlightToVisualLayer(scene.codeHighlights[i], scene.id, i));
+  // Convert textElements to text visualLayers
+  if (visualScene?.textElements && visualScene.textElements.length > 0) {
+    for (let i = 0; i < visualScene.textElements.length; i++) {
+      visualLayers.push(textElementToVisualLayer(visualScene.textElements[i], i));
     }
   }
 
+  // Use merged visualLayers if we have any, otherwise fall back to existing
   return {
     ...scene,
     visualLayers: visualLayers.length > 0 ? visualLayers : scene.visualLayers,
@@ -92,17 +152,32 @@ export function adaptSceneForRenderer(scene: SceneScript): SceneScript {
 }
 
 /**
- * Adapts the entire script output by converting highlights/codeHighlights to visualLayers.
+ * Adapts the entire script output by merging visual plan data into scenes.
  * Returns the adapted script with title and totalDuration derived from scenes.
+ *
+ * @param script - The script output from Script Agent (script.json)
+ * @param visualPlan - The visual plan from Visual Agent (visual.json), optional
  *
  * Call this function in the compose step before passing script data to spawnRenderer.
  */
-export function adaptScriptForRenderer(script: { title: string; scenes: SceneScript[] }): {
+export function adaptScriptForRenderer(
+  script: { title: string; scenes: SceneScript[] },
+  visualPlan?: VisualPlan,
+): {
   title: string;
   totalDuration: number;
   scenes: SceneScript[];
 } {
-  const adaptedScenes = script.scenes.map(adaptSceneForRenderer);
+  // Build a map of sceneId -> visualScene for efficient lookup
+  const visualMap = visualPlan ? buildVisualPlanMap(visualPlan) : new Map();
+
+  const adaptedScenes = script.scenes.map((scene) => {
+    // Try to find matching visual scene by sceneId (e.g., "scene-1")
+    // Also try by index-based id if sceneId format differs
+    const visualScene = visualMap.get(scene.id);
+    return adaptSceneForRenderer(scene, visualScene);
+  });
+
   const totalDuration = adaptedScenes.reduce((sum, s) => sum + s.duration, 0);
 
   return {

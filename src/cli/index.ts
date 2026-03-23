@@ -849,8 +849,21 @@ program
         JSON.parse(scriptContent),
       );
 
-      // Phase 9: Adapt script to renderer format - convert highlights/codeHighlights to visualLayers
-      const adaptedScript = adaptScriptForRenderer(script);
+      // Phase 9: Read visual.json if exists (from visualAgent)
+      const visualPath = join(dir, "visual.json");
+      let visualPlan: unknown | undefined;
+      if (existsSync(visualPath)) {
+        try {
+          const visualContent = readFileSync(visualPath, "utf-8");
+          visualPlan = JSON.parse(visualContent);
+          console.log(chalk.gray("  Visual: " + visualPath));
+        } catch {
+          // Visual plan is optional, continue without it
+        }
+      }
+
+      // Phase 9: Adapt script to renderer format - convert visual.json to visualLayers
+      const adaptedScript = adaptScriptForRenderer(script, visualPlan as Parameters<typeof adaptScriptForRenderer>[1]);
 
       const screenshotResources: Record<string, string> = {};
       script.scenes.forEach((scene, sceneIndex) => {
