@@ -1,32 +1,22 @@
-import { z } from "zod";
+// =============================================================================
+// Research Types - Re-export from @video-script/types
+// =============================================================================
+// D-04a: src/types re-exports unified types from @video-script/types
+// This ensures main and renderer use the same schema definitions.
+// =============================================================================
 
-export const ResearchLinkSchema = z.object({
-  url: z.string().url(),
-  key: z.string(),
-});
+// Re-export unified types from @video-script/types
+export {
+  ResearchInputSchema,
+  type ResearchInput,
+  ResearchSegmentSchema,
+  type ResearchSegment,
+  ResearchOutputSchema,
+  type ResearchOutput,
+} from "@video-script/types";
 
-export type ResearchLink = z.infer<typeof ResearchLinkSchema>;
-
-export const RelationshipTagEnum = z.enum(['原因', '对比', '示例', '注意事项']);
+// Additional relationship tags for D-02 (local to main process)
+export const RelationshipTagEnum = z.enum(["原因", "对比", "示例", "注意事项"]);
 export type RelationshipTag = z.infer<typeof RelationshipTagEnum>;
 
-export const ResearchSegmentSchema = z.object({
-  order: z.number().int().positive(),
-  sentence: z.string().min(1),
-  keyContent: z.object({
-    concept: z.string(),
-    // relationship tags per D-02
-    relationships: z.array(RelationshipTagEnum).optional(),
-    relationshipNotes: z.record(z.string(), z.string()).optional(),
-  }),
-  links: z.array(ResearchLinkSchema).min(1),
-});
-
-export type ResearchSegment = z.infer<typeof ResearchSegmentSchema>;
-
-export const ResearchOutputSchema = z.object({
-  title: z.string().min(1),
-  segments: z.array(ResearchSegmentSchema).min(1).max(20),
-});
-
-export type ResearchOutput = z.infer<typeof ResearchOutputSchema>;
+import { z } from "zod";

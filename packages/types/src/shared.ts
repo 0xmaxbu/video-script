@@ -46,3 +46,22 @@ export const ScreenshotConfigBaseSchema = z.object({
   fontFamily: z.string().default("Fira Code"),
 });
 export type ScreenshotConfigBase = z.infer<typeof ScreenshotConfigBaseSchema>;
+
+// Screenshot specification schema
+export const ScreenshotSpecSchema = z.object({
+  url: z.string().url().optional(),
+  selector: z.string().optional(),
+  viewport: z.object({
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  }),
+});
+export type ScreenshotSpec = z.infer<typeof ScreenshotSpecSchema>;
+
+// Code specification schema
+export const CodeSpecSchema = z.object({
+  language: z.string(),
+  code: z.string(),
+  highlightLines: z.array(z.number().int().positive()).optional(),
+});
+export type CodeSpec = z.infer<typeof CodeSpecSchema>;

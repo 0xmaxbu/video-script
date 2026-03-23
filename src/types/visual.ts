@@ -1,12 +1,39 @@
 /**
- * Visual Architecture Types
+ * Visual Architecture Types - Main Process Specific
  *
  * 核心原则：视觉服从口播
  * - 所有视觉元素的时机绑定到口播时间轴
  * - 标注、截图、文字的出现由口播内容触发
+ *
+ * NOTE: Shared types (Annotation, SceneHighlight, CodeHighlight, etc.)
+ * are now in @video-script/types. This file only contains main-process-specific types.
  */
 
 import { z } from "zod";
+import {
+  AnnotationSchema,
+  SceneHighlightSchema,
+  CodeHighlightSchema,
+  type AnnotationColor,
+} from "@video-script/types";
+
+// Re-export for backward compatibility
+export {
+  AnnotationSchema,
+  AnnotationTypeEnum,
+  AnnotationColorEnum,
+  AnnotationTargetSchema,
+  SceneHighlightSchema,
+  CodeHighlightSchema,
+  ANNOTATION_COLORS,
+  type Annotation,
+  type AnnotationType,
+  type AnnotationColor,
+  type AnnotationTarget,
+  type SceneHighlight,
+  type CodeHighlight,
+  type AnnotationColorValue,
+} from "@video-script/types";
 
 // ============================================================================
 // 信息重要性分级
@@ -49,62 +76,6 @@ export const ScreenshotResourceSchema = z.object({
 export type ScreenshotResource = z.infer<typeof ScreenshotResourceSchema>;
 
 // ============================================================================
-// 标注系统
-// ============================================================================
-
-export const AnnotationTypeEnum = z.enum([
-  "circle", // 圈出重点
-  "underline", // 强调文字
-  "arrow", // 指向说明
-  "highlight", // 背景高亮
-  "box", // 框选区域
-  "number", // 序号标注
-  "crossout", // 删除标记
-  "checkmark", // 完成标记
-]);
-export type AnnotationType = z.infer<typeof AnnotationTypeEnum>;
-
-// 固定颜色方案
-export const AnnotationColorEnum = z.enum([
-  "attention", // 红色 - 警告、重要
-  "highlight", // 黄色 - 高亮、强调
-  "info", // 蓝色 - 信息、说明
-  "success", // 绿色 - 成功、完成
-]);
-export type AnnotationColor = z.infer<typeof AnnotationColorEnum>;
-
-// 标注目标定位
-export const AnnotationTargetSchema = z.object({
-  type: z.enum(["text", "region", "code-line"]),
-  // 文本匹配
-  textMatch: z.string().optional(),
-  // 代码行号
-  lineNumber: z.number().int().positive().optional(),
-  // 区域定位
-  region: z
-    .enum(["top-left", "top-right", "center", "bottom-left", "bottom-right"])
-    .optional(),
-});
-export type AnnotationTarget = z.infer<typeof AnnotationTargetSchema>;
-
-// 完整标注定义
-export const AnnotationSchema = z.object({
-  type: AnnotationTypeEnum,
-  target: AnnotationTargetSchema,
-  style: z.object({
-    color: AnnotationColorEnum,
-    size: z.enum(["small", "medium", "large"]),
-  }),
-  // 关键：绑定到口播
-  narrationBinding: z.object({
-    triggerText: z.string(), // 口播说到这些字时触发
-    segmentIndex: z.number().int().nonnegative(), // 对应哪段口播
-    appearAt: z.number().nonnegative(), // 口播说到第几秒时出现
-  }),
-});
-export type Annotation = z.infer<typeof AnnotationSchema>;
-
-// ============================================================================
 // 布局模板
 // ============================================================================
 
@@ -143,34 +114,6 @@ export const NarrationSegmentSchema = z.object({
   endTime: z.number().nonnegative(),
 });
 export type NarrationSegment = z.infer<typeof NarrationSegmentSchema>;
-
-// 场景重点标记
-export const SceneHighlightSchema = z.object({
-  text: z.string(), // 口播中的重点文字片段
-  segmentIndex: z.number().int().nonnegative(), // 在哪个 segment 中
-  charStart: z.number().int().nonnegative(), // 在 segment 中的字符起始位置
-  charEnd: z.number().int().nonnegative(), // 在 segment 中的字符结束位置
-  timeInScene: z.number().nonnegative(), // 在场景中的时间点（秒）
-  importance: z.enum(["critical", "high", "medium"]),
-  annotationSuggestion: z.enum([
-    "circle",
-    "underline",
-    "highlight",
-    "number",
-  ]),
-  reason: z.string(), // 为什么这是重点（供 AI 理解）
-});
-export type SceneHighlight = z.infer<typeof SceneHighlightSchema>;
-
-// 代码重点
-export const CodeHighlightSchema = z.object({
-  codeLine: z.number().int().positive(), // 行号
-  codeText: z.string(), // 代码内容
-  explanation: z.string(), // 解释
-  timeInScene: z.number().nonnegative(), // 口播讲到这行代码的时间点
-  annotationType: z.enum(["circle", "underline", "arrow", "number"]),
-});
-export type CodeHighlight = z.infer<typeof CodeHighlightSchema>;
 
 // 新的场景 Schema
 export const NewSceneSchema = z.object({
@@ -277,16 +220,3 @@ export const VisualPlanSchema = z.object({
   scenes: z.array(VisualSceneSchema),
 });
 export type VisualPlan = z.infer<typeof VisualPlanSchema>;
-
-// ============================================================================
-// 颜色映射（运行时使用）
-// ============================================================================
-
-export const ANNOTATION_COLORS = {
-  attention: "#FF3B30", // 红色
-  highlight: "#FFCC00", // 黄色
-  info: "#007AFF", // 蓝色
-  success: "#34C759", // 绿色
-} as const;
-
-export type AnnotationColorValue = (typeof ANNOTATION_COLORS)[AnnotationColor];
