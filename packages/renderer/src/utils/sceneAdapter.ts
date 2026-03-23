@@ -60,7 +60,7 @@ export interface ScreenshotResource {
 export interface TextElement {
   content: string;
   role: "title" | "subtitle" | "bullet" | "quote";
-  position: "top" | "center" | "bottom" | "left" | "right";
+  position: "top" | "center" | "bottom";
   narrationBinding: NarrationBinding;
 }
 
@@ -196,21 +196,14 @@ function convertSceneHighlightToAnnotation(
   _index: number,
 ): Annotation {
   return {
-    type:
-      highlight.annotationSuggestion === "number"
-        ? "number"
-        : highlight.annotationSuggestion,
+    type: highlight.annotationSuggestion === "number" ? "number" : highlight.annotationSuggestion,
     target: {
       type: "text",
       textMatch: highlight.text,
     },
     style: {
-      color:
-        highlight.importance === "critical"
-          ? "attention"
-          : highlight.importance === "high"
-            ? "highlight"
-            : "info",
+      color: highlight.importance === "critical" ? "attention" :
+             highlight.importance === "high" ? "highlight" : "info",
       size: "medium",
     },
     narrationBinding: {
@@ -228,10 +221,8 @@ function convertCodeHighlightToAnnotation(
   codeHighlight: CodeHighlight,
 ): Annotation {
   return {
-    type:
-      codeHighlight.annotationType === "arrow"
-        ? "arrow"
-        : codeHighlight.annotationType,
+    type: codeHighlight.annotationType === "arrow" ? "arrow" :
+          codeHighlight.annotationType,
     target: {
       type: "code-line",
       lineNumber: codeHighlight.codeLine,
@@ -260,9 +251,7 @@ export function convertHighlightsToAnnotations(
   const annotations: Annotation[] = [];
 
   if (highlights && highlights.length > 0) {
-    annotations.push(
-      ...highlights.map((h) => convertSceneHighlightToAnnotation(h, 0)),
-    );
+    annotations.push(...highlights.map((h) => convertSceneHighlightToAnnotation(h, 0)));
   }
 
   if (codeHighlights && codeHighlights.length > 0) {
@@ -298,64 +287,14 @@ function createNarrationTimeline(
 }
 
 /**
- * Converts a VisualLayer with type "text" to a TextElement.
- * Maps x/y position to single position value.
- */
-function visualLayerToTextElement(
-  layer: VisualLayer,
-  index: number,
-): TextElement {
-  // Map x,y position back to single position
-  // For vertical layouts: y:top -> "top", y:bottom -> "bottom", y:center -> "center"
-  // For horizontal layouts: x:left -> "left", x:right -> "right"
-  let position: TextElement["position"] = "center";
-
-  // Determine primary axis based on y position (vertical layout priority)
-  if (layer.position.y === "top") {
-    position = "top";
-  } else if (layer.position.y === "bottom") {
-    position = "bottom";
-  } else if (layer.position.x === "left") {
-    position = "left";
-  } else if (layer.position.x === "right") {
-    position = "right";
-  } else {
-    position = "center";
-  }
-
-  return {
-    content: layer.content,
-    role: index === 0 ? "title" : "subtitle", // First text layer is title
-    position,
-    narrationBinding: {
-      triggerText: layer.content.slice(0, 50),
-      segmentIndex: 0,
-      appearAt: layer.animation.enterDelay,
-    },
-  };
-}
-
-/**
- * Creates text elements from visualLayers (type "text").
- * Falls back to scene title if no visualLayers with type "text" exist.
+ * Creates text elements from scene title.
+ * Per D-01d: Title becomes the primary text element.
  */
 function createTextElements(
   title: string,
   _narration: string,
   _duration: number,
-  visualLayers?: VisualLayer[],
 ): TextElement[] {
-  // First, check if there are visualLayers with type "text"
-  const textLayers = visualLayers?.filter((l) => l.type === "text") || [];
-
-  if (textLayers.length > 0) {
-    // Convert visualLayers to textElements
-    return textLayers.map((layer, index) =>
-      visualLayerToTextElement(layer, index),
-    );
-  }
-
-  // Fallback: create title element from scene title
   return [
     {
       content: title,
@@ -411,12 +350,11 @@ export function convertToVisualScene(
     scene.duration,
   );
 
-  // Create text elements (pass visualLayers to convert type "text" layers to textElements)
+  // Create text elements
   const textElements = createTextElements(
     scene.title,
     scene.narration,
     scene.duration,
-    scene.visualLayers,
   );
 
   // Handle transition with default

@@ -574,3 +574,64 @@ export function selectStrategyForContent(
     reasoning: `Selected ${strategyKey} strategy based on content hint "${contentHint}"`,
   };
 }
+
+// Content-type-specific strategies (D-04)
+export const CONTENT_TYPE_STRATEGIES = {
+  documentation: {
+    primaryHint: "documentation" as const,
+    selectors: ["article", ".content", ".markdown-body", ".docs-content", "main"],
+    preferSemantic: true,
+    minContentLength: 200,
+  },
+  code: {
+    primaryHint: "code" as const,
+    selectors: ["pre", "code", ".highlight", ".code-block", ".syntax-highlight"],
+    preferSemantic: false,
+    minContentLength: 50,
+  },
+  article: {
+    primaryHint: "article" as const,
+    selectors: ["article", "main", ".content", ".post-body", "h1, h2"],
+    preferSemantic: true,
+    minContentLength: 300,
+  },
+} as const;
+
+export type ContentTypeStrategyKey = keyof typeof CONTENT_TYPE_STRATEGIES;
+
+export interface SelectStrategyInput {
+  contentHint: string;
+  pageStructure: Awaited<ReturnType<typeof analyzePageStructure>>;
+}
+
+export interface SelectStrategyResult {
+  strategy: (typeof CONTENT_TYPE_STRATEGIES)[ContentTypeStrategyKey];
+  selectedSelectors: string[];
+  reasoning: string;
+}
+
+export function selectStrategyForContent(
+  input: SelectStrategyInput,
+): SelectStrategyResult {
+  const { contentHint, pageStructure: _pageStructure } = input;
+  
+  const hint = contentHint.toLowerCase();
+  
+  let strategyKey: ContentTypeStrategyKey = "documentation";
+  
+  if (hint.includes("code") || hint.includes("snippet") || hint.includes("syntax")) {
+    strategyKey = "code";
+  } else if (hint.includes("article") || hint.includes("blog") || hint.includes("post")) {
+    strategyKey = "article";
+  } else if (hint.includes("doc") || hint.includes("guide") || hint.includes("tutorial")) {
+    strategyKey = "documentation";
+  }
+  
+  const strategy = CONTENT_TYPE_STRATEGIES[strategyKey];
+  
+  return {
+    strategy,
+    selectedSelectors: [...strategy.selectors],
+    reasoning: `Selected ${strategyKey} strategy based on content hint "${contentHint}"`,
+  };
+}

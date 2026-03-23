@@ -7,32 +7,19 @@
  * - 所有元素通过 narrationBinding 控制出现时机
  */
 
-import { HeroFullscreen } from "./HeroFullscreen.js";
-import { SplitHorizontal } from "./SplitHorizontal.js";
-import { SplitVertical } from "./SplitVertical.js";
-import { TextOverImage } from "./TextOverImage.js";
-import { CodeFocus } from "./CodeFocus.js";
-import { Comparison } from "./Comparison.js";
-import { BulletList } from "./BulletList.js";
-import { Quote } from "./Quote.js";
-import { Grid } from "./Grid.js";
-import { FrostedCard } from "./FrostedCard.js";
-
-export {
-  HeroFullscreen,
-  SplitHorizontal,
-  SplitVertical,
-  TextOverImage,
-  CodeFocus,
-  Comparison,
-  BulletList,
-  Quote,
-  Grid,
-  FrostedCard,
-};
+export { HeroFullscreen } from "./HeroFullscreen.js";
+export { SplitHorizontal } from "./SplitHorizontal.js";
+export { SplitVertical } from "./SplitVertical.js";
+export { TextOverImage } from "./TextOverImage.js";
+export { CodeFocus } from "./CodeFocus.js";
+export { Comparison } from "./Comparison.js";
+export { BulletList } from "./BulletList.js";
+export { Quote } from "./Quote.js";
+export { Grid } from "./Grid.js";
+export { FrostedCard } from "./FrostedCard.js";
 
 import type { ReactNode } from "react";
-import type { VisualScene } from "../../utils/sceneAdapter.js";
+import type { VisualScene } from "@video-script/types";
 
 /**
  * 布局组件的通用 Props

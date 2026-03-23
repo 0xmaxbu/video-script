@@ -1,5 +1,5 @@
 import React from "react";
-import { Composition, registerRoot } from "remotion";
+import { Composition } from "remotion";
 import { Config } from "@remotion/cli/config";
 import { z } from "zod";
 import { VideoComposition } from "./Composition.js";
@@ -96,6 +96,3 @@ export const RemotionRoot: React.FC = () => {
     </>
   );
 };
-
-// Register the root component - this is required by Remotion v4
-registerRoot(RemotionRoot);

@@ -30,7 +30,7 @@ async function spawnRenderProcess(
   );
   await writeFile(propsFile, JSON.stringify(props), "utf-8");
 
-  // Remotion CLI path from project root's node_modules (not packages/renderer's)
+  // Remotion CLI path from packages/renderer directory
   const remotionCli = join(
     process.cwd(),
     "node_modules",
@@ -39,18 +39,10 @@ async function spawnRenderProcess(
     "remotion-cli.js",
   );
 
-  const entryPoint = join(
-    process.cwd(),
-    "packages/renderer",
-    "src",
-    "remotion",
-    "Root.tsx",
-  );
-
   const args = [
     remotionCli,
     "render",
-    entryPoint,
+    "src/remotion/Root.tsx", // Entry point is packages/renderer
     compositionId,
     videoOutputPath,
     "--props",
@@ -64,10 +56,10 @@ async function spawnRenderProcess(
     "--quiet",
   ];
 
-  // Run from packages/renderer directory
+  // Run from packages/renderer directory (cwd = process.cwd())
   const renderProcess = spawn(process.execPath, args, {
     stdio: ["pipe", "pipe", "pipe"],
-    cwd: join(process.cwd(), "packages/renderer"),
+    cwd: process.cwd(),
   });
 
   let stderrParts: string[] = [];
