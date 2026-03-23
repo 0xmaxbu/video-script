@@ -3,10 +3,6 @@ import { homedir } from "os";
 import { spawn } from "child_process";
 import { z } from "zod";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
-import {
-  generateRemotionProject,
-  type GenerateProjectInput,
-} from "./remotion-project-generator.js";
 import { generateOutputDirectory } from "./output-directory.js";
 
 interface RenderResult {
@@ -17,25 +13,26 @@ interface RenderResult {
 }
 
 async function spawnRenderProcess(
-  projectPath: string,
   videoOutputPath: string,
   fps: number,
-  scenes: z.infer<typeof SceneScriptSchema>[],
+  props: { script: ScriptOutput; images?: Record<string, string> },
   compositionId: string = "Video",
 ): Promise<RenderResult> {
   const { existsSync } = await import("fs");
+  const { writeFile, unlink } = await import("fs/promises");
+  const { randomBytes } = await import("crypto");
+  const { tmpdir } = await import("os");
 
-  if (!existsSync(projectPath)) {
-    return {
-      videoPath: "",
-      duration: 0,
-      success: false,
-      error: `Project path not found: ${projectPath}`,
-    };
-  }
+  // Write props to temp JSON file
+  const propsFile = join(
+    tmpdir(),
+    `remotion-props-${randomBytes(8).toString("hex")}.json`,
+  );
+  await writeFile(propsFile, JSON.stringify(props), "utf-8");
 
-  const remotionScript = join(
-    projectPath,
+  // Remotion CLI path from packages/renderer directory
+  const remotionCli = join(
+    process.cwd(),
     "node_modules",
     "@remotion",
     "cli",
@@ -43,11 +40,13 @@ async function spawnRenderProcess(
   );
 
   const args = [
-    remotionScript,
+    remotionCli,
     "render",
-    "src/index.tsx",
+    "src/remotion/Root.tsx", // Entry point is packages/renderer
     compositionId,
     videoOutputPath,
+    "--props",
+    propsFile,
     "--codec",
     "h264",
     "--fps",
@@ -57,9 +56,10 @@ async function spawnRenderProcess(
     "--quiet",
   ];
 
+  // Run from packages/renderer directory (cwd = process.cwd())
   const renderProcess = spawn(process.execPath, args, {
     stdio: ["pipe", "pipe", "pipe"],
-    cwd: projectPath,
+    cwd: process.cwd(),
   });
 
   let stderrParts: string[] = [];
@@ -68,12 +68,24 @@ async function spawnRenderProcess(
     stderrParts.push(data.toString());
   });
 
+  // Helper to clean up temp props file
+  const cleanupPropsFile = async () => {
+    try {
+      await unlink(propsFile);
+    } catch {
+      // Ignore cleanup errors
+    }
+  };
+
   return new Promise((resolve) => {
-    renderProcess.on("close", (code: number) => {
+    renderProcess.on("close", async (code: number) => {
+      // Clean up temp props file
+      await cleanupPropsFile();
+
       if (code === 0 && existsSync(videoOutputPath)) {
         return resolve({
           videoPath: videoOutputPath,
-          duration: calculateTotalDuration(scenes),
+          duration: calculateTotalDuration(props.script.scenes),
           success: true,
         });
       }
@@ -86,7 +98,8 @@ async function spawnRenderProcess(
       });
     });
 
-    renderProcess.on("error", (error: Error) => {
+    renderProcess.on("error", async (error: Error) => {
+      await cleanupPropsFile();
       return resolve({
         videoPath: "",
         duration: 0,
@@ -164,27 +177,7 @@ export async function renderVideo(
 
     onProgress?.(10);
 
-    const projectInput: GenerateProjectInput = {
-      script,
-      screenshotResources,
-      outputPath: join(finalOutputDir, ".remotion-project"),
-    };
-
-    const projectResult = await generateRemotionProject(projectInput);
-
-    if (!projectResult.success) {
-      return {
-        videoPath: "",
-        duration: 0,
-        fps: 30,
-        resolution: "1920x1080",
-        success: false,
-        error: projectResult.error || "Failed to generate Remotion project",
-      };
-    }
-
-    onProgress?.(30);
-
+    // Create output directory
     const videoOutputPath = resolve(join(finalOutputDir, videoFileName));
     const { existsSync, mkdirSync } = await import("fs");
     const { dirname } = await import("path");
@@ -196,11 +189,11 @@ export async function renderVideo(
 
     onProgress?.(40);
 
+    // Pass script and images directly to spawnRenderProcess (no project generation)
     const renderResult = await spawnRenderProcess(
-      projectResult.projectPath,
       videoOutputPath,
-      projectResult.videoConfig.fps,
-      script.scenes,
+      30, // fps - hardcoded since no project generation
+      { script, images: screenshotResources }, // props object
       input.compositionId ?? "Video",
     );
 
@@ -210,8 +203,8 @@ export async function renderVideo(
       return {
         videoPath: "",
         duration: 0,
-        fps: projectResult.videoConfig.fps,
-        resolution: projectResult.videoConfig.resolution,
+        fps: 30,
+        resolution: "1920x1080",
         success: false,
         error: renderResult.error || "Video rendering failed",
       };
@@ -224,8 +217,8 @@ export async function renderVideo(
     const result: RenderVideoOutput = {
       videoPath: renderResult.videoPath,
       duration: calculateTotalDuration(script.scenes),
-      fps: projectResult.videoConfig.fps,
-      resolution: projectResult.videoConfig.resolution,
+      fps: 30, // hardcoded since no project generation
+      resolution: "1920x1080", // hardcoded since no project generation
       success: true,
     };
 
