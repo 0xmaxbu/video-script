@@ -228,9 +228,10 @@ Plans:
 - Issue: All layouts aligned to top instead of proper content positioning
 - Issue: Layout components ignore visualLayers data
 
-**Plans:** 1 plan (TBD)
+**Plans:** 2 plans
 
----
+- [ ] 12-01-PLAN.md — Fix FrostedCard z-index and SplitVertical flexbox centering (VIS-04, VIS-05)
+- [ ] 12-02-PLAN.md — Fix visualLayer content mapping in layouts (VIS-06, VIS-07)
 
 _Roadmap created: 2026-03-22_
 _Last updated: 2026-03-23_
