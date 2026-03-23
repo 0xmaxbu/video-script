@@ -47,7 +47,11 @@ export const playwrightScreenshotTool = createTool({
       .describe("Output filename (e.g., scene-001.png)"),
   }),
   outputSchema: z.object({
-    imagePath: z.string().describe("Path to the saved PNG screenshot"),
+    imagePath: z
+      .string()
+      .describe(
+        "Path to the saved PNG screenshot (always local file path, ORB-safe)",
+      ),
     url: z.string().describe("The URL that was captured"),
     success: z.boolean().describe("Whether the screenshot was successful"),
   }),

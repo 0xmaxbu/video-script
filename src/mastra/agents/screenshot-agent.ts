@@ -328,3 +328,188 @@ export function parseMediaResources(visualPlan: {
 
   return resources;
 }
+
+export interface AnalyzeFailureInput {
+  url: string;
+  failedSelector: string;
+  errorMessage: string;
+  contentHint: string;
+}
+
+export interface AnalyzeFailureResult {
+  improvedSelector: string;
+  reason: string;
+  alternativeSelectors: string[];
+}
+
+export async function analyzeFailureAndSuggestSelector(
+  input: AnalyzeFailureInput,
+): Promise<AnalyzeFailureResult> {
+  const { url, failedSelector, errorMessage, contentHint } = input;
+
+  try {
+    const pageStructure = await analyzePageStructure(
+      url,
+      contentHint as "documentation" | "code" | "article",
+    );
+
+    if (
+      !pageStructure.semanticRegions ||
+      pageStructure.semanticRegions.length === 0
+    ) {
+      const fallback = getDefaultSelectorForType(contentHint);
+      return {
+        improvedSelector: fallback,
+        reason: `Failed selector "${failedSelector}" not found. No semantic regions detected, using default.`,
+        alternativeSelectors: DEFAULT_SELECTORS[contentHint] || ["article"],
+      };
+    }
+
+    let reason = "";
+    if (errorMessage.includes("SELECTOR_NOT_FOUND")) {
+      reason = `Selector "${failedSelector}" not found on page.`;
+    } else if (errorMessage.includes("Timeout")) {
+      reason = `Timeout waiting for "${failedSelector}". Element may have dynamic loading.`;
+    } else {
+      reason = `Screenshot failed: ${errorMessage}`;
+    }
+
+    const alternatives: string[] = [];
+    const usedSelectors = new Set<string>([failedSelector]);
+
+    for (const region of pageStructure.semanticRegions) {
+      if (!usedSelectors.has(region.selector)) {
+        alternatives.push(region.selector);
+        usedSelectors.add(region.selector);
+      }
+      if (alternatives.length >= 2) break;
+    }
+
+    if (alternatives.length === 0) {
+      const defaults = DEFAULT_SELECTORS[contentHint] || ["article"];
+      for (const sel of defaults) {
+        if (!usedSelectors.has(sel)) {
+          alternatives.push(sel);
+          usedSelectors.add(sel);
+        }
+        if (alternatives.length >= 2) break;
+      }
+    }
+
+    const improvedSelector =
+      alternatives[0] || getDefaultSelectorForType(contentHint);
+
+    return {
+      improvedSelector,
+      reason: `${reason} Found ${pageStructure.semanticRegions.length} semantic regions. Selected "${improvedSelector}".`,
+      alternativeSelectors: alternatives.slice(0, 2),
+    };
+  } catch (error) {
+    console.error(`Failure analysis failed: ${error}`);
+    return {
+      improvedSelector: getDefaultSelectorForType(contentHint),
+      reason: `Failure analysis error: ${error}. Using default selector.`,
+      alternativeSelectors: DEFAULT_SELECTORS[contentHint]?.slice(0, 2) || [
+        "article",
+      ],
+    };
+  }
+}
+
+export interface CaptureWithRetryInput {
+  url: string;
+  selector?: string;
+  contentHint: string;
+  narrationContext: string;
+  maxRetries?: number;
+  viewport?: { width: number; height: number };
+  outputDir?: string;
+  filename?: string;
+}
+
+export interface CaptureWithRetryResult {
+  imagePath: string | null;
+  selectorUsed: string;
+  success: boolean;
+  attempts: Array<{
+    selector: string;
+    error?: string;
+  }>;
+}
+
+export async function captureWithRetry(
+  input: CaptureWithRetryInput,
+): Promise<CaptureWithRetryResult> {
+  const {
+    url,
+    selector,
+    contentHint,
+    narrationContext: _narrationContext,
+    maxRetries = 2,
+    viewport = { width: 1920, height: 1080 },
+    outputDir = "./output/screenshots",
+    filename,
+  } = input;
+
+  let currentSelector = selector;
+  const attempts: Array<{ selector: string; error?: string }> = [];
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const selectorToUse =
+      currentSelector || getDefaultSelectorForType(contentHint);
+    attempts.push({ selector: selectorToUse });
+
+    try {
+      const result = await (playwrightScreenshotTool as any).execute({
+        url,
+        selector: selectorToUse,
+        viewport,
+        outputDir,
+        filename,
+      });
+
+      return {
+        imagePath: result.imagePath as string,
+        selectorUsed: selectorToUse,
+        success: true,
+        attempts,
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      attempts[attempts.length - 1].error = errorMsg;
+
+      console.error(`Screenshot attempt ${attempt + 1} failed: ${errorMsg}`);
+
+      if (attempt < maxRetries) {
+        const analysis = await analyzeFailureAndSuggestSelector({
+          url,
+          failedSelector: selectorToUse,
+          errorMessage: errorMsg,
+          contentHint,
+        });
+
+        console.log(
+          `Retrying with selector "${analysis.improvedSelector}": ${analysis.reason}`,
+        );
+
+        currentSelector = analysis.improvedSelector;
+
+        if (analysis.alternativeSelectors.length > 1) {
+          for (let i = 1; i < analysis.alternativeSelectors.length; i++) {
+            if (currentSelector !== analysis.alternativeSelectors[i]) {
+              currentSelector = analysis.alternativeSelectors[i];
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    imagePath: null,
+    selectorUsed: attempts[attempts.length - 1].selector,
+    success: false,
+    attempts,
+  };
+}
