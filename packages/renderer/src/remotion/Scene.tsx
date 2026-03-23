@@ -6,6 +6,8 @@ import { VisualLayerRenderer } from "./components/VisualLayerRenderer.js";
 import { CodeAnimation } from "./components/CodeAnimation.js";
 import { AnnotationRenderer } from "./annotations/AnnotationRenderer.js";
 import type { Annotation } from "@video-script/types";
+import { getLayoutComponent } from "./layouts/index.js";
+import { convertToVisualScene } from "../utils/sceneAdapter.js";
 
 interface SceneProps {
   scene: SceneType;
@@ -65,7 +67,16 @@ const getPositionStyle = (
   return style;
 };
 
-export const Scene: React.FC<SceneProps> = ({
+/**
+ * InlineScene - D-03 fallback component
+ *
+ * Contains the original inline rendering logic used when:
+ * - layoutTemplate is undefined
+ * - layoutTemplate is explicitly "inline"
+ * - getLayoutComponent returns null (unknown layout)
+ * - Layout rendering fails
+ */
+const InlineScene: React.FC<SceneProps> = ({
   scene,
   imagePaths,
   annotations = [],
@@ -177,4 +188,69 @@ export const Scene: React.FC<SceneProps> = ({
   }
 
   return null;
+};
+
+/**
+ * Scene - Main scene component with layout routing
+ *
+ * Per D-03: Routes through layout components when layoutTemplate is set,
+ * with fallback to inline rendering when:
+ * - layoutTemplate is undefined or "inline"
+ * - getLayoutComponent returns null (unknown layout)
+ * - Layout rendering throws an error
+ */
+export const Scene: React.FC<SceneProps> = ({
+  scene,
+  imagePaths,
+  annotations = [],
+}) => {
+  const layoutTemplate = scene.layoutTemplate;
+
+  // D-03: Fallback to inline when no template or explicit "inline"
+  if (!layoutTemplate || layoutTemplate === "inline") {
+    return (
+      <InlineScene
+        scene={scene}
+        imagePaths={imagePaths}
+        annotations={annotations}
+      />
+    );
+  }
+
+  const LayoutComponent = getLayoutComponent(layoutTemplate);
+
+  // D-03b: Degrade gracefully on unknown layout
+  if (!LayoutComponent) {
+    console.warn(
+      `Unknown layout template: ${layoutTemplate}, falling back to inline`,
+    );
+    return (
+      <InlineScene
+        scene={scene}
+        imagePaths={imagePaths}
+        annotations={annotations}
+      />
+    );
+  }
+
+  try {
+    const visualScene = convertToVisualScene(scene, imagePaths || {});
+    const screenshotsMap = new Map(Object.entries(imagePaths || {}));
+
+    return (
+      <LayoutComponent scene={visualScene} screenshots={screenshotsMap}>
+        <AnnotationRenderer annotations={annotations} />
+        <Subtitle text={scene.narration} />
+      </LayoutComponent>
+    );
+  } catch (error) {
+    console.warn(`Layout render failed: ${error}, falling back to inline`);
+    return (
+      <InlineScene
+        scene={scene}
+        imagePaths={imagePaths}
+        annotations={annotations}
+      />
+    );
+  }
 };
