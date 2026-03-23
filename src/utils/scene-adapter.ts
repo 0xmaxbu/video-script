@@ -46,7 +46,7 @@ interface MediaResource {
 interface TextElement {
   content: string;
   role: "title" | "subtitle" | "bullet" | "quote";
-  position: "top" | "center" | "bottom";
+  position: "top" | "center" | "bottom" | "left" | "right";
   narrationBinding: {
     triggerText: string;
     segmentIndex: number;
@@ -98,17 +98,34 @@ function textElementToVisualLayer(
   element: TextElement,
   index: number,
 ): VisualLayer {
+  // Map element.position (top/center/bottom/left/right) to x and y
+  // Horizontal positions (left/right) affect x, vertical positions affect y
+  let x: "left" | "center" | "right" = "center";
+  let y: "top" | "center" | "bottom" = "center";
+
+  if (element.position === "left") {
+    x = "left";
+    y = "center";
+  } else if (element.position === "right") {
+    x = "right";
+    y = "center";
+  } else if (element.position === "top") {
+    x = "center";
+    y = "top";
+  } else if (element.position === "center") {
+    x = "center";
+    y = "center";
+  } else if (element.position === "bottom") {
+    x = "center";
+    y = "bottom";
+  }
+
   return {
     id: `text-${index}`,
     type: "text",
     position: {
-      x: "center",
-      y:
-        element.position === "top"
-          ? "top"
-          : element.position === "center"
-            ? "center"
-            : "bottom",
+      x,
+      y,
       width: "auto",
       height: "auto",
       zIndex: 10,
