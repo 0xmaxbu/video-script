@@ -6,6 +6,8 @@ import { VideoComposition } from "./Composition.js";
 import { ScriptOutputSchema } from "../types.js";
 
 // Configure default video settings
+// Config.overrideWidth/overrideHeight from @remotion/cli/config is the correct
+// Remotion CLI config API for setting default dimensions in a static registration file.
 Config.overrideWidth(1920);
 Config.overrideHeight(1080);
 
