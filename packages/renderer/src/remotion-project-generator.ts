@@ -2,64 +2,11 @@ import { mkdir, writeFile } from "fs/promises";
 import { spawn } from "child_process";
 import { join, resolve } from "path";
 import { z } from "zod";
-import { ScriptOutput } from "./types.js";
+import { ScriptOutput, ScriptOutputSchema } from "./types.js";
 
+// D-02c: Use proper schemas instead of z.any() for transition and annotations
 const GenerateProjectInputSchema = z.object({
-  script: z.object({
-    title: z.string(),
-    totalDuration: z.number().positive(),
-    scenes: z.array(
-      z.object({
-        id: z.string(),
-        type: z.enum(["intro", "feature", "code", "outro"]),
-        title: z.string(),
-        narration: z.string(),
-        duration: z.number().positive(),
-        visualLayers: z
-          .array(
-            z.object({
-              id: z.string(),
-              type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
-              position: z.object({
-                x: z.union([z.number(), z.enum(["left", "center", "right"])]),
-                y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
-                width: z.union([
-                  z.number(),
-                  z.literal("auto"),
-                  z.literal("full"),
-                ]),
-                height: z.union([
-                  z.number(),
-                  z.literal("auto"),
-                  z.literal("full"),
-                ]),
-                zIndex: z.number().default(0),
-              }),
-              content: z.string(),
-              animation: z.object({
-                enter: z.enum([
-                  "fadeIn",
-                  "slideLeft",
-                  "slideRight",
-                  "slideUp",
-                  "slideDown",
-                  "slideIn",
-                  "zoomIn",
-                  "typewriter",
-                  "none",
-                ]),
-                enterDelay: z.number().default(0),
-                exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
-                exitAt: z.number().optional(),
-              }),
-            }),
-          )
-          .optional(),
-        transition: z.any().optional(),
-        annotations: z.array(z.any()).optional(),
-      }),
-    ),
-  }),
+  script: ScriptOutputSchema,
   screenshotResources: z.record(z.string(), z.string()),
   outputPath: z.string().min(1),
   width: z.number().int().positive().default(1920),
@@ -285,6 +232,58 @@ import { Composition } from "remotion";
 import { z } from "zod";
 import { VideoComposition } from "./Composition";
 
+// D-02c: Proper schema definitions instead of z.any()
+const PositionSchema = z.object({
+  x: z.union([z.number(), z.enum(["left", "center", "right"])]),
+  y: z.union([z.number(), z.enum(["top", "center", "bottom"])]),
+  width: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  height: z.union([z.number(), z.literal("auto"), z.literal("full")]),
+  zIndex: z.number().default(0),
+});
+
+const AnimationConfigSchema = z.object({
+  enter: z.enum(["fadeIn", "slideLeft", "slideRight", "slideUp", "slideDown", "slideIn", "zoomIn", "typewriter", "none"]),
+  enterDelay: z.number().default(0),
+  exit: z.enum(["fadeOut", "slideOut", "zoomOut", "none"]),
+  exitAt: z.number().optional(),
+});
+
+const VisualLayerSchema = z.object({
+  id: z.string(),
+  type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
+  position: PositionSchema,
+  content: z.string(),
+  animation: AnimationConfigSchema,
+});
+
+const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "flip", "clockWipe", "iris", "none"]),
+  duration: z.number().min(0).max(1),
+});
+
+const AnnotationTargetSchema = z.object({
+  type: z.enum(["text", "region", "code-line"]),
+  textMatch: z.string().optional(),
+  lineNumber: z.number().int().positive().optional(),
+  region: z.enum(["top-left", "top-right", "center", "bottom-left", "bottom-right"]).optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
+});
+
+const AnnotationSchema = z.object({
+  type: z.enum(["circle", "underline", "arrow", "box", "highlight", "number", "crossout", "checkmark"]),
+  target: AnnotationTargetSchema,
+  style: z.object({
+    color: z.enum(["attention", "highlight", "info", "success"]),
+    size: z.enum(["small", "medium", "large"]),
+  }),
+  narrationBinding: z.object({
+    triggerText: z.string(),
+    segmentIndex: z.number().int().nonnegative(),
+    appearAt: z.number().nonnegative(),
+  }),
+});
+
 const compositionSchema = z.object({
   script: z.object({
     title: z.string(),
@@ -296,8 +295,9 @@ const compositionSchema = z.object({
         title: z.string(),
         narration: z.string(),
         duration: z.number().positive(),
-        visualLayers: z.array(z.any()).optional(),
-        transition: z.any().optional(),
+        visualLayers: z.array(VisualLayerSchema).optional(),
+        transition: SceneTransitionSchema.optional(),
+        annotations: z.array(AnnotationSchema).optional(),
       })
     ),
   }),

@@ -69,6 +69,33 @@ export const SceneTransitionSchema = z.object({
 });
 export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
+// D-02: AnnotationTarget schema
+export const AnnotationTargetSchema = z.object({
+  type: z.enum(["text", "region", "code-line"]),
+  textMatch: z.string().optional(),
+  lineNumber: z.number().int().positive().optional(),
+  region: z.enum(["top-left", "top-right", "center", "bottom-left", "bottom-right"]).optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
+});
+export type AnnotationTarget = z.infer<typeof AnnotationTargetSchema>;
+
+// D-02: Annotation schema
+export const AnnotationSchema = z.object({
+  type: z.enum(["circle", "underline", "arrow", "box", "highlight", "number", "crossout", "checkmark"]),
+  target: AnnotationTargetSchema,
+  style: z.object({
+    color: z.enum(["attention", "highlight", "info", "success"]),
+    size: z.enum(["small", "medium", "large"]),
+  }),
+  narrationBinding: z.object({
+    triggerText: z.string(),
+    segmentIndex: z.number().int().nonnegative(),
+    appearAt: z.number().nonnegative(),
+  }),
+});
+export type Annotation = z.infer<typeof AnnotationSchema>;
+
 // D-02: SceneHighlight schema (for script highlights)
 export const SceneHighlightSchema = z.object({
   text: z.string(),
