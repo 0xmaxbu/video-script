@@ -39,6 +39,9 @@ export const SplitVertical: React.FC<LayoutProps> = ({
     : null;
 
   const titleElement = scene.textElements.find((t) => t.role === "title");
+  const bottomTextElements = scene.textElements.filter(
+    (t) => t.role === "bullet" || t.position === "bottom",
+  );
 
   const topProgress = spring({
     frame,
@@ -95,7 +98,7 @@ export const SplitVertical: React.FC<LayoutProps> = ({
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            color: "rgba(0,0,0,",
+            padding: "2rem",
             borderTop: "1px solid rgba(255,255,255,0.1)",
           }}
         >
@@ -110,17 +113,42 @@ export const SplitVertical: React.FC<LayoutProps> = ({
               }}
             />
           )}
-          {titleElement && (
-            <h2
+          {bottomTextElements.length > 0 ? (
+            <div
               style={{
-                fontSize: TYPOGRAPHY.title.section,
-                fontWeight: "600",
-                color: "white",
-                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                width: "100%",
               }}
             >
-              {titleElement.content}
-            </h2>
+              {bottomTextElements.map((text, index) => (
+                <p
+                  key={index}
+                  style={{
+                    fontSize: TYPOGRAPHY.body.primary,
+                    color: "white",
+                    lineHeight: 1.4,
+                    margin: 0,
+                  }}
+                >
+                  {text.content}
+                </p>
+              ))}
+            </div>
+          ) : (
+            titleElement && (
+              <h2
+                style={{
+                  fontSize: TYPOGRAPHY.title.section,
+                  fontWeight: "600",
+                  color: "white",
+                  textAlign: "center",
+                }}
+              >
+                {titleElement.content}
+              </h2>
+            )
           )}
         </FrostedCard>
       </div>

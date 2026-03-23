@@ -173,10 +173,10 @@ export function convertVisualLayersToResources(
     return {
       id: resourceId,
       type: mapLayerTypeToScreenshotType(layer.type),
-      url: `local://${resourceId}`, // Placeholder URL for local resources
+      url: `local://${resourceId}`,
       role: mapLayerTypeToRole(layer.type),
       narrationBinding: {
-        triggerText: layer.content.slice(0, 50), // First 50 chars as trigger
+        triggerText: layer.content.slice(0, 50),
         segmentIndex: 0,
         appearAt: 0,
       },
@@ -196,14 +196,21 @@ function convertSceneHighlightToAnnotation(
   _index: number,
 ): Annotation {
   return {
-    type: highlight.annotationSuggestion === "number" ? "number" : highlight.annotationSuggestion,
+    type:
+      highlight.annotationSuggestion === "number"
+        ? "number"
+        : highlight.annotationSuggestion,
     target: {
       type: "text",
       textMatch: highlight.text,
     },
     style: {
-      color: highlight.importance === "critical" ? "attention" :
-             highlight.importance === "high" ? "highlight" : "info",
+      color:
+        highlight.importance === "critical"
+          ? "attention"
+          : highlight.importance === "high"
+            ? "highlight"
+            : "info",
       size: "medium",
     },
     narrationBinding: {
@@ -221,8 +228,10 @@ function convertCodeHighlightToAnnotation(
   codeHighlight: CodeHighlight,
 ): Annotation {
   return {
-    type: codeHighlight.annotationType === "arrow" ? "arrow" :
-          codeHighlight.annotationType,
+    type:
+      codeHighlight.annotationType === "arrow"
+        ? "arrow"
+        : codeHighlight.annotationType,
     target: {
       type: "code-line",
       lineNumber: codeHighlight.codeLine,
@@ -251,7 +260,9 @@ export function convertHighlightsToAnnotations(
   const annotations: Annotation[] = [];
 
   if (highlights && highlights.length > 0) {
-    annotations.push(...highlights.map((h) => convertSceneHighlightToAnnotation(h, 0)));
+    annotations.push(
+      ...highlights.map((h) => convertSceneHighlightToAnnotation(h, 0)),
+    );
   }
 
   if (codeHighlights && codeHighlights.length > 0) {
@@ -286,27 +297,53 @@ function createNarrationTimeline(
   };
 }
 
-/**
- * Creates text elements from scene title.
- * Per D-01d: Title becomes the primary text element.
- */
+function mapYToPosition(
+  y: number | "top" | "center" | "bottom",
+): "top" | "center" | "bottom" {
+  if (y === "top" || y === "center" || y === "bottom") {
+    return y;
+  }
+  return y <= 50 ? "top" : "bottom";
+}
+
 function createTextElements(
   title: string,
   _narration: string,
   _duration: number,
+  visualLayers?: VisualLayer[],
 ): TextElement[] {
-  return [
-    {
-      content: title,
-      role: "title",
-      position: "top",
-      narrationBinding: {
-        triggerText: title,
-        segmentIndex: 0,
-        appearAt: 0,
-      },
+  const titleElement: TextElement = {
+    content: title,
+    role: "title",
+    position: "top",
+    narrationBinding: {
+      triggerText: title,
+      segmentIndex: 0,
+      appearAt: 0,
     },
-  ];
+  };
+
+  const visualTextElements: TextElement[] = [];
+
+  if (visualLayers) {
+    for (const layer of visualLayers) {
+      if (layer.type === "text") {
+        const position = mapYToPosition(layer.position.y);
+        visualTextElements.push({
+          content: layer.content,
+          role: "bullet",
+          position,
+          narrationBinding: {
+            triggerText: layer.content.slice(0, 50),
+            segmentIndex: 0,
+            appearAt: 0,
+          },
+        });
+      }
+    }
+  }
+
+  return [titleElement, ...visualTextElements];
 }
 
 /**
@@ -355,6 +392,7 @@ export function convertToVisualScene(
     scene.title,
     scene.narration,
     scene.duration,
+    scene.visualLayers,
   );
 
   // Handle transition with default
