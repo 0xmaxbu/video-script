@@ -26,6 +26,8 @@ export const FrostedCard: React.FC<FrostedCardProps> = ({
       borderRadius: radius,
       border: "1px solid rgba(255,255,255,0.1)",
       overflow: "hidden",
+      // Ensure frosted glass appears BEHIND text content (textLayers have zIndex: 10)
+      zIndex: -1,
       ...style,
     }}
     {...props}
