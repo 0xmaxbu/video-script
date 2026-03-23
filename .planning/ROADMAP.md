@@ -119,7 +119,7 @@ Plans:
 | 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
 | 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
 | 11. Screenshot Quality   | 0/3            | Planned  | -          |
-| 12. Fix Layout Rendering | 0/1            | Planned  | -          |
+| 12. Fix Layout Rendering | 1/2 | In Progress|  |
 
 **Coverage:** 16/16 v1 requirements mapped
 
@@ -228,9 +228,9 @@ Plans:
 - Issue: All layouts aligned to top instead of proper content positioning
 - Issue: Layout components ignore visualLayers data
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
-- [ ] 12-01-PLAN.md — Fix FrostedCard z-index and SplitVertical flexbox centering (VIS-04, VIS-05)
+- [x] 12-01-PLAN.md — Fix FrostedCard z-index and SplitVertical flexbox centering (VIS-04, VIS-05)
 - [ ] 12-02-PLAN.md — Fix visualLayer content mapping in layouts (VIS-06, VIS-07)
 
 _Roadmap created: 2026-03-22_
