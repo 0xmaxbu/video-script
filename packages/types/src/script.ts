@@ -2,12 +2,12 @@ import { z } from "zod";
 import {
   SceneHighlightSchema,
   CodeHighlightSchema,
-} from "./visual.js";
+} from "./visual";
 import {
   VisualTypeEnum,
   PositionSchema,
   AnimationConfigSchema,
-} from "./shared.js";
+} from "./shared";
 
 export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
 export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
