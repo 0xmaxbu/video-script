@@ -23,6 +23,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@video-script/types": "workspace:*",
     "@remotion/bundler": "4.0.436",
     "@remotion/cli": "4.0.436",
     "@remotion/renderer": "4.0.436",
