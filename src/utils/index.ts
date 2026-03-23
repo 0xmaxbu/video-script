@@ -48,3 +48,7 @@ export {
   type WorkflowStepState,
   type WorkflowStepStatus,
 } from "./workflow-state.js";
+export {
+  adaptSceneForRenderer,
+  adaptScriptForRenderer,
+} from "./scene-adapter.js";
