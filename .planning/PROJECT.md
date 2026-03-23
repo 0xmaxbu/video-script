@@ -42,6 +42,7 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 ## Context
 
 **Existing architecture (brownfield):**
+
 - Two-process model: Main CLI (zod v4) + Renderer subprocess (zod v3)
 - Mastra agent framework for AI orchestration
 - Remotion for React-based video rendering
@@ -52,6 +53,7 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 - Openspec docs in `openspec/` define current specifications
 
 **Current pipeline test findings (2026-03-22):**
+
 - Research: Links resolved to `example.com/placeholder` — no real content crawled
 - Script: Structure correct, but content is shallow due to failed research
 - Visual: Layout and annotation descriptions are detailed and correct
@@ -59,11 +61,13 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 - Compose: Video generated (160s) but quality needs verification
 
 **Visual effects reference (from openspec):**
+
 - Animation types: fadeIn, slideIn, typewriter, zoom, pan
 - Annotation types: highlight (背景高亮), underline (下划线), circle (圈注), number (序号标注)
 - Layout templates: hero-fullscreen, comparison, split-vertical, bullet-list, text-over-image
 
 **PPT layout reference (Deer Flow):**
+
 - Center frosted glass cards with 32px rounded corners
 - 40-60% negative space for premium feel
 - Headlines: 72pt+ bold, Body: 18-24pt
@@ -80,18 +84,19 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|---------|-----------|---------|
-| Two-process architecture | Zod v3/v4 version conflict between main and renderer | ✓ Locked |
-| Remotion for video rendering | Flexible React-based composition | ✓ Locked |
-| 5 pipeline stages | Each stage independently testable/rerunnable | ✓ Locked |
-| Mastra agents | AI orchestration framework | ✓ Locked |
+| Decision                     | Rationale                                            | Outcome  |
+| ---------------------------- | ---------------------------------------------------- | -------- |
+| Two-process architecture     | Zod v3/v4 version conflict between main and renderer | ✓ Locked |
+| Remotion for video rendering | Flexible React-based composition                     | ✓ Locked |
+| 5 pipeline stages            | Each stage independently testable/rerunnable         | ✓ Locked |
+| Mastra agents                | AI orchestration framework                           | ✓ Locked |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 **After each phase transition** (via `/gsd:transition`):
+
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
@@ -99,10 +104,30 @@ This document evolves at phase transitions and milestone boundaries.
 5. "What This Is" still accurate? → Update if drifted
 
 **After each milestone** (via `/gsd:complete-milestone`):
+
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state (users, feedback, metrics)
 
+### v1.1 → v1.2 Transition (2026-03-23)
+
+**v1.1 shipped:** 16/16 requirements complete, 13 phases, 35 plans. Core pipeline functional.
+
+**v1.2 problem statement:** Current output is functional but not impressive. Specific gaps:
+
+- Only fade-in animation (vs AI Jason's 10+ animation types)
+- Screenshot capture misses content, includes nav bars
+- Research/script content is hollow and generic
+- Visual style is flat with no depth or hierarchy
+- Static SRT subtitles (vs kinetic word-by-word typography)
+
+**v1.2 target quality:** AI Jason / WorldofAI level — dark mode aesthetic, kinetic typography, Ken Burns parallax, content-aware screenshots, tutorial-depth narration with concrete examples.
+
+**Research sources:** claude-remotion-kickstart (component patterns), remotion-dev/template-prompt-to-video (Ken Burns + blur + per-word animation), AI Jason channel analysis (dark mode, callouts, pacing).
+
+**v1.2 scope:** 4 phases (Animation Engine → Screenshot+Content → Visual Polish → E2E Testing), 19 requirements.
+
 ---
-*Last updated: 2026-03-23 after Phase 08 verification-cleanup*
+
+_Last updated: 2026-03-23 after v1.2 milestone creation_

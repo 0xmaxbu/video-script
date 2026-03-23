@@ -3,12 +3,13 @@
 ## Milestones
 
 - [x] **v1.0 MVP** - Core video generation pipeline (shipped 2026-03-22)
-- [ ] **v1.1 Professional Quality** - Phases 1-5, gap closure 6-8 (in progress)
+- [x] **v1.1 Professional Quality** - Phases 1-13, gap closure 6-12 (shipped 2026-03-23)
+- [ ] **v1.2 Video Quality Leap** - Animation engine, screenshot intelligence, content depth, visual polish (planned)
 - [ ] **v2.0 Advanced** - Deep research, themes, batch processing (planned)
 
 ## Overview
 
-v1.0 established the core video generation pipeline. v1.1 focuses on elevating video quality to professional standards through improved research depth, visual annotation rendering, grid-based layouts, animated transitions, and polished composition.
+v1.0 established the core video generation pipeline. v1.1 elevated video quality to professional standards through improved research depth, visual annotation rendering, grid-based layouts, animated transitions, and polished composition. v1.2 targets AI Jason / WorldofAI quality level — rich animations, intelligent screenshots, deep content, and dark-mode aesthetics.
 
 ## Phases
 
@@ -106,23 +107,91 @@ Plans:
 
 ## Progress
 
-| Phase                    | Plans Complete | Status      | Completed  |
-| ------------------------ | -------------- | ----------- | ---------- |
-| 1. Annotation Renderer   | 4/4            | Complete    | 2026-03-22 |
-| 2. Layout System         | 5/5            | Complete    | 2026-03-22 |
-| 3. Research & Content    | 3/3            | Complete    | 2026-03-22 |
-| 4. Transitions           | 2/2            | Complete    | 2026-03-22 |
-| 5. Composition           | 3/3            | Complete    | 2026-03-22 |
-| 6. Type Package + Schema | 3/3            | Complete    | 2026-03-23 |
-| 7. Wire Layouts          | 2/2            | Complete    | 2026-03-23 |
-| 8. Verification Docs     | 3/3            | Complete    | 2026-03-23 |
-| 9. Fix Types + Adapter   | 2/2            | Complete    | 2026-03-23 |
-| 10. Wire Layouts to Comp | 1/1            | Complete    | 2026-03-23 |
-| 11. Screenshot Quality   | 3/3            | Complete    | 2026-03-23 |
-| 12. Fix Layout Rendering | 2/2            | Complete    | 2026-03-23 |
-| 13. Fix Issues + Tests   | 0/3            | In Progress | -          |
+| Phase                    | Plans Complete | Status   | Completed  |
+| ------------------------ | -------------- | -------- | ---------- |
+| 1. Annotation Renderer   | 4/4            | Complete | 2026-03-22 |
+| 2. Layout System         | 5/5            | Complete | 2026-03-22 |
+| 3. Research & Content    | 3/3            | Complete | 2026-03-22 |
+| 4. Transitions           | 2/2            | Complete | 2026-03-22 |
+| 5. Composition           | 3/3            | Complete | 2026-03-22 |
+| 6. Type Package + Schema | 3/3            | Complete | 2026-03-23 |
+| 7. Wire Layouts          | 2/2            | Complete | 2026-03-23 |
+| 8. Verification Docs     | 3/3            | Complete | 2026-03-23 |
+| 9. Fix Types + Adapter   | 2/2            | Complete | 2026-03-23 |
+| 10. Wire Layouts to Comp | 1/1            | Complete | 2026-03-23 |
+| 11. Screenshot Quality   | 3/3            | Complete | 2026-03-23 |
+| 12. Fix Layout Rendering | 2/2            | Complete | 2026-03-23 |
+| 13. Fix Issues + Tests   | 3/3            | Complete | 2026-03-23 |
 
-**Coverage:** 16/16 v1 requirements mapped
+**v1.1 Complete:** 16/16 requirements delivered, 13 phases, 35 plans
+
+### v1.2: Video Quality Leap
+
+**Goal:** Elevate video output to AI Jason / WorldofAI quality level
+**Research sources:** claude-remotion-kickstart, remotion-dev/template-prompt-to-video, AI Jason channel analysis
+**Target quality:** Dark mode aesthetic, kinetic typography, Ken Burns parallax, content-aware screenshots, tutorial-depth narration
+
+| Phase                    | Plans | Status  | Completed |
+| ------------------------ | ----- | ------- | --------- |
+| 14. Animation Engine     | TBD   | Planned | -         |
+| 15. Screenshot + Content | TBD   | Planned | -         |
+| 16. Visual Polish        | TBD   | Planned | -         |
+| 17. E2E Testing          | TBD   | Planned | -         |
+
+### Phase 14: Animation Engine
+
+**Goal:** Expand from 1 animation type (fade-in) to 10+ types with Ken Burns, parallax, stagger, and kinetic typography
+**Depends on**: Phase 13
+**Requirements**: ANIM-01 through ANIM-06
+**Success Criteria**:
+
+1. Animation utility library with 10+ reusable animation functions
+2. Ken Burns alternating zoom-in/zoom-out on screenshot visual layers
+3. Parallax depth — text and image layers move at different speeds
+4. Staggered bullet/step reveal with configurable delay per item
+5. Scene transition variety: blur, slide, wipe with configurable easing
+6. Per-word kinetic typography subtitle component
+   **Plans:** TBD
+
+### Phase 15: Screenshot Intelligence + Content Depth
+
+**Goal:** Fix screenshot quality and hollow content — content-aware capture, dark mode, tutorial-depth narration
+**Depends on**: Phase 14
+**Requirements**: SCR-03, SCR-04, SCR-05, RES-04, RES-05, SCR-06
+**Success Criteria**:
+
+1. Screenshot capture focuses on content regions (not nav/sidebars)
+2. All captured screenshots use dark mode
+3. Zoom-to-region: full page capture with element-level zoom
+4. Research produces specific, example-rich content (not generic summaries)
+5. Script narration explains WHY with analogies and concrete examples
+6. Visual plan selects varied, content-appropriate layouts
+   **Plans:** TBD
+
+### Phase 16: Visual Polish
+
+**Goal:** Dark mode theme, callout system, progress indicators, responsive text sizing — AI Jason aesthetic
+**Depends on**: Phase 15
+**Requirements**: VIS-11, VIS-12, VIS-13, VIS-14
+**Success Criteria**:
+
+1. Dark mode theme system with high-contrast color palette (black + white + yellow accent)
+2. Callout/highlight components (yellow rounded rects, annotation arrows)
+3. Progress indicators for multi-step tutorials (numbered circles, checkmarks)
+4. Responsive text sizing via fitText pattern across aspect ratios
+   **Plans:** TBD
+
+### Phase 17: E2E Testing
+
+**Goal:** Verify entire pipeline produces AI Jason quality output with real topics
+**Depends on**: Phase 16
+**Requirements**: TEST-01, TEST-02, TEST-03
+**Success Criteria**:
+
+1. Fixed-fixture E2E test: script → visual → render produces valid MP4
+2. Real-topic test: research agent produces deep, specific content
+3. Screenshot quality test: captures focus on relevant content regions
+   **Plans:** TBD
 
 ## Gap Closure Phases
 
