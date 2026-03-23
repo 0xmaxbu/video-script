@@ -119,6 +119,20 @@ export const CodeHighlightSchema = z.object({
 });
 export type CodeHighlight = z.infer<typeof CodeHighlightSchema>;
 
+// D-02: Layout template enum for agent-driven layout selection
+export const LayoutTemplateEnum = z.enum([
+  "hero-fullscreen",
+  "split-horizontal",
+  "split-vertical",
+  "text-over-image",
+  "code-focus",
+  "comparison",
+  "bullet-list",
+  "quote",
+  "inline", // explicit fallback per D-02b
+]);
+export type LayoutTemplate = z.infer<typeof LayoutTemplateEnum>;
+
 // D-02: Unified SceneScriptSchema with highlights and codeHighlights
 export const SceneScriptSchema = z.object({
   id: z.string(),
@@ -133,6 +147,8 @@ export const SceneScriptSchema = z.object({
   // D-02a: codeHighlights - marks code line annotations
   codeHighlights: z.array(CodeHighlightSchema).optional(),
   sourceRef: z.string().optional(),
+  // D-02: Optional layout template selection
+  layoutTemplate: LayoutTemplateEnum.optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 
