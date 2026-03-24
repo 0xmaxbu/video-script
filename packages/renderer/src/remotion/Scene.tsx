@@ -125,7 +125,12 @@ const InlineScene: React.FC<SceneProps> = ({
               const imagePath = imagePaths?.[imageKey];
               return (
                 <div key={layer.id} style={getPositionStyle(layer.position)}>
-                <VisualLayerRenderer layer={layer} imagePath={imagePath} sceneType={scene.type} />
+                  <VisualLayerRenderer
+                    layer={layer}
+                    imagePath={imagePath}
+                    sceneType={scene.type}
+                  />
+                </div>
               );
             })}
         </div>
@@ -145,7 +150,11 @@ const InlineScene: React.FC<SceneProps> = ({
             const imagePath = imagePaths?.[imageKey];
             return (
               <div key={layer.id} style={getPositionStyle(layer.position)}>
-                <VisualLayerRenderer layer={layer} imagePath={imagePath} sceneType={scene.type} />
+                <VisualLayerRenderer
+                  layer={layer}
+                  imagePath={imagePath}
+                  sceneType={scene.type}
+                />
               </div>
             );
           })}
@@ -176,7 +185,11 @@ const InlineScene: React.FC<SceneProps> = ({
             const imagePath = imagePaths?.[imageKey];
             return (
               <div key={layer.id} style={getPositionStyle(layer.position)}>
-                <VisualLayerRenderer layer={layer} imagePath={imagePath} sceneType={scene.type} />
+                <VisualLayerRenderer
+                  layer={layer}
+                  imagePath={imagePath}
+                  sceneType={scene.type}
+                />
               </div>
             );
           })}
