@@ -1,112 +1,47 @@
 import React from "react";
+import { AbsoluteFill, Img } from "remotion";
+import { VisualLayer, SceneNarrativeType } from "../../types.js";
 import {
-  AbsoluteFill,
-  Img,
-  useCurrentFrame,
-  useVideoConfig,
-  interpolate,
-  spring,
-} from "remotion";
-import { VisualLayer } from "../../types.js";
+  useKenBurns,
+  useParallax,
+  useEnterAnimation,
+  useExitAnimation,
+} from "../../utils/animation-utils.js";
 
 interface ScreenshotLayerProps {
   layer: VisualLayer;
   imagePath: string | undefined;
+  sceneType?: SceneNarrativeType;
 }
 
 export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   layer,
   imagePath,
+  sceneType,
 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const { content, position, animation } = layer;
 
-  const enterFrame = Math.max(0, frame - animation.enterDelay * fps);
+  const enter = useEnterAnimation(animation);
+  const exit = useExitAnimation(animation);
 
-  const springProgress = spring({
-    frame: enterFrame,
-    fps,
-    config: { damping: 15, stiffness: 100, mass: 1 },
-  });
+  const kenBurns = useKenBurns(sceneType ?? "feature");
+  const parallax = useParallax(position.zIndex);
 
-  let opacity = interpolate(
-    enterFrame,
-    [0, 30],
-    animation.enter === "fadeIn" ? [0, 1] : [1, 1],
-    { extrapolateRight: "clamp" },
-  );
+  const kbScale =
+    sceneType === "intro" || sceneType === "feature" ? kenBurns.scale : 1;
+  const pTranslateX = sceneType === "intro" ? parallax.translateX : 0;
+  const pTranslateY = sceneType === "intro" ? parallax.translateY : 0;
 
-  let translateX = interpolate(
-    springProgress,
-    [0, 1],
-    animation.enter === "slideLeft" || animation.enter === "slideIn"
-      ? [100, 0]
-      : animation.enter === "slideRight"
-        ? [-100, 0]
-        : [0, 0],
-  );
+  const opacity =
+    exit.opacity !== undefined
+      ? Math.min(enter.opacity, exit.opacity)
+      : enter.opacity;
+  const translateX = enter.translateX + exit.translateX + pTranslateX;
+  const translateY = enter.translateY + exit.translateY + pTranslateY;
+  const scale =
+    exit.scale !== undefined ? Math.min(enter.scale, exit.scale) : enter.scale;
 
-  let translateY = interpolate(
-    springProgress,
-    [0, 1],
-    animation.enter === "slideUp"
-      ? [100, 0]
-      : animation.enter === "slideDown"
-        ? [-100, 0]
-        : [0, 0],
-  );
-
-  let scale = interpolate(
-    springProgress,
-    [0, 1],
-    animation.enter === "zoomIn" ? [0.8, 1] : [1, 1],
-  );
-
-  if (animation.exitAt !== undefined && animation.exit !== "none") {
-    const exitStartFrame = animation.exitAt * fps;
-    const exitDuration = 30;
-
-    if (frame >= exitStartFrame) {
-      const exitFrame = frame - exitStartFrame;
-
-      const exitOpacity = interpolate(
-        exitFrame,
-        [0, exitDuration],
-        animation.exit === "fadeOut" || animation.exit === "zoomOut"
-          ? [1, 0]
-          : animation.exit === "slideOut"
-            ? [1, 0]
-            : [1, 1],
-        { extrapolateRight: "clamp" },
-      );
-      opacity = Math.min(opacity, exitOpacity);
-
-      const exitTranslateX = interpolate(
-        exitFrame,
-        [0, exitDuration],
-        animation.exit === "slideOut" ? [0, 100] : [0, 0],
-        { extrapolateRight: "clamp" },
-      );
-      translateX += exitTranslateX;
-
-      const exitTranslateY = interpolate(
-        exitFrame,
-        [0, exitDuration],
-        animation.exit === "slideOut" ? [0, 100] : [0, 0],
-        { extrapolateRight: "clamp" },
-      );
-      translateY += exitTranslateY;
-
-      const exitScale = interpolate(
-        exitFrame,
-        [0, exitDuration],
-        animation.exit === "zoomOut" ? [1, 0.8] : [1, 1],
-        { extrapolateRight: "clamp" },
-      );
-      scale = Math.min(scale, exitScale);
-    }
-  }
+  const finalScale = scale * kbScale;
 
   const style: React.CSSProperties = {
     position: "absolute",
@@ -139,7 +74,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           ? "auto"
           : position.height,
     zIndex: position.zIndex,
-    transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+    transform: `translate(${translateX}px, ${translateY}px) scale(${finalScale})`,
     transformOrigin: "center center",
     opacity,
   };
