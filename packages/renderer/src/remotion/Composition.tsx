@@ -1,25 +1,41 @@
 import React from "react";
 import { useVideoConfig, AbsoluteFill } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const fade = require("@remotion/transitions/dist/esm/fade.mjs").fade;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const slide = require("@remotion/transitions/dist/esm/slide.mjs").slide;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const wipe = require("@remotion/transitions/dist/esm/wipe.mjs").wipe;
+import type { TransitionPresentation } from "@remotion/transitions";
+import { fade } from "@remotion/transitions/fade";
+import { slide } from "@remotion/transitions/slide";
+import { wipe } from "@remotion/transitions/wipe";
+import { flip } from "@remotion/transitions/flip";
+import { clockWipe } from "@remotion/transitions/clock-wipe";
+import { iris } from "@remotion/transitions/iris";
 import { ScriptOutput, SceneNarrativeType } from "../types.js";
 import { Scene } from "./Scene.js";
+
+const BlurTransition: React.FC<{
+  presentationProgress: number;
+  children: React.ReactNode;
+}> = ({ presentationProgress, children }) => {
+  const blurAmount = Math.round((1 - presentationProgress) * 25);
+  return (
+    <AbsoluteFill style={{ filter: `blur(${blurAmount}px)` }}>
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+const blurPresentation: TransitionPresentation<{}> = {
+  component: BlurTransition,
+  props: {},
+};
+
+const VIDEO_WIDTH = 1920;
+const VIDEO_HEIGHT = 1080;
 
 export interface VideoCompositionProps {
   script: ScriptOutput;
   images?: Record<string, string>;
 }
 
-/**
- * Get transition duration in frames based on scene type.
- * - intro/outro: 45 frames (~1.5s at 30fps) - more dramatic for open/close
- * - feature/code: 30 frames (~1s at 30fps) - snappier for content
- */
 const getTransitionDuration = (sceneType: SceneNarrativeType): number => {
   switch (sceneType) {
     case "intro":
@@ -32,28 +48,26 @@ const getTransitionDuration = (sceneType: SceneNarrativeType): number => {
   }
 };
 
-/**
- * Get transition presentation based on type and scene index.
- * - fade: standard cross-fade
- * - slide: alternates direction based on scene index (odd=from-left, even=from-right)
- * - wipe: standard wipe effect
- */
-const getTransitionPresentation = (
-  type: string,
-  sceneIndex: number
-): ReturnType<typeof fade> | ReturnType<typeof slide> | ReturnType<typeof wipe> | undefined => {
+const getTransitionPresentation = (type: string, sceneIndex: number) => {
   switch (type) {
     case "fade":
       return fade();
     case "slide":
-      // Alternate direction: odd scenes from-left, even scenes from-right
       return slide({
         direction: sceneIndex % 2 === 1 ? "from-left" : "from-right",
       });
     case "wipe":
       return wipe();
+    case "flip":
+      return flip();
+    case "clockWipe":
+      return clockWipe({ width: VIDEO_WIDTH, height: VIDEO_HEIGHT });
+    case "iris":
+      return iris({ width: VIDEO_WIDTH, height: VIDEO_HEIGHT });
+    case "blur":
+      return blurPresentation;
     default:
-      return undefined;
+      return fade();
   }
 };
 
@@ -92,13 +106,17 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
               <TransitionSeries.Sequence durationInFrames={durationInFrames}>
                 <Scene scene={scene} imagePaths={images} />
               </TransitionSeries.Sequence>
-              {/* No transition after last scene - video ends directly */}
               {!isLast && transition && transition.type !== "none" && (
                 <TransitionSeries.Transition
                   timing={linearTiming({
                     durationInFrames: getTransitionDuration(scene.type),
                   })}
-                  presentation={getTransitionPresentation(transition.type, index)}
+                  presentation={
+                    getTransitionPresentation(
+                      transition.type,
+                      index,
+                    ) as TransitionPresentation<{}>
+                  }
                 />
               )}
             </React.Fragment>
