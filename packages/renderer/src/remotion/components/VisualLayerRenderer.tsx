@@ -15,35 +15,22 @@ export const VisualLayerRenderer: React.FC<VisualLayerRendererProps> = ({
   imagePath,
   sceneType,
 }) => {
+  const screenshotProps =
+    sceneType !== undefined
+      ? { layer, imagePath, sceneType }
+      : { layer, imagePath };
+
   switch (layer.type) {
     case "screenshot":
-      return (
-        <ScreenshotLayer
-          layer={layer}
-          imagePath={imagePath}
-          sceneType={sceneType}
-        />
-      );
+      return <ScreenshotLayer {...screenshotProps} />;
     case "text":
       return <TextLayer layer={layer} />;
     case "code":
       return <CodeLayer layer={layer} />;
     case "diagram":
-      return (
-        <ScreenshotLayer
-          layer={layer}
-          imagePath={imagePath}
-          sceneType={sceneType}
-        />
-      );
+      return <ScreenshotLayer {...screenshotProps} />;
     case "image":
-      return (
-        <ScreenshotLayer
-          layer={layer}
-          imagePath={imagePath}
-          sceneType={sceneType}
-        />
-      );
+      return <ScreenshotLayer {...screenshotProps} />;
     default:
       return null;
   }

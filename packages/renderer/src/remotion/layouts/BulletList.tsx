@@ -9,7 +9,7 @@ import {
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
-import { staggerDelay, SPRING_PRESETS } from "../utils/animation-utils.js";
+import { staggerDelay, SPRING_PRESETS } from "../../utils/animation-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
