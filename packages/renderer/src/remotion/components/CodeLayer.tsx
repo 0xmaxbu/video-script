@@ -1,11 +1,10 @@
 import React from "react";
-import {
-  AbsoluteFill,
-  useCurrentFrame,
-  useVideoConfig,
-  interpolate,
-} from "remotion";
+import { AbsoluteFill } from "remotion";
 import { VisualLayer } from "../../types.js";
+import {
+  useEnterAnimation,
+  useExitAnimation,
+} from "../../utils/animation-utils.js";
 import { CodeAnimation } from "./CodeAnimation.js";
 
 interface CodeLayerProps {
@@ -13,29 +12,18 @@ interface CodeLayerProps {
 }
 
 export const CodeLayer: React.FC<CodeLayerProps> = ({ layer }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const { content, position, animation } = layer;
 
-  const enterFrame = frame - animation.enterDelay * fps;
+  const enter = useEnterAnimation(animation);
+  const exit = useExitAnimation(animation);
 
-  const opacity = interpolate(
-    enterFrame,
-    [0, 15],
-    animation.enter === "fadeIn" ? [0, 1] : [1, 1],
-    { extrapolateRight: "clamp" },
-  );
-
-  const translateY = interpolate(
-    enterFrame,
-    [0, 15],
-    animation.enter === "slideUp"
-      ? [30, 0]
-      : animation.enter === "slideDown"
-        ? [-30, 0]
-        : [0, 0],
-    { extrapolateRight: "clamp" },
-  );
+  const opacity =
+    exit.opacity !== undefined
+      ? Math.min(enter.opacity, exit.opacity)
+      : enter.opacity;
+  const translateY = enter.translateY + exit.translateY;
+  const scale =
+    exit.scale !== undefined ? Math.min(enter.scale, exit.scale) : enter.scale;
 
   const style: React.CSSProperties = {
     position: "absolute",
@@ -68,7 +56,7 @@ export const CodeLayer: React.FC<CodeLayerProps> = ({ layer }) => {
           ? "auto"
           : position.height,
     zIndex: position.zIndex,
-    transform: `translateY(${translateY}px)`,
+    transform: `translateY(${translateY}px) scale(${scale})`,
     transformOrigin: "center center",
     opacity,
     overflow: "hidden",
