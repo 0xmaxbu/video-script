@@ -133,7 +133,7 @@ Plans:
 
 | Phase                    | Plans | Status  | Completed |
 | ------------------------ | ----- | ------- | --------- |
-| 14. Animation Engine     | TBD   | Planned | -         |
+| 14. Animation Engine     | 3     | Planned | -         |
 | 15. Screenshot + Content | TBD   | Planned | -         |
 | 16. Visual Polish        | TBD   | Planned | -         |
 | 17. E2E Testing          | TBD   | Planned | -         |
@@ -151,7 +151,13 @@ Plans:
 4. Staggered bullet/step reveal with configurable delay per item
 5. Scene transition variety: blur, slide, wipe with configurable easing
 6. Per-word kinetic typography subtitle component
-   **Plans:** TBD
+   **Plans:** 3 plans
+
+Plans:
+
+- [ ] 14-01-PLAN.md — Create animation-utils.ts foundation and complete Composition.tsx transitions (ANIM-01, ANIM-02)
+- [ ] 14-02-PLAN.md — Add Ken Burns, parallax, exit animations, and stagger to layer components (ANIM-01, ANIM-03, ANIM-04, ANIM-05)
+- [ ] 14-03-PLAN.md — Create KineticSubtitle component and wire into scene rendering (ANIM-06, ANIM-01)
 
 ### Phase 15: Screenshot Intelligence + Content Depth
 
