@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { SceneScript as SceneType, VisualLayer } from "../types.js";
-import { Subtitle } from "./Subtitle.js";
+import { KineticSubtitle } from "./components/KineticSubtitle.js";
 import { VisualLayerRenderer } from "./components/VisualLayerRenderer.js";
 import { CodeAnimation } from "./components/CodeAnimation.js";
 import { AnnotationRenderer } from "./annotations/AnnotationRenderer.js";
@@ -131,7 +131,7 @@ const InlineScene: React.FC<SceneProps> = ({
             })}
         </div>
         <AnnotationRenderer annotations={annotations} />
-        <Subtitle text={narration} />
+        <KineticSubtitle text={narration} />
       </AbsoluteFill>
     );
   }
@@ -152,7 +152,7 @@ const InlineScene: React.FC<SceneProps> = ({
           })}
         </div>
         <AnnotationRenderer annotations={annotations} />
-        <Subtitle text={narration} />
+        <KineticSubtitle text={narration} />
       </AbsoluteFill>
     );
   }
@@ -182,7 +182,7 @@ const InlineScene: React.FC<SceneProps> = ({
             );
           })}
         <AnnotationRenderer annotations={annotations} />
-        <Subtitle text={narration} />
+        <KineticSubtitle text={narration} />
       </AbsoluteFill>
     );
   }
@@ -240,7 +240,7 @@ export const Scene: React.FC<SceneProps> = ({
     return (
       <LayoutComponent scene={visualScene} screenshots={screenshotsMap}>
         <AnnotationRenderer annotations={annotations} />
-        <Subtitle text={scene.narration} />
+        <KineticSubtitle text={scene.narration} />
       </LayoutComponent>
     );
   } catch (error) {

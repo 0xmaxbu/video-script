@@ -1,91 +1,11 @@
 import React from "react";
 import {
-  AbsoluteFill,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
   spring,
   Easing,
 } from "remotion";
-
-type TransitionType = "fade" | "slide" | "wipe" | "none";
-
-interface TransitionProps {
-  children: React.ReactNode;
-  type?: TransitionType;
-  durationInFrames?: number;
-  enter?: boolean;
-  exit?: boolean;
-  delay?: number;
-}
-
-export const Transition: React.FC<TransitionProps> = ({
-  children,
-  type = "fade",
-  durationInFrames = 30,
-  enter = true,
-  exit = true,
-  delay = 0,
-}) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames: totalFrames } = useVideoConfig();
-
-  const adjustedFrame = frame - delay;
-  const exitStart = totalFrames - durationInFrames;
-
-  const getTransitionStyles = (): React.CSSProperties => {
-    const styles: React.CSSProperties = {};
-
-    const enterProgress = interpolate(
-      adjustedFrame,
-      [0, durationInFrames],
-      [0, 1],
-      {
-        extrapolateRight: "clamp",
-        extrapolateLeft: "clamp",
-      },
-    );
-
-    const exitProgress = interpolate(frame, [exitStart, totalFrames], [0, 1], {
-      extrapolateRight: "clamp",
-      extrapolateLeft: "clamp",
-    });
-
-    const progress =
-      enter && !exit
-        ? enterProgress
-        : !enter && exit
-          ? exitProgress
-          : adjustedFrame < durationInFrames
-            ? enterProgress
-            : frame > exitStart
-              ? 1 - exitProgress
-              : 1;
-
-    switch (type) {
-      case "fade":
-        styles.opacity = progress;
-        break;
-
-      case "slide":
-        styles.transform = `translateX(${interpolate(progress, [0, 1], [100, 0])}px)`;
-        styles.opacity = progress;
-        break;
-
-      case "wipe":
-        styles.clipPath = `inset(0 ${interpolate(progress, [0, 1], [100, 0])}% 0 0)`;
-        break;
-
-      case "none":
-        styles.opacity = 1;
-        break;
-    }
-
-    return styles;
-  };
-
-  return <AbsoluteFill style={getTransitionStyles()}>{children}</AbsoluteFill>;
-};
 
 interface HighlightBoxProps {
   children: React.ReactNode;
@@ -118,7 +38,6 @@ export const HighlightBox: React.FC<HighlightBoxProps> = ({
         borderLeft: `4px solid ${color}`,
         padding: "8px 16px",
         transform: `scale(${scale})`,
-        transition: "transform 0.1s ease-out",
       }}
     >
       {children}
