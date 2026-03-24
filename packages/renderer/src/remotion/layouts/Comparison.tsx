@@ -1,14 +1,13 @@
 import React from "react";
-import {
-  Img,
-  useCurrentFrame,
-  useVideoConfig,
-  spring,
-} from "remotion";
+import { Img, useCurrentFrame, useVideoConfig, spring } from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
+import type {
+  ScreenshotResource,
+  TextElement,
+} from "../../utils/sceneAdapter.js";
 
 /**
  * Comparison Layout
@@ -16,18 +15,17 @@ import type { LayoutProps } from "./index.js";
  * 对比布局
  * 适合：前后对比、功能对比
  */
-export const Comparison: React.FC<LayoutProps> = ({
-  scene,
-  screenshots,
-}) => {
+export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const resources = scene.mediaResources.filter(
-    (r) => r.role === "primary" || r.role === "secondary",
+    (r: ScreenshotResource) => r.role === "primary" || r.role === "secondary",
   );
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
 
   // VS 文字动画
   const vsProgress = spring({
@@ -49,7 +47,14 @@ export const Comparison: React.FC<LayoutProps> = ({
             textAlign: "center",
           }}
         >
-          <h1 style={{ fontSize: TYPOGRAPHY.title.section, fontWeight: "bold", color: "white", margin: 0 }}>
+          <h1
+            style={{
+              fontSize: TYPOGRAPHY.title.section,
+              fontWeight: "bold",
+              color: "white",
+              margin: 0,
+            }}
+          >
             {titleElement.content}
           </h1>
         </div>
@@ -71,14 +76,31 @@ export const Comparison: React.FC<LayoutProps> = ({
             opacity={0.1}
             blur={20}
             radius={24}
-            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "1.5rem" }}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "1.5rem",
+            }}
           >
-            <span style={{ fontSize: TYPOGRAPHY.body.secondary, color: "rgba(255,255,255,0.6)", marginBottom: "0.75rem" }}>
+            <span
+              style={{
+                fontSize: TYPOGRAPHY.body.secondary,
+                color: "rgba(255,255,255,0.6)",
+                marginBottom: "0.75rem",
+              }}
+            >
               Before
             </span>
             <Img
               src={leftSrc}
-              style={{ maxWidth: "100%", maxHeight: "400px", objectFit: "contain", borderRadius: "0.5rem" }}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "400px",
+                objectFit: "contain",
+                borderRadius: "0.5rem",
+              }}
             />
           </FrostedCard>
         )}
@@ -97,7 +119,13 @@ export const Comparison: React.FC<LayoutProps> = ({
             padding: "1rem 2rem",
           }}
         >
-          <span style={{ fontSize: TYPOGRAPHY.title.section, fontWeight: "bold", color: "white" }}>
+          <span
+            style={{
+              fontSize: TYPOGRAPHY.title.section,
+              fontWeight: "bold",
+              color: "white",
+            }}
+          >
             VS
           </span>
         </FrostedCard>
@@ -108,14 +136,31 @@ export const Comparison: React.FC<LayoutProps> = ({
             opacity={0.1}
             blur={20}
             radius={24}
-            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "1.5rem" }}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "1.5rem",
+            }}
           >
-            <span style={{ fontSize: TYPOGRAPHY.body.secondary, color: "rgba(255,255,255,0.6)", marginBottom: "0.75rem" }}>
+            <span
+              style={{
+                fontSize: TYPOGRAPHY.body.secondary,
+                color: "rgba(255,255,255,0.6)",
+                marginBottom: "0.75rem",
+              }}
+            >
               After
             </span>
             <Img
               src={rightSrc}
-              style={{ maxWidth: "100%", maxHeight: "400px", objectFit: "contain", borderRadius: "0.5rem" }}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "400px",
+                objectFit: "contain",
+                borderRadius: "0.5rem",
+              }}
             />
           </FrostedCard>
         )}

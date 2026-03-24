@@ -8,6 +8,10 @@ import {
   spring,
 } from "remotion";
 import type { LayoutProps } from "./index.js";
+import type {
+  ScreenshotResource,
+  TextElement,
+} from "../../utils/sceneAdapter.js";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import {
@@ -30,11 +34,17 @@ export const TextOverImage: React.FC<LayoutProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const bgResource = scene.mediaResources.find((r) => r.role === "background");
+  const bgResource = scene.mediaResources.find(
+    (r: ScreenshotResource) => r.role === "background",
+  );
   const bgScreenshot = bgResource ? screenshots.get(bgResource.id) : null;
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
-  const subtitleElement = scene.textElements.find((t) => t.role === "subtitle");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
+  const subtitleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "subtitle",
+  );
 
   // 动画
   const bgProgress = spring({

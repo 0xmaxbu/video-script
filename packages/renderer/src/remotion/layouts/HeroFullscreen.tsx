@@ -11,6 +11,10 @@ import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
+import type {
+  ScreenshotResource,
+  TextElement,
+} from "../../utils/sceneAdapter.js";
 
 /**
  * Hero Fullscreen Layout
@@ -25,15 +29,19 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const bgResource = scene.mediaResources.find((r) => r.role === "background");
+  const bgResource = scene.mediaResources.find(
+    (r: ScreenshotResource) => r.role === "background",
+  );
   const bgScreenshot = bgResource ? screenshots.get(bgResource.id) : null;
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
 
   // 标题动画
   const titleAppearFrame = titleElement?.narrationBinding.appearAt
     ? titleElement.narrationBinding.appearAt * fps
-        : 0;
+    : 0;
   const titleProgress = spring({
     frame: Math.max(0, frame - titleAppearFrame),
     fps,
@@ -110,7 +118,9 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
             >
               {titleElement.content}
             </h1>
-            {scene.textElements.find((t) => t.role === "subtitle") && (
+            {scene.textElements.find(
+              (t: TextElement) => t.role === "subtitle",
+            ) && (
               <p
                 style={{
                   fontSize: TYPOGRAPHY.body.secondary,
@@ -118,7 +128,11 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
                   marginTop: "0.5rem",
                 }}
               >
-                {scene.textElements.find((t) => t.role === "subtitle")?.content}
+                {
+                  scene.textElements.find(
+                    (t: TextElement) => t.role === "subtitle",
+                  )?.content
+                }
               </p>
             )}
           </FrostedCard>

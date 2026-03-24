@@ -1,14 +1,10 @@
 import React from "react";
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  interpolate,
-  spring,
-} from "remotion";
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
+import type { TextElement } from "../../utils/sceneAdapter.js";
 
 /**
  * Code Focus Layout
@@ -20,8 +16,12 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
-  const subtitleElement = scene.textElements.find((t) => t.role === "subtitle");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
+  const subtitleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "subtitle",
+  );
 
   // 动画
   const codeProgress = spring({

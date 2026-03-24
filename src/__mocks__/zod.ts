@@ -12,7 +12,7 @@ z.min = (val: unknown, _min?: unknown) => val;
 z.max = (val: unknown, _max?: unknown) => val;
 z.positive = () => "positive";
 z.int = () => "int";
-z.default = (val: unknown, def: unknown) => def;
+z.default = (_val: unknown, def: unknown) => def;
 z.parse = (val: unknown) => val;
 z.infer = (val: unknown) => val;
 z.tuple = (items: unknown) => items;

@@ -1,0 +1,52 @@
+{
+  "title": "Understanding TypeScript Generics",
+  "totalDuration": 30,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "type": "intro",
+      "title": "TypeScript Generics Explained",
+      "narration": "Welcome to this tutorial on TypeScript generics. Generics allow you to write reusable, type-safe code that works with any data type.",
+      "duration": 10,
+      "visualLayers": [],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "id": "scene-2",
+      "type": "feature",
+      "title": "What are Generics?",
+      "narration": "Generics are like variables for types. Instead of writing separate functions for different types, you write one function that works with any type.",
+      "duration": 10,
+      "visualLayers": [
+        {
+          "id": "hero-code",
+          "type": "code",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 1
+          },
+          "content": "function identity<T>(arg: T): T {\n  return arg;\n}",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 2,
+            "exit": "fadeOut",
+            "exitAt": 8
+          }
+        }
+      ],
+      "transition": { "type": "slide", "duration": 1 }
+    },
+    {
+      "id": "scene-3",
+      "type": "outro",
+      "title": "Next Steps",
+      "narration": "Now that you understand generics, try using them in your own projects. In the next video, we'll cover generic constraints.",
+      "duration": 10,
+      "visualLayers": [],
+      "transition": { "type": "fade", "duration": 1 }
+    }
+  ]
+}

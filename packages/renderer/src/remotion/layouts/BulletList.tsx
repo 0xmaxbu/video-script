@@ -11,6 +11,7 @@ import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
 import { staggerDelay, SPRING_PRESETS } from "../../utils/animation-utils.js";
 import type { LayoutProps } from "./index.js";
+import type { TextElement } from "../../utils/sceneAdapter.js";
 
 /**
  * Bullet List Layout
@@ -24,8 +25,12 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
-  const bulletElements = scene.textElements.filter((t) => t.role === "bullet");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
+  const bulletElements = scene.textElements.filter(
+    (t: TextElement) => t.role === "bullet",
+  );
 
   const usableWidth = getGridSpanPx(12);
   const usableHeight =
@@ -82,7 +87,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
             gap: "1.5rem",
           }}
         >
-          {bulletElements.map((bullet, index) => {
+          {bulletElements.map((bullet: TextElement, index: number) => {
             const bulletFrame = Math.max(0, frame - staggerDelay(index, 10));
             const bulletProgress = spring({
               frame: bulletFrame,

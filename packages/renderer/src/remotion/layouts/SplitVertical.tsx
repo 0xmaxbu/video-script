@@ -10,6 +10,10 @@ import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
 import type { LayoutProps } from "./index.js";
+import type {
+  ScreenshotResource,
+  TextElement,
+} from "../../utils/sceneAdapter.js";
 
 /**
  * Split Vertical Layout
@@ -25,10 +29,10 @@ export const SplitVertical: React.FC<LayoutProps> = ({
   const { fps } = useVideoConfig();
 
   const primaryResource = scene.mediaResources.find(
-    (r) => r.role === "primary",
+    (r: ScreenshotResource) => r.role === "primary",
   );
   const secondaryResource = scene.mediaResources.find(
-    (r) => r.role === "secondary",
+    (r: ScreenshotResource) => r.role === "secondary",
   );
 
   const primaryScreenshot = primaryResource
@@ -38,9 +42,11 @@ export const SplitVertical: React.FC<LayoutProps> = ({
     ? screenshots.get(secondaryResource.id)
     : null;
 
-  const titleElement = scene.textElements.find((t) => t.role === "title");
+  const titleElement = scene.textElements.find(
+    (t: TextElement) => t.role === "title",
+  );
   const bottomTextElements = scene.textElements.filter(
-    (t) => t.role === "bullet" || t.position === "bottom",
+    (t: TextElement) => t.role === "bullet" || t.position === "bottom",
   );
 
   const topProgress = spring({
@@ -122,7 +128,7 @@ export const SplitVertical: React.FC<LayoutProps> = ({
                 width: "100%",
               }}
             >
-              {bottomTextElements.map((text, index) => (
+              {bottomTextElements.map((text: TextElement, index: number) => (
                 <p
                   key={index}
                   style={{

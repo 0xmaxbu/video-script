@@ -1,0 +1,66 @@
+{
+  "title": "Understanding TypeScript Generics",
+  "totalDuration": 60,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "type": "intro",
+      "title": "Welcome to TypeScript Generics",
+      "narration": "In this video, you'll learn how TypeScript generics help you write reusable, type-safe code. We'll start with the basics and build up to advanced patterns.",
+      "duration": 15,
+      "visualLayers": [],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "id": "scene-2",
+      "type": "feature",
+      "title": "What are Generics?",
+      "narration": "Generics are like variables for types. Instead of writing separate functions for different types, you write one function that works with any type. Think of them as type-level functions.",
+      "duration": 20,
+      "visualLayers": [
+        {
+          "id": "code-example",
+          "type": "code",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 1
+          },
+          "content": "function identity<T>(arg: T): T {\n  return arg;\n}",
+          "animation": { "enter": "fadeIn", "enterDelay": 2, "exit": "none" }
+        }
+      ],
+      "transition": { "type": "slide", "duration": 1 }
+    },
+    {
+      "id": "scene-3",
+      "type": "feature",
+      "title": "Generic Constraints",
+      "narration": "Sometimes you need to restrict what types can be used. TypeScript lets you constrain generics using the extends keyword. This ensures your generic type has certain properties.",
+      "duration": 25,
+      "visualLayers": [
+        {
+          "id": "constraint-code",
+          "type": "code",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 1
+          },
+          "content": "interface Lengthwise {\n  length: number;\n}\n\nfunction logLength<T extends Lengthwise>(arg: T): number {\n  return arg.length;\n}",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 3,
+            "exit": "fadeOut",
+            "exitAt": 22
+          }
+        }
+      ],
+      "transition": { "type": "wipe", "duration": 1 }
+    }
+  ]
+}
