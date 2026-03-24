@@ -9,6 +9,7 @@ import {
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
+import { staggerDelay, SPRING_PRESETS } from "../utils/animation-utils.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -82,11 +83,11 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
           }}
         >
           {bulletElements.map((bullet, index) => {
-            const bulletFrame = Math.max(0, frame - index * 10);
+            const bulletFrame = Math.max(0, frame - staggerDelay(index, 10));
             const bulletProgress = spring({
               frame: bulletFrame,
               fps,
-              config: { damping: 100, stiffness: 200 },
+              config: SPRING_PRESETS.smooth,
             });
 
             return (
@@ -99,7 +100,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
                   transform: `translateX(${interpolate(
                     bulletProgress,
                     [0, 1],
-                    [-30, 0]
+                    [-30, 0],
                   )}px)`,
                 }}
               >
