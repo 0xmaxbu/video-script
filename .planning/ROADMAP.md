@@ -311,3 +311,13 @@ Plans:
 
 _Roadmap created: 2026-03-22_
 _Last updated: 2026-03-23_
+
+### Phase 18: 14-gap-03 我们需要对项目进行一次模拟用户测试。有你直接通过 bash命令来调用项目功能。 并生成最终的完整视频。 由我来审核视频质量。
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 18 to break down)
