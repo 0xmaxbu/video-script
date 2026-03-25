@@ -1,15 +1,60 @@
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { join, isAbsolute, resolve } from "path";
 import { homedir } from "os";
-import { spawn } from "child_process";
 import { existsSync, mkdirSync } from "fs";
 import { z } from "zod";
+import { bundle, type WebpackOverrideFn } from "@remotion/bundler";
+import { selectComposition, renderMedia } from "@remotion/renderer";
+import type { VideoConfig } from "remotion/no-react";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
 import { generateOutputDirectory } from "./output-directory.js";
 
-// ESM-compatible way to get __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Webpack override function to handle Node.js polyfills
+// This fixes pnpm monorepo issues where path, fs, stream are not available
+const webpackOverride: WebpackOverrideFn = (config) => ({
+  ...config,
+  resolve: {
+    ...config.resolve,
+    fallback: {
+      ...config.resolve?.fallback,
+      path: require.resolve("path-browserify"),
+      fs: require.resolve("path-browserify"),
+      stream: false,
+    },
+  },
+});
+
+// Bundle location cache to avoid re-bundling on every render
+let cachedBundleLocation: string | null = null;
+
+async function getBundleLocation(entryPoint: string): Promise<string> {
+  if (cachedBundleLocation) {
+    return cachedBundleLocation;
+  }
+
+  // Use legacy tuple format: bundle(entryPoint, onProgress?, options?)
+  const bundleLocation = await bundle(entryPoint, (progress) => {
+    // Log bundle progress at 10% intervals
+    if (Math.round(progress * 100) % 10 === 0) {
+      console.log(`Bundling: ${Math.round(progress * 100)}%`);
+    }
+  }, {
+    webpackOverride,
+    outDir: "/tmp/video-script-bundles",
+    enableCaching: true,
+    publicPath: "",
+    rootDir: null,
+    publicDir: null,
+    onPublicDirCopyProgress: () => undefined,
+    onSymlinkDetected: () => undefined,
+    keyboardShortcutsEnabled: true,
+    askAIEnabled: false,
+    rspack: false,
+  });
+
+  cachedBundleLocation = bundleLocation;
+  return bundleLocation;
+}
+
 
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
@@ -73,8 +118,9 @@ export async function renderVideo(
     } = input;
 
     const baseOutputDir = outputDir || join(homedir(), "simple-videos");
+    // Ensure finalOutputDir is always absolute to avoid path resolution issues
     const finalOutputDir = outputDir
-      ? outputDir
+      ? (isAbsolute(outputDir) ? outputDir : resolve(process.cwd(), outputDir))
       : await generateOutputDirectory(baseOutputDir, script.title);
 
     // Create output directory if it doesn't exist
@@ -88,10 +134,8 @@ export async function renderVideo(
     // This ensures the full animation system (Ken Burns, parallax, KineticSubtitle) is used
     const videoOutputPath = join(finalOutputDir, videoFileName);
 
-    // Resolve the path to packages/renderer/src - this is where the Remotion project lives
-    // The remotion/index.ts registers RemotionRoot with VideoComposition
-    // __dirname is packages/renderer/src (or dist), so ../src gives us packages/renderer/src
-    const rendererSrcPath = join(__dirname, "..", "src");
+    // Use renderer package directory as cwd
+    const rendererRoot = "/Volumes/SN350-1T/dev/video-script/packages/renderer";
 
     // Process screenshot resources: convert file paths to base64 data URIs
     const processedImages: Record<string, string> = {};
@@ -126,49 +170,35 @@ export async function renderVideo(
 
     onProgress?.(30);
 
-    // Run npx remotion render using packages/renderer/src/remotion/ directly
-    // The --props flag passes data through Remotion's props system (calculateMetadata/defaultProps)
-    await new Promise<void>((resolve, reject) => {
-      const propsJson = JSON.stringify(remotionProps);
-      const args = [
-        "remotion",
-        "render",
-        "remotion/index.ts",
-        compositionId,
-        videoOutputPath,
-        "--codec",
-        "h264",
-        "--fps",
-        "30",
-        "--crf",
-        "20",
-        "--quiet",
-        "--props",
-        propsJson,
-      ];
+    // Step 1: Bundle the Remotion project using programmatic API
+    // This avoids CLI spawn issues with pnpm monorepo and path-with-spaces
+    const remotionEntryPoint = join(rendererRoot, "src/remotion/index.ts");
+    const bundleLocation = await getBundleLocation(remotionEntryPoint);
 
-      const child = spawn("npx", args, {
-        stdio: ["pipe", "pipe", "pipe"],
-        cwd: rendererSrcPath,
-      });
+    onProgress?.(40);
 
-      let stderr = "";
+    // Step 2: Select the composition to render
+    const composition: VideoConfig = await selectComposition({
+      serveUrl: bundleLocation,
+      id: compositionId,
+      inputProps: remotionProps,
+    });
 
-      child.stderr?.on("data", (data: Buffer) => {
-        stderr += data.toString();
-      });
+    onProgress?.(50);
 
-      child.on("close", (code: number | null) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`npx remotion failed (exit ${code}): ${stderr}`));
-        }
-      });
-
-      child.on("error", (err) => {
-        reject(err);
-      });
+    // Step 3: Render the video using programmatic API
+    await renderMedia({
+      serveUrl: bundleLocation,
+      composition,
+      inputProps: remotionProps,
+      outputLocation: videoOutputPath,
+      codec: "h264",
+      crf: 20,
+      onProgress: (progress) => {
+        // Map render progress (0-1) to our overall progress (50-90)
+        const overallProgress = 50 + progress.progress * 40;
+        onProgress?.(overallProgress);
+      },
     });
 
     onProgress?.(90);
