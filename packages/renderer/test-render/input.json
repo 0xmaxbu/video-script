@@ -1,0 +1,28 @@
+{
+  "script": {
+    "title": "Test Video",
+    "totalDuration": 10,
+    "scenes": [
+      {
+        "id": "intro",
+        "type": "intro",
+        "title": "Welcome",
+        "narration": "Hello and welcome to this test video",
+        "duration": 5,
+        "visualLayers": []
+      },
+      {
+        "id": "outro",
+        "type": "outro",
+        "title": "Thanks",
+        "narration": "Thank you for watching",
+        "duration": 5,
+        "visualLayers": []
+      }
+    ]
+  },
+  "screenshotResources": {},
+  "outputDir": "/tmp/video-script-test-output",
+  "videoFileName": "test-output.mp4",
+  "compositionId": "Video"
+}
