@@ -35,6 +35,24 @@
             "exit": "fadeOut",
             "exitAt": 8
           }
+        },
+        {
+          "id": "hero-screenshot",
+          "type": "screenshot",
+          "position": {
+            "x": "right",
+            "y": "center",
+            "width": 800,
+            "height": 450,
+            "zIndex": 2
+          },
+          "content": "TypeScript code example",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "fadeOut",
+            "exitAt": 9
+          }
         }
       ],
       "transition": { "type": "slide", "duration": 1 }
@@ -45,7 +63,62 @@
       "title": "Next Steps",
       "narration": "Now that you understand generics, try using them in your own projects. In the next video, we'll cover generic constraints.",
       "duration": 10,
-      "visualLayers": [],
+      "visualLayers": [
+        {
+          "id": "bullet-1",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 300,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "Write reusable, type-safe code",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0,
+            "exit": "none",
+            "exitAt": 9
+          }
+        },
+        {
+          "id": "bullet-2",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 400,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "Works with any data type",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0.3,
+            "exit": "none",
+            "exitAt": 9
+          }
+        },
+        {
+          "id": "bullet-3",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 500,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "Catch errors at compile time",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0.6,
+            "exit": "none",
+            "exitAt": 9
+          }
+        }
+      ],
       "transition": { "type": "fade", "duration": 1 }
     }
   ]

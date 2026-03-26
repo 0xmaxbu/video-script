@@ -58,7 +58,7 @@ export const KineticSubtitle: React.FC<KineticSubtitleProps> = ({
 
         return (
           <span key={i} style={style}>
-            {word}
+            {word}{" "}
           </span>
         );
       })}
@@ -78,7 +78,6 @@ const containerStyle: React.CSSProperties = {
   display: "flex",
   flexWrap: "wrap",
   justifyContent: "center",
-  gap: "4px 2px",
 };
 
 const baseWordStyle: React.CSSProperties = {

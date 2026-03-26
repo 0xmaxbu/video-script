@@ -20,7 +20,7 @@ export const SPRING_PRESETS = {
 
 type SpringPresetName = keyof typeof SPRING_PRESETS;
 
-const ENTER_ANIMATION_CONFIG: Record<
+export const ENTER_ANIMATION_CONFIG: Record<
   AnimationConfig["enter"],
   { preset: SpringPresetName; durationFrames: number }
 > = {
