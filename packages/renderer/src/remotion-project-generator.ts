@@ -1,5 +1,4 @@
 import { mkdir, writeFile, cp } from "fs/promises";
-import { spawn } from "child_process";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { z } from "zod";
@@ -114,27 +113,8 @@ export async function generateRemotionProject(
       JSON.stringify(packageJson, null, 2),
     );
 
-    // Install dependencies so remotion binary is available
-    await new Promise<void>((resolve, reject) => {
-      const npm = spawn("npm", ["install", "--ignore-scripts"], {
-        cwd: projectPath,
-        stdio: "pipe",
-      });
-      let stderr = "";
-      npm.stderr?.on("data", (data: Buffer) => {
-        stderr += data.toString();
-      });
-      npm.on("close", (code: number | null) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`npm install failed: ${stderr}`));
-        }
-      });
-      npm.on("error", (err) => {
-        reject(err);
-      });
-    });
+    // NOTE: No npm install needed — esbuild resolves deps from workspace root node_modules directly.
+    // The package.json is kept for documentation only.
 
     const tsConfig = {
       compilerOptions: {
@@ -196,36 +176,35 @@ Config.overrideWebpackConfig((currentConfiguration) => {
       remotionConfigContent,
     );
 
-    const indexContent = `import React, { useRef, useEffect } from "react";
-import { StrictMode } from "react";
+    // Calculate total duration in frames for the Player
+    const totalDurationInFrames = Math.ceil(script.totalDuration * 30);
+
+    const indexContent = `import React from "react";
 import { createRoot } from "react-dom/client";
+import { flushSync } from "react-dom";
 import { Player } from "@remotion/player";
 import { VideoComposition } from "./remotion/Composition";
 
-// Expose variables for puppeteer renderer setup
-const script = (window as any).remotion_script || { scenes: [{ duration: 10 }] };
-const images = (window as any).remotion_screenshotResources || {};
+// Script and image data embedded at generation time
+const scriptData = ${JSON.stringify(script)};
+const imagesData = ${JSON.stringify(processedScreenshotResources)};
 
-const App = () => {
-  const playerRef = useRef<any>(null);
-
-  useEffect(() => {
-    (window as any).remotion_setFrame = (frame: number) => {
-      if (playerRef.current) {
-        playerRef.current.seekTo(frame);
-      }
-    };
-  }, []);
-
+// App renders the Player with a key equal to the frame number.
+// Using key={frame} forces React to UNMOUNT the old Player and MOUNT a new one,
+// so @remotion/player's initialFrame prop takes effect on every call.
+// This avoids the async seekTo() approach which races with the screenshot timer.
+const App = ({ frame = 0 }: { frame?: number }) => {
   return (
     <Player
-      ref={playerRef}
+      key={frame}
+      acknowledgeRemotionLicense
       component={VideoComposition}
-      inputProps={{ script, images }}
-      durationInFrames={Math.ceil((script.scenes.length || 1) * 30 * 30)}
-      compositionWidth={${width}}
-      compositionHeight={${height}}
+      inputProps={{ script: scriptData, images: imagesData }}
+      durationInFrames={${totalDurationInFrames}}
+      compositionWidth={${validated.width}}
+      compositionHeight={${validated.height}}
       fps={30}
+      initialFrame={frame}
       style={{
         width: "100%",
         height: "100%",
@@ -236,10 +215,27 @@ const App = () => {
 
 const container = document.getElementById("root");
 if (container) {
-  const root = createRoot(container);
-  root.render(
-    StrictMode ? <StrictMode><App /></StrictMode> : <App />
-  );
+  const reactRoot = createRoot(container);
+
+  // remotion_setFrame: called by Playwright for each frame.
+  // flushSync forces React to synchronously commit the new frame to the DOM
+  // before this function returns. No async race, no seekTo().
+  (window as any).remotion_setFrame = (frame: number) => {
+    flushSync(() => {
+      reactRoot.render(<App frame={frame} />);
+    });
+  };
+
+  (window as any).remotion_ready = false;
+
+  // Initial render at frame 0 (async, React 18 default)
+  reactRoot.render(<App frame={0} />);
+
+  // Mark ready after the first microtask — by then the initial render is
+  // scheduled and remotion_setFrame is available.
+  Promise.resolve().then(() => {
+    (window as any).remotion_ready = true;
+  });
 }
 `;
 
@@ -393,7 +389,6 @@ export const RemotionRoot: React.FC = () => {
     await cp(join(__dirname, "remotion"), join(srcPath, "remotion"), {
       recursive: true,
     });
-
 
     const gitignore = `node_modules/
 dist/

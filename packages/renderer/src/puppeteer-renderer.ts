@@ -304,10 +304,13 @@ async function renderFrames(
   mkdirSync(framesDir, { recursive: true });
 
   try {
-    // Wait for Remotion to be ready
+    // Wait for Remotion to be ready (remotion_ready is set after initial render)
     await page.waitForFunction(
       () => {
-        return typeof (window as any).remotion_setFrame === "function";
+        return (
+          typeof (window as any).remotion_setFrame === "function" &&
+          (window as any).remotion_ready === true
+        );
       },
       { timeout: 30000 },
     );
@@ -316,7 +319,7 @@ async function renderFrames(
 
     // Render each frame
     for (let frame = 0; frame < totalFrames; frame++) {
-      // Set the current frame
+      // Set the current frame via flushSync re-render (synchronous in new index.tsx)
       await page.evaluate(
         ({ frameNum, compId }) => {
           (window as any).remotion_setFrame(frameNum, compId);
@@ -324,8 +327,9 @@ async function renderFrames(
         { frameNum: frame, compId: compositionId },
       );
 
-      // Wait for the frame to render
-      await page.waitForTimeout(50); // Small delay to ensure frame is rendered
+      // Wait for browser to paint the new frame
+      // flushSync makes React render synchronous, but browser paint is async
+      await page.waitForTimeout(16); // ~1 frame at 60fps for paint to flush
 
       // Capture screenshot
       const screenshot = await page.screenshot({
@@ -529,7 +533,7 @@ export async function renderVideoWithPuppeteer(
 
     context = await browser.newContext({
       viewport: { width, height },
-      deviceScaleFactor: 2,
+      deviceScaleFactor: 1,
     });
 
     page = await context.newPage();
