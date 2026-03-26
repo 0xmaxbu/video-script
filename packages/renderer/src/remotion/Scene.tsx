@@ -23,13 +23,15 @@ const getPositionStyle = (
     position: "absolute",
   };
 
+  const transforms: string[] = [];
+
   if (typeof position.x === "number") {
     style.left = position.x;
   } else if (position.x === "left") {
     style.left = 0;
   } else if (position.x === "center") {
     style.left = "50%";
-    style.transform = "translateX(-50%)";
+    transforms.push("translateX(-50%)");
   } else if (position.x === "right") {
     style.right = 0;
   }
@@ -40,9 +42,13 @@ const getPositionStyle = (
     style.top = 0;
   } else if (position.y === "center") {
     style.top = "50%";
-    style.transform = "translateY(-50%)";
+    transforms.push("translateY(-50%)");
   } else if (position.y === "bottom") {
     style.bottom = 0;
+  }
+
+  if (transforms.length > 0) {
+    style.transform = transforms.join(" ");
   }
 
   if (position.width === "full") {

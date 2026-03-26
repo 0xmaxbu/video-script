@@ -60,6 +60,9 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
 
   const finalScale = scale * kbScale;
 
+  const centerXOffset = position.x === "center" ? "-50%" : "0";
+  const centerYOffset = position.y === "center" ? "-50%" : "0";
+
   const style: React.CSSProperties = {
     position: "absolute",
     left:
@@ -70,6 +73,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           : position.x === "center"
             ? "50%"
             : "auto",
+    right: position.x === "right" ? 0 : undefined,
     top:
       typeof position.y === "number"
         ? position.y
@@ -78,6 +82,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           : position.y === "center"
             ? "50%"
             : "auto",
+    bottom: position.y === "bottom" ? 0 : undefined,
     width:
       position.width === "full"
         ? "100%"
@@ -91,7 +96,7 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           ? "auto"
           : position.height,
     zIndex: position.zIndex,
-    transform: `translate(${translateX}px, ${translateY}px) scale(${finalScale})`,
+    transform: `translate(calc(${centerXOffset} + ${translateX}px), calc(${centerYOffset} + ${translateY}px)) scale(${finalScale})`,
     transformOrigin: "center center",
     opacity,
   };
