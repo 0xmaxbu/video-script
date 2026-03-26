@@ -212,7 +212,10 @@ export function parseResearchMarkdown(md: string): {
       const match = line.match(sourceIndexRegex);
       if (match) {
         const [, num, srcTitle, url] = match;
-        sourceIndex.set(parseInt(num), { title: srcTitle.trim(), url: url.trim() });
+        sourceIndex.set(parseInt(num), {
+          title: srcTitle.trim(),
+          url: url.trim(),
+        });
       }
       continue;
     }
@@ -234,7 +237,11 @@ export function parseResearchMarkdown(md: string): {
         heading,
         level,
         priority: priorityMatch
-          ? (priorityMatch[1] as "essential" | "important" | "supporting" | "skip")
+          ? (priorityMatch[1] as
+              | "essential"
+              | "important"
+              | "supporting"
+              | "skip")
           : "supporting",
         content: "",
         sourceRefs: [],
@@ -290,4 +297,119 @@ export function filterEssentialContent(md: string): string {
   }
 
   return result;
+}
+
+/**
+ * 多轮深度研究
+ *
+ * 三轮研究流程：
+ * - Round 1: 基础研究，从所有链接和文档中提取关键信息
+ * - Round 2: 识别信息空白，补充更多来源
+ * - Round 3: 提取具体示例和类比，加深理解
+ *
+ * 每轮输出喂入下一轮 prompt，最终合并三轮 Markdown。
+ */
+export async function runDeepResearch(input: {
+  title: string;
+  links: string[];
+  document?: string;
+}): Promise<string> {
+  const { title, links, document } = input;
+
+  const linksSection =
+    links.length > 0
+      ? `## 参考链接\n${links.map((l, i) => `${i + 1}. ${l}`).join("\n")}`
+      : "";
+
+  const docSection = document ? `## 补充文档\n\n${document}` : "";
+
+  // Round 1: 基础研究
+  const round1Prompt = `# 研究任务: ${title}
+
+${linksSection}
+
+${docSection}
+
+请对以上内容进行全面研究，提取关键信息，按照输出格式输出结构化 Markdown。
+重点关注：核心概念、主要特性、实际用法。`;
+
+  const round1Result = await researchAgent.generate(round1Prompt);
+  const round1Md = round1Result.text;
+
+  // Round 2: 识别空白，补充来源
+  const round2Prompt = `# 研究任务: ${title} - 第二轮深化
+
+## 第一轮研究结果
+
+${round1Md}
+
+---
+
+请基于以上第一轮研究结果，识别信息空白和不清晰的地方：
+1. 哪些概念缺少具体解释？
+2. 哪些特性缺少对比说明（before/after）？
+3. 是否有遗漏的重要特性？
+
+请补充这些缺失内容，使用 [relationship: 对比] 或 [relationship: 原因] 标记新增内容。
+按照相同 Markdown 格式输出补充研究。`;
+
+  const round2Result = await researchAgent.generate(round2Prompt);
+  const round2Md = round2Result.text;
+
+  // Round 3: 提取具体示例和类比
+  const round3Prompt = `# 研究任务: ${title} - 第三轮示例提炼
+
+## 第一轮研究结果
+
+${round1Md}
+
+## 第二轮深化结果
+
+${round2Md}
+
+---
+
+请基于以上两轮研究结果，专注提取：
+1. 具体的代码示例（真实可运行的代码片段）
+2. 易于理解的类比说明（将复杂概念类比为日常事物）
+3. 常见误用场景和正确做法对比
+
+使用 [relationship: 示例] 标记代码示例，[relationship: 对比] 标记误用/正确对比。
+按照相同 Markdown 格式输出。`;
+
+  const round3Result = await researchAgent.generate(round3Prompt);
+  const round3Md = round3Result.text;
+
+  // 合并三轮结果
+  return mergResearchRounds(title, round1Md, round2Md, round3Md);
+}
+
+/**
+ * 合并多轮研究结果
+ * 以第一轮为主体，追加二、三轮的新内容
+ */
+function mergResearchRounds(
+  title: string,
+  round1: string,
+  round2: string,
+  round3: string,
+): string {
+  return `# ${title} - 深度研究报告
+
+## 第一轮：基础研究
+
+${round1}
+
+---
+
+## 第二轮：深化补充
+
+${round2}
+
+---
+
+## 第三轮：示例提炼
+
+${round3}
+`;
 }
