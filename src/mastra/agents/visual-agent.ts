@@ -229,11 +229,21 @@ export function selectAnnotationType(
 
 /**
  * 生成 Visual Agent 的 prompt
+ *
+ * @param scriptOutput - Script Agent 的输出
+ * @param researchMd - Research Markdown 文档
+ * @param usedLayouts - 已使用的布局模板列表（用于避免重复）
  */
 export function generateVisualPrompt(
   scriptOutput: unknown,
   researchMd: string,
+  usedLayouts?: string[],
 ): string {
+  const layoutVarietySection =
+    usedLayouts && usedLayouts.length > 0
+      ? `\n## Previously Used Layouts\n\n${usedLayouts.join(", ")}\n\nDo NOT repeat these layouts. Choose a different template for each scene.\n`
+      : "";
+
   return `根据以下 Script 和 Research 生成视觉编排方案。
 
 **核心原则：视觉服从口播**
@@ -247,7 +257,7 @@ Research 文档（用于获取来源 URL）：
 ---
 ${researchMd}
 ---
-
+${layoutVarietySection}
 输出要求：
 1. 只输出 JSON，不要 markdown 代码块
 2. 每个视觉元素必须有 narrationBinding
