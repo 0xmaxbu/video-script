@@ -92,6 +92,7 @@ export async function generateRemotionProject(
         "@remotion/renderer": "4.0.436",
         "@remotion/studio": "4.0.436",
         "@remotion/transitions": "4.0.436",
+        "@remotion/player": "4.0.436",
       },
       devDependencies: {
         "@types/node": "^25.5.0",
@@ -189,18 +190,49 @@ Config.overrideWebpackConfig((currentConfiguration) => {
       remotionConfigContent,
     );
 
-    const indexContent = `import { registerRoot } from "remotion";
+    const indexContent = `import React, { useRef, useEffect } from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { RemotionRoot } from "./Root";
+import { Player } from "@remotion/player";
+import { VideoComposition } from "./Composition";
 
-registerRoot(RemotionRoot);
+// Expose variables for puppeteer renderer setup
+const script = (window as any).remotion_script || { scenes: [{ duration: 10 }] };
+const images = (window as any).remotion_screenshotResources || {};
+
+const App = () => {
+  const playerRef = useRef<any>(null);
+
+  useEffect(() => {
+    (window as any).remotion_setFrame = (frame: number) => {
+      if (playerRef.current) {
+        playerRef.current.seekTo(frame);
+      }
+    };
+  }, []);
+
+  return (
+    <Player
+      ref={playerRef}
+      component={VideoComposition}
+      inputProps={{ script, images }}
+      durationInFrames={Math.ceil((script.scenes.length || 1) * 30 * 30)}
+      compositionWidth={${width}}
+      compositionHeight={${height}}
+      fps={30}
+      style={{
+        width: "100%",
+        height: "100%",
+      }}
+    />
+  );
+};
 
 const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
-    StrictMode ? <StrictMode><RemotionRoot /></StrictMode> : <RemotionRoot />
+    StrictMode ? <StrictMode><App /></StrictMode> : <App />
   );
 }
 `;

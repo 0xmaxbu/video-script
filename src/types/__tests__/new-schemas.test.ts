@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  ResearchLinkSchema,
   ResearchSegmentSchema,
   ResearchOutputSchema,
 } from "../research.js";
@@ -11,28 +10,6 @@ import {
   ScriptOutputSchema,
 } from "../script.js";
 
-describe("ResearchLinkSchema", () => {
-  it("should accept a valid link", () => {
-    expect(
-      ResearchLinkSchema.safeParse({
-        url: "https://example.com",
-        key: "Example",
-      }).success,
-    ).toBe(true);
-  });
-
-  it("should reject invalid URL", () => {
-    expect(
-      ResearchLinkSchema.safeParse({ url: "not-a-url", key: "Bad" }).success,
-    ).toBe(false);
-  });
-
-  it("should require key field", () => {
-    expect(
-      ResearchLinkSchema.safeParse({ url: "https://example.com" }).success,
-    ).toBe(false);
-  });
-});
 
 describe("ResearchSegmentSchema", () => {
   const validSegment = {

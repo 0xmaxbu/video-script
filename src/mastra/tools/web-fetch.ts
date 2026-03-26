@@ -6,7 +6,7 @@ import { parseHTML } from 'linkedom';
 import Turndown from 'turndown';
 
 // Turndown instance for HTML to Markdown conversion
-const td = new Turndown();
+const td = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced', emDelimiter: '*' });
 
 function extractTitle(html: string): string {
   const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
@@ -53,16 +53,22 @@ export async function fetchAndExtract(url: string): Promise<{ content: string; t
     const reader = new Readability(document, { charThreshold: 0 });
     const article = reader.parse();
 
-    if (!article) {
+    let contentHtml = "";
+    let extractedTitle = "";
+
+    if (article && article.content) {
+      contentHtml = article.content;
+      extractedTitle = article.title || "";
+    } else if (document.body) {
+      // Fallback if Readability fails to find an article
+      contentHtml = document.body.innerHTML;
+    } else {
       throw new Error("READABILITY_FAILED");
     }
 
     // Convert to Markdown using Turndown
-    if (!article.content) {
-      throw new Error("READABILITY_FAILED: No content extracted");
-    }
-    const markdown = td.turndown(article.content);
-    const title = article.title || extractTitle(html);
+    const markdown = td.turndown(contentHtml);
+    const title = extractedTitle || extractTitle(html);
 
     return {
       content: markdown,

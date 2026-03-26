@@ -1,14 +1,22 @@
-import { extname, join } from "path";
-import { z } from "zod";
+/**
+ * Root-level video rendering orchestrator.
+ *
+ * Delegates all rendering to @video-script/renderer which uses:
+ * - esbuild for bundling (bypasses broken Remotion webpack bundler)
+ * - Playwright/Chrome headless for frame rendering via CDP
+ * - FFmpeg for stitching frames into MP4
+ *
+ * Requires: ffmpeg installed on the system.
+ */
+import { z } from "zod/v4";
 import { ScriptOutput, SceneScript } from "../types/script.js";
 import {
-  generateRemotionProject,
-  type GenerateProjectInput,
-} from "./remotion-project-generator.js";
-import { cleanupRemotionTempDir } from "./cleanup.js";
+  renderVideo as rendererRenderVideo,
+  calculateTotalDuration as rendererCalculateTotalDuration,
+} from "@video-script/renderer";
 
 export function calculateTotalDuration(scenes: SceneScript[]): number {
-  return scenes.reduce((sum, s) => sum + s.duration, 0);
+  return rendererCalculateTotalDuration(scenes as Parameters<typeof rendererCalculateTotalDuration>[0]);
 }
 
 /**
@@ -17,7 +25,7 @@ export function calculateTotalDuration(scenes: SceneScript[]): number {
 export const RenderVideoInputSchema = z.object({
   script: z.object({
     title: z.string(),
-    totalDuration: z.number().positive().optional(),
+    totalDuration: z.number().check(z.positive()).optional(),
     scenes: z.array(
       z.object({
         id: z.string(),
@@ -71,198 +79,21 @@ export interface RenderVideoOutput {
 }
 
 /**
- * Orchestrates the complete video rendering process
- *
- * @param input - Rendering input including script, resources, and output path
- * @returns Rendering result with video path and metadata
+ * Orchestrates the complete video rendering process by delegating
+ * to @video-script/renderer's Playwright-based renderer.
  */
 export async function renderVideo(
   input: RenderVideoInput,
 ): Promise<RenderVideoOutput> {
-  try {
-    // Validate input
-    RenderVideoInputSchema.omit({ onProgress: true }).parse(input);
-
-    const {
-      script,
-      screenshotResources,
-      outputDir,
-      videoFileName = `${script.title.toLowerCase().replace(/\s+/g, "-")}.mp4`,
-      onProgress,
-    } = input;
-
-    // Step 1: Generate Remotion project
-    onProgress?.(10);
-
-    const projectInput: GenerateProjectInput = {
-      script,
-      screenshotResources,
-      outputPath: join(outputDir, ".remotion-project"),
-    };
-
-    const projectResult = await generateRemotionProject(projectInput);
-
-    if (!projectResult.success) {
-      return {
-        videoPath: "",
-        duration: 0,
-        fps: 30,
-        resolution: "1920x1080",
-        success: false,
-        error: projectResult.error || "Failed to generate Remotion project",
-      };
-    }
-
-    onProgress?.(30);
-
-    // Step 2: Prepare video output path
-    const videoOutputPath = join(outputDir, videoFileName);
-
-    // Step 3: Execute remotion-render tool
-    onProgress?.(50);
-
-    const { spawn } = await import("child_process");
-    const { existsSync, mkdirSync } = await import("fs");
-    const { dirname } = await import("path");
-
-    const renderResult = await new Promise<{
-      videoPath: string;
-      duration: number;
-      success: boolean;
-      error?: string;
-    }>((resolve) => {
-      try {
-        if (!existsSync(projectResult.projectPath)) {
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Project path not found: ${projectResult.projectPath}`,
-          });
-        }
-
-        const outputDirPath = dirname(videoOutputPath);
-        if (!existsSync(outputDirPath)) {
-          mkdirSync(outputDirPath, { recursive: true });
-        }
-
-        const format =
-          extname(videoFileName).toLowerCase() === ".webm" ? "webm" : "mp4";
-        const args = [
-          "remotion",
-          "render",
-          projectResult.mainComponentPath,
-          videoOutputPath,
-          "--codec",
-          "h264",
-          "--fps",
-          projectResult.videoConfig.fps.toString(),
-        ];
-
-        if (format === "webm") {
-          args.push("--webm");
-        }
-
-        const renderProcess = spawn("npx", args, {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: process.cwd(),
-        });
-
-        let stdout = "";
-        let stderr = "";
-
-        renderProcess.stdout?.on("data", (data: Buffer) => {
-          stdout += data.toString();
-        });
-
-        renderProcess.stderr?.on("data", (data: Buffer) => {
-          stderr += data.toString();
-        });
-
-        renderProcess.on("close", (code: number) => {
-          if (code === 0 && existsSync(videoOutputPath)) {
-            return resolve({
-              videoPath: videoOutputPath,
-              duration: calculateTotalDuration(script.scenes),
-              success: true,
-            });
-          }
-
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Rendering failed (Exit code: ${code}): ${stderr || stdout}`,
-          });
-        });
-
-        renderProcess.on("error", (error: Error) => {
-          return resolve({
-            videoPath: "",
-            duration: 0,
-            success: false,
-            error: `Process error: ${error.message}`,
-          });
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
-
-        return resolve({
-          videoPath: "",
-          duration: 0,
-          success: false,
-          error: `Render exception: ${errorMessage}`,
-        });
-      }
-    });
-
-    onProgress?.(80);
-
-    if (!renderResult.success) {
-      return {
-        videoPath: "",
-        duration: 0,
-        fps: projectResult.videoConfig.fps,
-        resolution: projectResult.videoConfig.resolution,
-        success: false,
-        error: renderResult.error || "Video rendering failed",
-      };
-    }
-
-    // Step 4: Clean up temporary project files (optional)
-    onProgress?.(90);
-
-    try {
-      await cleanupRemotionTempDir(projectResult.projectPath, {
-        preservePatterns: ["*.mp4", "*.srt", "*.json"],
-      });
-    } catch (cleanupError) {
-      console.warn("Failed to clean up temporary project files:", cleanupError);
-    }
-
-    onProgress?.(100);
-
-    // Return success result
-    const result: RenderVideoOutput = {
-      videoPath: renderResult.videoPath,
-      duration: calculateTotalDuration(script.scenes),
-      fps: projectResult.videoConfig.fps,
-      resolution: projectResult.videoConfig.resolution,
-      success: true,
-    };
-
-    return result;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    return {
-      videoPath: "",
-      duration: 0,
-      fps: 30,
-      resolution: "1920x1080",
-      success: false,
-      error: `Video rendering error: ${errorMessage}`,
-    };
-  }
+  const args: Parameters<typeof rendererRenderVideo>[0] = {
+    script: input.script as Parameters<typeof rendererRenderVideo>[0]["script"],
+    screenshotResources: input.screenshotResources,
+    outputDir: input.outputDir,
+  };
+  
+  if (input.videoFileName !== undefined) args.videoFileName = input.videoFileName;
+  if (input.onProgress !== undefined) args.onProgress = input.onProgress;
+  
+  // Delegate to @video-script/renderer which uses Playwright + FFmpeg
+  return rendererRenderVideo(args);
 }

@@ -1,46 +1,29 @@
-const z = (val: unknown) => val;
-z.object = (schema: unknown) => schema;
-z.string = () => "string";
-z.number = () => "number";
-z.array = (item: unknown) => [item];
-z.enum = (values: unknown) => values;
-z.optional = (val: unknown) => val;
-z.boolean = () => "boolean";
-z.union = (vals: unknown) => vals;
-z.literal = (val: unknown) => val;
-z.min = (val: unknown, _min?: unknown) => val;
-z.max = (val: unknown, _max?: unknown) => val;
-z.positive = () => "positive";
-z.int = () => "int";
-z.default = (_val: unknown, def: unknown) => def;
-z.parse = (val: unknown) => val;
-z.infer = (val: unknown) => val;
-z.tuple = (items: unknown) => items;
-z.regex = (val: unknown, _pattern?: unknown) => val;
-z.nullable = (val: unknown) => val;
-z.undefined = () => "undefined";
-z.null = () => "null";
-z.void = () => "void";
-z.any = () => "any";
-z.unknown = () => "unknown";
-z.never = () => "never";
-z.record = (key: unknown, val?: unknown) => ({ key, val });
-z.discriminatedUnion = (_discriminator: unknown, options: unknown) => options;
-z.strict = (val: unknown) => val;
-z.extend = (val: unknown, _extension: unknown) => val;
-z.merge = (val: unknown, _other: unknown) => val;
-z.pick = (val: unknown, _keys: unknown) => val;
-z.omit = (val: unknown, _keys: unknown) => val;
-z.partial = (val: unknown) => val;
-z.required = (val: unknown) => val;
-z.custom = () => "custom";
-z.refine = (val: unknown) => val;
-z.superRefine = (val: unknown) => val;
-z.transform = (val: unknown) => val;
-z.brand = (val: unknown) => val;
-z.branded = (val: unknown) => val;
-z.catch = (val: unknown) => val;
-z.safeParse = (val: unknown) => ({ success: true, data: val });
+// Create a Proxy that returns itself for any property access or function call,
+// allowing infinite chaining like z.string().url().min().describe().optional()
+function createZodMock(): any {
+  const handler: ProxyHandler<Function> = {
+    get(_target, prop) {
+      if (prop === "parse" || prop === "safeParse") {
+        return (val: any) => (prop === "parse" ? val : { success: true, data: val });
+      }
+      return createZodMock();
+    },
+    apply(_target, _thisArg, _argArray) {
+      return createZodMock();
+    },
+  };
+  return new Proxy(() => {}, handler);
+}
 
-export { z };
+const mockZod = createZodMock();
+
+export const z = new Proxy({}, {
+  get(_target, prop) {
+    if (prop === "infer") {
+      return (val: any) => val;
+    }
+    return mockZod;
+  }
+});
+
 export default z;

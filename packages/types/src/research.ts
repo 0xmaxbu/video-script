@@ -13,20 +13,20 @@ export type ResearchInput = z.infer<typeof ResearchInputSchema>;
 // keyContent is flexible Record<string, string> to support AI-extracted key-value pairs
 export const ResearchSegmentSchema = z.object({
   order: z.number().int().positive(),
-  sentence: z.string(),
+  sentence: z.string().min(1),
   keyContent: z.record(z.string(), z.string()),
   links: z.array(
     z.object({
       url: z.string(),
       key: z.string(),
     }),
-  ),
+  ).min(1),
 });
 export type ResearchSegment = z.infer<typeof ResearchSegmentSchema>;
 
 // Research output schema per RES-01
 export const ResearchOutputSchema = z.object({
-  title: z.string(),
-  segments: z.array(ResearchSegmentSchema),
+  title: z.string().min(1),
+  segments: z.array(ResearchSegmentSchema).min(1).max(20),
 });
 export type ResearchOutput = z.infer<typeof ResearchOutputSchema>;

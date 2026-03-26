@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   ResearchInputSchema,
   ResearchOutputSchema,
-  SceneSchema,
+  SceneScriptSchema as SceneSchema,
   ScriptOutputSchema,
   ScreenshotSpecSchema,
   CodeSpecSchema,
@@ -375,7 +375,7 @@ describe("ScriptOutputSchema", () => {
   it("should require at least one scene", () => {
     expect(
       ScriptOutputSchema.safeParse({ ...validScript, scenes: [] }).success,
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("should reject negative totalDuration", () => {

@@ -12,3 +12,4 @@ export * from "@video-script/types";
 
 // Re-export local architecture-specific types (not in @video-script/types)
 export * from "./visual.js";
+export * from "./validations.js";

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   ResearchOutputSchema,
   ScriptOutputSchema,
-  SceneSchema,
+  SceneScriptSchema as SceneSchema,
   SceneTransitionSchema,
   VisualLayerSchema,
 } from "../../src/types/index.js";

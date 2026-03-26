@@ -1,42 +1,56 @@
 {
-  "runId": "5fe7eeab133d8ae0",
+  "runId": "825d29a90ae96218",
   "workflowId": "video-generation",
-  "status": "running",
+  "status": "failed",
+  "currentStep": "compose",
   "steps": [
     {
       "stepId": "research",
       "status": "completed",
+      "startedAt": "2026-03-26T06:06:22.536Z",
+      "completedAt": "2026-03-26T06:07:54.273Z",
       "retryCount": 0,
-      "startedAt": "2026-03-24T08:16:49.034Z",
-      "completedAt": "2026-03-24T08:16:59.291Z",
       "output": {
-        "researchPath": "/Users/max/simple-videos/2026/13-3_23-3_29/test-fix/research.json",
-        "researchMdPath": "/Users/max/simple-videos/2026/13-3_23-3_29/test-fix/research.md"
+        "researchPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/research.json",
+        "researchMdPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/research.md"
       }
     },
     {
       "stepId": "script",
-      "status": "running",
+      "status": "completed",
+      "startedAt": "2026-03-26T06:07:54.279Z",
+      "completedAt": "2026-03-26T06:08:53.920Z",
       "retryCount": 0,
-      "startedAt": "2026-03-24T08:16:59.293Z"
+      "output": {
+        "scriptPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/script.json"
+      }
     },
     {
       "stepId": "screenshot",
-      "status": "pending",
-      "retryCount": 0
+      "status": "completed",
+      "retryCount": 0,
+      "startedAt": "2026-03-26T06:09:03.957Z",
+      "completedAt": "2026-03-26T06:09:45.392Z",
+      "output": {
+        "screenshotsDir": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/screenshots",
+        "screenshotCount": 6
+      }
     },
     {
       "stepId": "compose",
-      "status": "pending",
-      "retryCount": 0
+      "status": "failed",
+      "retryCount": 0,
+      "startedAt": "2026-03-26T06:09:45.394Z",
+      "error": "Render process timed out",
+      "completedAt": "2026-03-26T06:19:45.658Z"
     }
   ],
   "input": {
-    "title": "Test Fix",
-    "outputDir": "/Users/max/simple-videos/2026/13-3_23-3_29/test-fix",
+    "title": "Remotion Error Tracking",
+    "outputDir": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking",
     "aspectRatio": "16:9"
   },
-  "createdAt": "2026-03-24T08:16:49.029Z",
-  "updatedAt": "2026-03-24T08:16:59.293Z",
-  "currentStep": "script"
+  "createdAt": "2026-03-26T06:06:22.522Z",
+  "updatedAt": "2026-03-26T06:19:45.660Z",
+  "error": "Render process timed out"
 }

@@ -131,12 +131,12 @@ Plans:
 **Research sources:** claude-remotion-kickstart, remotion-dev/template-prompt-to-video, AI Jason channel analysis
 **Target quality:** Dark mode aesthetic, kinetic typography, Ken Burns parallax, content-aware screenshots, tutorial-depth narration
 
-| Phase                    | Plans | Status  | Completed |
-| ------------------------ | ----- | ------- | --------- |
-| 14. Animation Engine     | 3     | Planned | -         |
-| 15. Screenshot + Content | TBD   | Planned | -         |
-| 16. Visual Polish        | TBD   | Planned | -         |
-| 17. E2E Testing          | TBD   | Planned | -         |
+| Phase                    | Plans     | Status      | Completed |
+| ------------------------ | --------- | ----------- | --------- |
+| 14. Animation Engine     | 3 + 1 GAP | In Progress | -         |
+| 15. Screenshot + Content | TBD       | Planned     | -         |
+| 16. Visual Polish        | TBD       | Planned     | -         |
+| 17. E2E Testing          | TBD       | Planned     | -         |
 
 ### Phase 14: Animation Engine
 
@@ -151,13 +151,14 @@ Plans:
 4. Staggered bullet/step reveal with configurable delay per item
 5. Scene transition variety: blur, slide, wipe with configurable easing
 6. Per-word kinetic typography subtitle component
-   **Plans:** 3 plans
+   **Plans:** 3 plans + 1 GAP
 
 Plans:
 
-- [ ] 14-01-PLAN.md — Create animation-utils.ts foundation and complete Composition.tsx transitions (ANIM-01, ANIM-02)
-- [ ] 14-02-PLAN.md — Add Ken Burns, parallax, exit animations, and stagger to layer components (ANIM-01, ANIM-03, ANIM-04, ANIM-05)
-- [ ] 14-03-PLAN.md — Create KineticSubtitle component and wire into scene rendering (ANIM-06, ANIM-01)
+- [x] 14-01-PLAN.md — Create animation-utils.ts foundation and complete Composition.tsx transitions (ANIM-01, ANIM-02) — COMPLETE (no video output due to broken renderer)
+- [x] 14-02-PLAN.md — Add Ken Burns, parallax, exit animations, and stagger to layer components (ANIM-01, ANIM-03, ANIM-04, ANIM-05) — COMPLETE (no video output due to broken renderer)
+- [x] 14-03-PLAN.md — Create KineticSubtitle component and wire into scene rendering (ANIM-06, ANIM-01) — COMPLETE (no video output due to broken renderer)
+- [ ] 14-GAP-05-PLAN.md — Resolve Remotion/pnpm conflict via Playwright renderer (wire puppeteer-renderer.ts as primary path)
 
 ### Phase 15: Screenshot Intelligence + Content Depth
 
@@ -320,4 +321,5 @@ _Last updated: 2026-03-23_
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (run /gsd:plan-phase 18 to break down)

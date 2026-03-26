@@ -1,7 +1,7 @@
 {
   "name": "@video-script/renderer",
   "version": "0.1.0",
-  "description": "Standalone Remotion-based video renderer CLI for video-script",
+  "description": "Playwright-based video renderer for video-script",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -23,13 +23,9 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@remotion/bundler": "4.0.436",
-    "@remotion/cli": "4.0.436",
-    "@remotion/renderer": "4.0.436",
-    "@remotion/studio": "4.0.436",
-    "@remotion/studio-server": "4.0.436",
     "@remotion/transitions": "4.0.436",
     "commander": "^14.0.3",
+    "esbuild": "^0.25.0",
     "pinyin": "^3.0.0",
     "playwright": "^1.58.2",
     "react": "^19.2.4",

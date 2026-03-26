@@ -202,12 +202,14 @@ describe("webFetchTool", () => {
   describe("HTML to markdown conversion", () => {
     it("should convert headers correctly", async () => {
       const mockHtml = `
+      <html><body>
         <h1>H1</h1>
         <h2>H2</h2>
         <h3>H3</h3>
         <h4>H4</h4>
         <h5>H5</h5>
         <h6>H6</h6>
+      </body></html>
       `;
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -231,10 +233,12 @@ describe("webFetchTool", () => {
 
     it("should convert bold and italic tags", async () => {
       const mockHtml = `
+      <html><body>
         <p><strong>bold text</strong></p>
         <p><b>bold via b tag</b></p>
         <p><em>italic text</em></p>
         <p><i>italic via i tag</i></p>
+      </body></html>
       `;
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -256,11 +260,13 @@ describe("webFetchTool", () => {
 
     it("should normalize excessive whitespace", async () => {
       const mockHtml = `
+      <html><body>
         <p>Text    with     spaces</p>
         <p>Line 1</p>
 
 
         <p>Line 2</p>
+      </body></html>
       `;
 
       global.fetch = vi.fn().mockResolvedValue({
@@ -301,7 +307,7 @@ describe("webFetchTool", () => {
         status: 200,
         ok: true,
         url: "https://example.com",
-        text: () => Promise.resolve("<p>Minimal</p>"),
+        text: () => Promise.resolve("<html><body><p>Minimal</p></body></html>"),
       });
 
       const result = castResult(
@@ -318,7 +324,7 @@ describe("webFetchTool", () => {
         status: 200,
         ok: true,
         url: longUrl,
-        text: () => Promise.resolve("<p>Content</p>"),
+        text: () => Promise.resolve("<html><body><p>Content</p></body></html>"),
       });
 
       const result = castResult(

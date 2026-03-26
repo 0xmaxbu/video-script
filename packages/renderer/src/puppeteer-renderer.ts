@@ -188,7 +188,7 @@ async function bundleRemotionProjectWithEsbuild(
       bundle: true,
       outfile: join(outputDir, "index.js"),
       platform: "browser",
-      format: "esm",
+      format: "iife",
       splitting: false,
       sourcemap: false,
       minify: false,
@@ -214,6 +214,24 @@ async function bundleRemotionProjectWithEsbuild(
     };
 
     await esbuild.build(esbuildOptions);
+
+    // Create a basic index.html to load the bundle
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Remotion Composition</title>
+  <style>
+    html, body { margin: 0; padding: 0; overflow: hidden; background: white; }
+    #root { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="/index.js"></script>
+</body>
+</html>`;
+    writeFileSync(join(outputDir, "index.html"), htmlContent);
 
     return { success: true, bundlePath: outputDir };
   } catch (error) {
@@ -472,6 +490,8 @@ export async function renderVideoWithPuppeteer(
     });
 
     page = await context.newPage();
+    page.on('console', msg => console.log(`[Browser Console]: ${msg.text()}`));
+    page.on('pageerror', err => console.error(`[Browser Error]:`, err));
 
     onProgress?.(35, "Loading Remotion bundle");
 

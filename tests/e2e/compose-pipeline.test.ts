@@ -211,6 +211,7 @@ describe("Video Generation E2E - Compose Pipeline", () => {
       );
 
       const screenshotsDir = join(testProjectDir, "screenshots");
+      mkdirSync(screenshotsDir, { recursive: true });
       writeFileSync(join(screenshotsDir, "hero-image.png"), Buffer.alloc(0));
 
       const result = findScreenshotFile(screenshotsDir, 0, "hero-image");

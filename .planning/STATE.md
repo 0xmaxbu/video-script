@@ -19,20 +19,18 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Polished technical tutorial videos that feel professional and engaging
-**Current focus:** Phase 14 — Animation Engine (fixing video-renderer path issue)
+**Current focus:** Phase 14 — Animation Engine (GAP-05: wire puppeteer-renderer)
 
 ## Current Position
 
-Phase: 14 (Animation Engine) — BLOCKED
-Plan: GAP-01 (gap closure) — COMPLETE but new path issue discovered
+Phase: 14 (Animation Engine) — IN PROGRESS
+Plan: GAP-05 — wire Playwright renderer as primary path
 
-## Blocker
+## Blocker (RESOLVED)
 
-**Path with spaces:** `/Volumes/SN350-1T 1/dev/video-script/` causes Remotion webpack bundler to fail.
+**Remotion webpack bundler incompatible with pnpm monorepo.** Previous approach of programmatic SSR API via @remotion/renderer hit endless chain of resolution errors.
 
-**Verified working:** `demo-e2e/.remotion-project` successfully renders video (11.8MB).
-
-**Next step:** Sync `packages/renderer/src/remotion/` to `demo-e2e/.remotion-project/src/` and use that as working directory.
+**New approach:** Use existing `puppeteer-renderer.ts` (esbuild + Playwright + FFmpeg) which bypasses the broken Remotion bundler entirely.
 
 ## Performance Metrics
 
@@ -118,15 +116,13 @@ From research (2026-03-22):
 - [Phase 09-types-schema-fix]: Scene adapter converts visual.json (from visualAgent) to visualLayers: mediaResources → screenshot, textElements → text
 - [Phase 09-types-schema-fix]: ESM requires .js extension on relative imports in packages/types
 - [Phase 09-types-schema-fix]: @video-script/types added as workspace:\* dependency to renderer package
-- [Phase 14]: Programmatic SSR API implemented but blocked by pnpm monorepo module resolution - requires architectural decision on pnpm vs standalone approach
+- [Phase 14]: Programmatic SSR API approach abandoned - Remotion webpack bundler fundamentally incompatible with pnpm monorepo. Use existing puppeteer-renderer.ts (esbuild + Playwright + FFmpeg) instead.
 
 ### Pending Todos
 
 ### Roadmap Evolution
 
 - Phase 18 added: 14-gap-03 我们需要对项目进行一次模拟用户测试。有你直接通过 bash命令来调用项目功能。 并生成最终的完整视频。 由我来审核视频质量。
-
-None yet.
 
 ### Blockers/Concerns
 
