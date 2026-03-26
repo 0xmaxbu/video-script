@@ -3,6 +3,7 @@ import { AbsoluteFill, Img } from "remotion";
 import { VisualLayer, SceneNarrativeType } from "../../types.js";
 import {
   useKenBurns,
+  useAdvancedKenBurns,
   useParallax,
   useEnterAnimation,
   useExitAnimation,
@@ -19,25 +20,41 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   imagePath,
   sceneType,
 }) => {
-  const { content, position, animation } = layer;
+  const { content, position, animation, kenBurnsWaypoints } = layer;
 
   const enter = useEnterAnimation(animation);
   const exit = useExitAnimation(animation);
 
-  const kenBurns = useKenBurns(sceneType ?? "feature");
+  // Use multi-focal Ken Burns when waypoints are provided, otherwise simple Ken Burns
+  const advancedKB = useAdvancedKenBurns(kenBurnsWaypoints ?? []);
+  const simpleKB = useKenBurns(sceneType ?? "feature");
   const parallax = useParallax(position.zIndex);
 
-  const kbScale =
-    sceneType === "intro" || sceneType === "feature" ? kenBurns.scale : 1;
-  const pTranslateX = sceneType === "intro" ? parallax.translateX : 0;
-  const pTranslateY = sceneType === "intro" ? parallax.translateY : 0;
+  const useAdvanced =
+    kenBurnsWaypoints !== undefined && kenBurnsWaypoints.length > 0;
+
+  const kbScale = useAdvanced
+    ? advancedKB.scale
+    : sceneType === "intro" || sceneType === "feature"
+      ? simpleKB.scale
+      : 1;
+
+  const kbTranslateX = useAdvanced ? advancedKB.translateX : 0;
+  const kbTranslateY = useAdvanced ? advancedKB.translateY : 0;
+
+  const pTranslateX =
+    !useAdvanced && sceneType === "intro" ? parallax.translateX : 0;
+  const pTranslateY =
+    !useAdvanced && sceneType === "intro" ? parallax.translateY : 0;
 
   const opacity =
     exit.opacity !== undefined
       ? Math.min(enter.opacity, exit.opacity)
       : enter.opacity;
-  const translateX = enter.translateX + exit.translateX + pTranslateX;
-  const translateY = enter.translateY + exit.translateY + pTranslateY;
+  const translateX =
+    enter.translateX + exit.translateX + pTranslateX + kbTranslateX;
+  const translateY =
+    enter.translateY + exit.translateY + pTranslateY + kbTranslateY;
   const scale =
     exit.scale !== undefined ? Math.min(enter.scale, exit.scale) : enter.scale;
 

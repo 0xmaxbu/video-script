@@ -52,6 +52,15 @@ export const AnimationConfigSchema = z.object({
   exitAt: z.number().optional(),
 });
 
+// Ken Burns waypoint for multi-focal animation
+export const KenBurnsWaypointSchema = z.object({
+  focalX: z.number().min(0).max(1).default(0.5), // 0=left, 0.5=center, 1=right
+  focalY: z.number().min(0).max(1).default(0.5), // 0=top, 0.5=center, 1=bottom
+  scale: z.number().min(1).max(2.5), // zoom level ≥1
+  holdFrames: z.number().int().min(0).default(0), // frames to linger at this waypoint
+});
+export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
+
 // VisualLayer schema
 export const VisualLayerSchema = z.object({
   id: z.string(),
@@ -59,6 +68,7 @@ export const VisualLayerSchema = z.object({
   position: PositionSchema,
   content: z.string(),
   animation: AnimationConfigSchema,
+  kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 
@@ -74,7 +84,9 @@ export const AnnotationTargetSchema = z.object({
   type: z.enum(["text", "region", "code-line"]),
   textMatch: z.string().optional(),
   lineNumber: z.number().int().positive().optional(),
-  region: z.enum(["top-left", "top-right", "center", "bottom-left", "bottom-right"]).optional(),
+  region: z
+    .enum(["top-left", "top-right", "center", "bottom-left", "bottom-right"])
+    .optional(),
   x: z.number().optional(),
   y: z.number().optional(),
 });
@@ -82,7 +94,16 @@ export type AnnotationTarget = z.infer<typeof AnnotationTargetSchema>;
 
 // D-02: Annotation schema
 export const AnnotationSchema = z.object({
-  type: z.enum(["circle", "underline", "arrow", "box", "highlight", "number", "crossout", "checkmark"]),
+  type: z.enum([
+    "circle",
+    "underline",
+    "arrow",
+    "box",
+    "highlight",
+    "number",
+    "crossout",
+    "checkmark",
+  ]),
   target: AnnotationTargetSchema,
   style: z.object({
     color: z.enum(["attention", "highlight", "info", "success"]),

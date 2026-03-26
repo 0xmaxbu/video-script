@@ -5,7 +5,11 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { AnimationConfigSchema, SceneNarrativeType } from "../types.js";
+import {
+  AnimationConfigSchema,
+  SceneNarrativeType,
+  KenBurnsWaypoint,
+} from "../types.js";
 import type { z } from "zod";
 
 type AnimationConfig = z.infer<typeof AnimationConfigSchema>;
@@ -213,4 +217,112 @@ export function useParallax(
 
 export function staggerDelay(index: number, delayPerItem: number = 10): number {
   return index * delayPerItem;
+}
+
+/**
+ * Multi-focal Ken Burns: camera travels between focal waypoints with optional
+ * hold phases at each waypoint. Each waypoint specifies a focal point
+ * (focalX/focalY as 0-1 fractions of the image) and zoom scale.
+ *
+ * Timeline: hold at wp[0] → travel to wp[1] → hold at wp[1] → travel to wp[2] → …
+ * Travel frames are distributed evenly across all transition segments.
+ */
+export function useAdvancedKenBurns(waypoints: KenBurnsWaypoint[]): {
+  scale: number;
+  translateX: number;
+  translateY: number;
+} {
+  const frame = useCurrentFrame();
+  const { durationInFrames, width, height } = useVideoConfig();
+
+  if (!waypoints || waypoints.length === 0) {
+    return { scale: 1, translateX: 0, translateY: 0 };
+  }
+
+  if (waypoints.length === 1) {
+    const wp = waypoints[0];
+    const scale = wp.scale;
+    return {
+      scale,
+      translateX: width * scale * (0.5 - wp.focalX),
+      translateY: height * scale * (0.5 - wp.focalY),
+    };
+  }
+
+  // Build timeline segments
+  const totalHoldFrames = waypoints.reduce((sum, wp) => sum + wp.holdFrames, 0);
+  const numTravelSegments = waypoints.length - 1;
+  const totalTravelFrames = Math.max(
+    numTravelSegments,
+    durationInFrames - totalHoldFrames,
+  );
+  const travelFramesPerSegment = totalTravelFrames / numTravelSegments;
+
+  interface TimelineSegment {
+    startFrame: number;
+    endFrame: number;
+    type: "hold" | "travel";
+    waypointIdx?: number;
+    fromIdx?: number;
+    toIdx?: number;
+  }
+
+  const timeline: TimelineSegment[] = [];
+  let cursor = 0;
+
+  for (let i = 0; i < waypoints.length; i++) {
+    // Hold at waypoint i
+    if (waypoints[i].holdFrames > 0) {
+      timeline.push({
+        startFrame: cursor,
+        endFrame: cursor + waypoints[i].holdFrames,
+        type: "hold",
+        waypointIdx: i,
+      });
+      cursor += waypoints[i].holdFrames;
+    }
+    // Travel to next waypoint
+    if (i < waypoints.length - 1) {
+      timeline.push({
+        startFrame: cursor,
+        endFrame: cursor + travelFramesPerSegment,
+        type: "travel",
+        fromIdx: i,
+        toIdx: i + 1,
+      });
+      cursor += travelFramesPerSegment;
+    }
+  }
+
+  // Find active segment (clamp to last if past end)
+  const seg =
+    timeline.find((s) => frame >= s.startFrame && frame < s.endFrame) ??
+    timeline[timeline.length - 1];
+
+  let scale: number, focalX: number, focalY: number;
+
+  if (seg.type === "hold") {
+    const wp = waypoints[seg.waypointIdx!];
+    scale = wp.scale;
+    focalX = wp.focalX;
+    focalY = wp.focalY;
+  } else {
+    const fromWp = waypoints[seg.fromIdx!];
+    const toWp = waypoints[seg.toIdx!];
+    const segLen = seg.endFrame - seg.startFrame;
+    const rawProgress = segLen > 0 ? (frame - seg.startFrame) / segLen : 1;
+    const eased = Easing.inOut(Easing.ease)(
+      Math.min(1, Math.max(0, rawProgress)),
+    );
+
+    scale = interpolate(eased, [0, 1], [fromWp.scale, toWp.scale]);
+    focalX = interpolate(eased, [0, 1], [fromWp.focalX, toWp.focalX]);
+    focalY = interpolate(eased, [0, 1], [fromWp.focalY, toWp.focalY]);
+  }
+
+  return {
+    scale,
+    translateX: width * scale * (0.5 - focalX),
+    translateY: height * scale * (0.5 - focalY),
+  };
 }

@@ -53,6 +53,14 @@ export interface RenderProcessInput {
           exit: "fadeOut" | "slideOut" | "zoomOut" | "none";
           exitAt?: number | undefined;
         };
+        kenBurnsWaypoints?:
+          | Array<{
+              focalX: number;
+              focalY: number;
+              scale: number;
+              holdFrames: number;
+            }>
+          | undefined;
       }>;
     }>;
   };
