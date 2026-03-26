@@ -1,7 +1,7 @@
 # GAP-05: Resolve Remotion/pnpm Conflict via Playwright Renderer
 
 **Phase:** 14-animation-engine
-**Status:** PLANNED
+**Status:** COMPLETE
 **Created:** 2026-03-26
 
 ## Objective
@@ -161,11 +161,11 @@ Verify:
 
 ## Success Criteria
 
-- [ ] `video-script compose` produces valid MP4 output
-- [ ] No `@remotion/bundler`, `@remotion/renderer`, `@remotion/cli` in dependency tree
-- [ ] esbuild bundles Remotion React components successfully
-- [ ] FFmpeg stitches frames into playable MP4
-- [ ] Git commit created
+- [x] `video-script compose` produces valid MP4 output
+- [x] No `@remotion/bundler`, `@remotion/renderer`, `@remotion/cli` in dependency tree
+- [x] esbuild bundles Remotion React components successfully
+- [x] FFmpeg stitches frames into playable MP4
+- [x] Git commit created
 
 ---
 
