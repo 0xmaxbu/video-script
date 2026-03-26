@@ -109,6 +109,7 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
                 <Scene
                   scene={scene}
                   imagePaths={images}
+                  annotations={scene.annotations}
                   showSubtitles={showSubtitles}
                 />
               </TransitionSeries.Sequence>

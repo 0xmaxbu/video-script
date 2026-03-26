@@ -5,7 +5,7 @@ import { Arrow } from "./Arrow.js";
 import { Box } from "./Box.js";
 import { Highlight } from "./Highlight.js";
 import { Number } from "./Number.js";
-import type { Annotation } from "@video-script/types";
+import type { Annotation } from "../../types.js";
 
 export interface AnnotationRendererProps {
   annotations: Annotation[];
@@ -21,7 +21,7 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
 }) => {
   // 按 appearAt 排序，确保标注按时间顺序出现
   const sortedAnnotations = [...annotations].sort(
-    (a, b) => a.narrationBinding.appearAt - b.narrationBinding.appearAt
+    (a, b) => a.narrationBinding.appearAt - b.narrationBinding.appearAt,
   );
 
   const sizeToStrokeWidth = (size: "small" | "medium" | "large"): number => {

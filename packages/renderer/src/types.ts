@@ -116,6 +116,7 @@ export const AnnotationSchema = z.object({
   }),
 });
 export type Annotation = z.infer<typeof AnnotationSchema>;
+export type AnnotationColor = "attention" | "highlight" | "info" | "success";
 
 // D-02: SceneHighlight schema (for script highlights)
 export const SceneHighlightSchema = z.object({
@@ -167,6 +168,8 @@ export const SceneScriptSchema = z.object({
   highlights: z.array(SceneHighlightSchema).optional(),
   // D-02a: codeHighlights - marks code line annotations
   codeHighlights: z.array(CodeHighlightSchema).optional(),
+  // D-02: Annotation overlays (circles, arrows, boxes, etc.)
+  annotations: z.array(AnnotationSchema).optional(),
   sourceRef: z.string().optional(),
   // D-02: Optional layout template selection
   layoutTemplate: LayoutTemplateEnum.optional(),

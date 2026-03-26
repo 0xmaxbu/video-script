@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 import { getAnnotationColor, generateWobblyPath } from "./index.js";
-import type { AnnotationColor } from "@video-script/types";
+import type { AnnotationColor } from "../../types.js";
 
 export interface CircleProps {
   x: number;

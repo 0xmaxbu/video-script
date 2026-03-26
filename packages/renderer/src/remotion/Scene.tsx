@@ -5,7 +5,7 @@ import { KineticSubtitle } from "./components/KineticSubtitle";
 import { VisualLayerRenderer } from "./components/VisualLayerRenderer";
 import { CodeAnimation } from "./components/CodeAnimation";
 import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
-import type { Annotation } from "@video-script/types";
+import type { Annotation } from "../types.js";
 import { getLayoutComponent } from "./layouts/index";
 import { convertToVisualScene } from "../utils/sceneAdapter";
 
