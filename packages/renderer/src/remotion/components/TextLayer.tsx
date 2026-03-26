@@ -1,5 +1,4 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
 import { VisualLayer } from "../../types.js";
 import {
   useEnterAnimation,
@@ -24,6 +23,11 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
   const scale =
     exit.scale !== undefined ? Math.min(enter.scale, exit.scale) : enter.scale;
 
+  // Build transform: handle center-alignment offsets + animation
+  const xOffset = position.x === "center" ? "-50%" : "0";
+  const yOffset = position.y === "center" ? "-50%" : "0";
+  const transform = `translate(${xOffset}, ${yOffset}) translateY(${translateY}px) scale(${scale})`;
+
   const style: React.CSSProperties = {
     position: "absolute",
     left:
@@ -34,6 +38,7 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
           : position.x === "center"
             ? "50%"
             : "auto",
+    right: position.x === "right" ? 0 : undefined,
     top:
       typeof position.y === "number"
         ? position.y
@@ -42,20 +47,25 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
           : position.y === "center"
             ? "50%"
             : "auto",
+    bottom: position.y === "bottom" ? 0 : undefined,
     width:
       position.width === "full"
         ? "100%"
         : position.width === "auto"
           ? "auto"
-          : position.width,
+          : typeof position.width === "number"
+            ? position.width
+            : undefined,
     height:
       position.height === "full"
         ? "100%"
         : position.height === "auto"
           ? "auto"
-          : position.height,
+          : typeof position.height === "number"
+            ? position.height
+            : undefined,
     zIndex: position.zIndex,
-    transform: `translateY(${translateY}px) scale(${scale})`,
+    transform,
     transformOrigin: "center center",
     opacity,
     display: "flex",
@@ -64,7 +74,7 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
   };
 
   return (
-    <AbsoluteFill style={style}>
+    <div style={style}>
       <span
         style={{
           color: "white",
@@ -76,6 +86,6 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
       >
         {content}
       </span>
-    </AbsoluteFill>
+    </div>
   );
 };

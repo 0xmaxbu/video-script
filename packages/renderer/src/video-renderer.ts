@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
 import { renderVideoWithPuppeteer } from "./puppeteer-renderer.js";
-import type { PuppeteerRenderInput, PuppeteerRenderOutput } from "./puppeteer-renderer.js";
-
+import type {
+  PuppeteerRenderInput,
+  PuppeteerRenderOutput,
+} from "./puppeteer-renderer.js";
 
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
@@ -20,6 +22,7 @@ export const RenderVideoInputSchema = z.object({
   outputDir: z.string().optional(),
   videoFileName: z.string().optional(),
   compositionId: z.string().default("Video"),
+  showSubtitles: z.boolean().default(false),
   onProgress: z.function().optional(),
 });
 
@@ -29,6 +32,7 @@ export interface RenderVideoInput {
   outputDir?: string;
   videoFileName?: string;
   compositionId?: string;
+  showSubtitles?: boolean;
   onProgress?: (progress: number) => void;
 }
 
@@ -76,13 +80,15 @@ export async function renderVideo(
   if (input.compositionId !== undefined) {
     puppeteerInput.compositionId = input.compositionId;
   }
+  if (input.showSubtitles !== undefined) {
+    puppeteerInput.showSubtitles = input.showSubtitles;
+  }
   if (input.onProgress) {
     puppeteerInput.onProgress = (pct: number) => input.onProgress!(pct);
   }
 
-  const result: PuppeteerRenderOutput = await renderVideoWithPuppeteer(
-    puppeteerInput,
-  );
+  const result: PuppeteerRenderOutput =
+    await renderVideoWithPuppeteer(puppeteerInput);
 
   // Map PuppeteerRenderOutput → RenderVideoOutput (drop framesRendered)
   const output: RenderVideoOutput = {

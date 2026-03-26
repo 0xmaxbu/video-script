@@ -34,6 +34,7 @@ program
         ...(input.videoFileName !== undefined && {
           videoFileName: input.videoFileName,
         }),
+        showSubtitles: input.showSubtitles ?? false,
         onProgress: (pct: number) => {
           process.stdout.write(JSON.stringify({ progress: pct }) + "\n");
         },

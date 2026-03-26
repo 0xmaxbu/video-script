@@ -60,6 +60,7 @@ export interface RenderProcessInput {
   outputDir: string;
   videoFileName?: string;
   srtOutputPath?: string;
+  showSubtitles?: boolean;
 }
 
 export interface RenderProcessOutput {

@@ -785,7 +785,8 @@ program
   .description(
     "Generate final video and subtitles from script.json and screenshots",
   )
-  .action(async (dir) => {
+  .option("--subtitles", "Include narration subtitles in video output")
+  .action(async (dir, options: { subtitles?: boolean }) => {
     const spinner = ora();
     gracefulShutdown.setSpinner(spinner);
 
@@ -896,6 +897,7 @@ program
           outputDir: dir,
           videoFileName: "output.mp4",
           srtOutputPath: srtPath,
+          showSubtitles: options.subtitles ?? false,
         },
         { onProgress },
       );

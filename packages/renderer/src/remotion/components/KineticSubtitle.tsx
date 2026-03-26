@@ -78,6 +78,7 @@ const containerStyle: React.CSSProperties = {
   display: "flex",
   flexWrap: "wrap",
   justifyContent: "center",
+  zIndex: 100,
 };
 
 const baseWordStyle: React.CSSProperties = {

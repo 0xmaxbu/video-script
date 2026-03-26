@@ -34,6 +34,7 @@ const VIDEO_HEIGHT = 1080;
 export interface VideoCompositionProps {
   script: ScriptOutput;
   images?: Record<string, string>;
+  showSubtitles?: boolean;
 }
 
 const getTransitionDuration = (sceneType: SceneNarrativeType): number => {
@@ -74,6 +75,7 @@ const getTransitionPresentation = (type: string, sceneIndex: number) => {
 export const VideoComposition: React.FC<VideoCompositionProps> = ({
   script,
   images,
+  showSubtitles = false,
 }) => {
   const { fps } = useVideoConfig();
 
@@ -104,7 +106,11 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
           return (
             <React.Fragment key={scene.id}>
               <TransitionSeries.Sequence durationInFrames={durationInFrames}>
-                <Scene scene={scene} imagePaths={images} />
+                <Scene
+                  scene={scene}
+                  imagePaths={images}
+                  showSubtitles={showSubtitles}
+                />
               </TransitionSeries.Sequence>
               {!isLast && transition && transition.type !== "none" && (
                 <TransitionSeries.Transition

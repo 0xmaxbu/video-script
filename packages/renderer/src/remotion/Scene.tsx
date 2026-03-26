@@ -13,6 +13,7 @@ interface SceneProps {
   scene: SceneType;
   imagePaths: Record<string, string> | undefined;
   annotations?: Annotation[];
+  showSubtitles?: boolean;
 }
 
 const getPositionStyle = (
@@ -80,6 +81,7 @@ const InlineScene: React.FC<SceneProps> = ({
   scene,
   imagePaths,
   annotations = [],
+  showSubtitles = false,
 }) => {
   const { type, title, narration, visualLayers } = scene;
 
@@ -118,24 +120,24 @@ const InlineScene: React.FC<SceneProps> = ({
       <AbsoluteFill style={containerStyle}>
         <div style={contentStyle}>
           <h1 style={titleStyle}>{title}</h1>
-          {visualLayers
-            ?.filter((l) => l.type === "text")
-            .map((layer) => {
-              const imageKey = `${scene.id}-${layer.id}`;
-              const imagePath = imagePaths?.[imageKey];
-              return (
-                <div key={layer.id} style={getPositionStyle(layer.position)}>
-                  <VisualLayerRenderer
-                    layer={layer}
-                    imagePath={imagePath}
-                    sceneType={scene.type}
-                  />
-                </div>
-              );
-            })}
         </div>
+        {/* Text layers rendered via AbsoluteFill with their own positioning */}
+        {visualLayers
+          ?.filter((l) => l.type === "text")
+          .map((layer) => {
+            const imageKey = `${scene.id}-${layer.id}`;
+            const imagePath = imagePaths?.[imageKey];
+            return (
+              <VisualLayerRenderer
+                key={layer.id}
+                layer={layer}
+                imagePath={imagePath}
+                sceneType={scene.type}
+              />
+            );
+          })}
         <AnnotationRenderer annotations={annotations} />
-        <KineticSubtitle text={narration} />
+        {showSubtitles && <KineticSubtitle text={narration} />}
       </AbsoluteFill>
     );
   }
@@ -143,9 +145,25 @@ const InlineScene: React.FC<SceneProps> = ({
   if (type === "feature") {
     return (
       <AbsoluteFill style={containerStyle}>
-        <div style={contentStyle}>
-          <h1 style={{ ...titleStyle, fontSize: 60 }}>{title}</h1>
-          {visualLayers?.map((layer) => {
+        {/* Screenshot/diagram/image layers fill the background */}
+        {visualLayers
+          ?.filter((l) => ["screenshot", "diagram", "image"].includes(l.type))
+          .map((layer) => {
+            const imageKey = `${scene.id}-${layer.id}`;
+            const imagePath = imagePaths?.[imageKey];
+            return (
+              <VisualLayerRenderer
+                key={layer.id}
+                layer={layer}
+                imagePath={imagePath}
+                sceneType={scene.type}
+              />
+            );
+          })}
+        {/* Code layers positioned via their own absolute positioning */}
+        {visualLayers
+          ?.filter((l) => l.type === "code")
+          .map((layer) => {
             const imageKey = `${scene.id}-${layer.id}`;
             const imagePath = imagePaths?.[imageKey];
             return (
@@ -158,9 +176,23 @@ const InlineScene: React.FC<SceneProps> = ({
               </div>
             );
           })}
-        </div>
+        {/* Text layers via AbsoluteFill with their own positioning */}
+        {visualLayers
+          ?.filter((l) => l.type === "text")
+          .map((layer) => {
+            const imageKey = `${scene.id}-${layer.id}`;
+            const imagePath = imagePaths?.[imageKey];
+            return (
+              <VisualLayerRenderer
+                key={layer.id}
+                layer={layer}
+                imagePath={imagePath}
+                sceneType={scene.type}
+              />
+            );
+          })}
         <AnnotationRenderer annotations={annotations} />
-        <KineticSubtitle text={narration} />
+        {showSubtitles && <KineticSubtitle text={narration} />}
       </AbsoluteFill>
     );
   }
@@ -184,17 +216,16 @@ const InlineScene: React.FC<SceneProps> = ({
             const imageKey = `${scene.id}-${layer.id}`;
             const imagePath = imagePaths?.[imageKey];
             return (
-              <div key={layer.id} style={getPositionStyle(layer.position)}>
-                <VisualLayerRenderer
-                  layer={layer}
-                  imagePath={imagePath}
-                  sceneType={scene.type}
-                />
-              </div>
+              <VisualLayerRenderer
+                key={layer.id}
+                layer={layer}
+                imagePath={imagePath}
+                sceneType={scene.type}
+              />
             );
           })}
         <AnnotationRenderer annotations={annotations} />
-        <KineticSubtitle text={narration} />
+        {showSubtitles && <KineticSubtitle text={narration} />}
       </AbsoluteFill>
     );
   }
@@ -215,6 +246,7 @@ export const Scene: React.FC<SceneProps> = ({
   scene,
   imagePaths,
   annotations = [],
+  showSubtitles = false,
 }) => {
   const layoutTemplate = scene.layoutTemplate;
 
@@ -225,6 +257,7 @@ export const Scene: React.FC<SceneProps> = ({
         scene={scene}
         imagePaths={imagePaths}
         annotations={annotations}
+        showSubtitles={showSubtitles}
       />
     );
   }
@@ -241,6 +274,7 @@ export const Scene: React.FC<SceneProps> = ({
         scene={scene}
         imagePaths={imagePaths}
         annotations={annotations}
+        showSubtitles={showSubtitles}
       />
     );
   }
@@ -252,7 +286,7 @@ export const Scene: React.FC<SceneProps> = ({
     return (
       <LayoutComponent scene={visualScene} screenshots={screenshotsMap}>
         <AnnotationRenderer annotations={annotations} />
-        <KineticSubtitle text={scene.narration} />
+        {showSubtitles && <KineticSubtitle text={scene.narration} />}
       </LayoutComponent>
     );
   } catch (error) {
@@ -262,6 +296,7 @@ export const Scene: React.FC<SceneProps> = ({
         scene={scene}
         imagePaths={imagePaths}
         annotations={annotations}
+        showSubtitles={showSubtitles}
       />
     );
   }

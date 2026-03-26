@@ -15,6 +15,7 @@ const GenerateProjectInputSchema = z.object({
   outputPath: z.string().min(1),
   width: z.number().int().positive().default(1920),
   height: z.number().int().positive().default(1080),
+  showSubtitles: z.boolean().default(false),
 });
 
 export interface GenerateProjectInput {
@@ -23,6 +24,7 @@ export interface GenerateProjectInput {
   outputPath: string;
   width?: number;
   height?: number;
+  showSubtitles?: boolean;
 }
 
 export interface GenerateProjectOutput {
@@ -43,8 +45,14 @@ export async function generateRemotionProject(
 ): Promise<GenerateProjectOutput> {
   try {
     const validated = GenerateProjectInputSchema.parse(input);
-    const { script, screenshotResources, outputPath, width, height } =
-      validated;
+    const {
+      script,
+      screenshotResources,
+      outputPath,
+      width,
+      height,
+      showSubtitles,
+    } = validated;
 
     const projectPath = resolve(outputPath);
     const srcPath = join(projectPath, "src");
@@ -199,7 +207,7 @@ const App = ({ frame = 0 }: { frame?: number }) => {
       key={frame}
       acknowledgeRemotionLicense
       component={VideoComposition}
-      inputProps={{ script: scriptData, images: imagesData }}
+      inputProps={{ script: scriptData, images: imagesData, showSubtitles: ${showSubtitles} }}
       durationInFrames={${totalDurationInFrames}}
       compositionWidth={${validated.width}}
       compositionHeight={${validated.height}}

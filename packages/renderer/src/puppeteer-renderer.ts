@@ -53,6 +53,7 @@ export const PuppeteerRenderInputSchema = z.object({
   fps: z.number().int().positive().default(30),
   width: z.number().int().positive().default(1920),
   height: z.number().int().positive().default(1080),
+  showSubtitles: z.boolean().default(false),
   onProgress: z.function().optional(),
 });
 
@@ -65,6 +66,7 @@ export interface PuppeteerRenderInput {
   fps?: number;
   width?: number;
   height?: number;
+  showSubtitles?: boolean;
   onProgress?: (progress: number, message?: string) => void;
 }
 
@@ -448,6 +450,7 @@ export async function renderVideoWithPuppeteer(
     fps = 30,
     width = 1920,
     height = 1080,
+    showSubtitles = false,
     onProgress,
   } = input;
 
@@ -475,6 +478,7 @@ export async function renderVideoWithPuppeteer(
       script,
       screenshotResources,
       outputPath: join(absoluteOutputDir, ".remotion-project"),
+      showSubtitles,
     };
 
     const projectResult = await generateRemotionProject(projectInput);
