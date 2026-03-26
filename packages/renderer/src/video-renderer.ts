@@ -85,8 +85,8 @@ export async function renderVideo(
     // This ensures the full animation system (Ken Burns, parallax, KineticSubtitle) is used
     const videoOutputPath = join(finalOutputDir, videoFileName);
 
-    // Use renderer package directory as cwd - it has properly linked remotion binaries
-    const cwdForSpawn = "/Volumes/SN350-1T/dev/video-script/packages/renderer";
+    // Use root project directory as cwd - remotion is hoisted there with shamefully-hoist=true
+    const projectRoot = "/Volumes/SN350-1T/dev/video-script";
 
     // Process screenshot resources: convert file paths to base64 data URIs
     const processedImages: Record<string, string> = {};
@@ -132,13 +132,14 @@ export async function renderVideo(
     writeFileSync(propsFilePath, propsJson);
 
     // Use remotion binary from renderer package (properly linked in pnpm)
+    // Use root project's remotion (hoisted with shamefully-hoist)
     const remotionCliPath = join(
-      cwdForSpawn,
+      projectRoot,
       "node_modules/.bin/remotion"
     );
-    // Use renderer's own remotion project
-    const remotionRoot = cwdForSpawn;
-    const remotionEntryPoint = join(remotionRoot, "src/remotion/index.ts");
+    // Use renderer's remotion project
+    const remotionRoot = projectRoot;
+    const remotionEntryPoint = join(projectRoot, "packages/renderer/src/remotion/index.ts");
 
     await new Promise<void>((resolve, reject) => {
       const args = [
@@ -148,6 +149,8 @@ export async function renderVideo(
         remotionEntryPoint,
         compositionId,
         videoOutputPath,
+        "--config",
+        join(projectRoot, "packages/renderer/remotion.config.ts"),
         "--codec",
         "h264",
         "--fps",
@@ -161,8 +164,8 @@ export async function renderVideo(
 
       const child = spawn(remotionCliPath, args, {
         stdio: ["pipe", "pipe", "pipe"],
-        cwd: cwdForSpawn,
-        env: { ...process.env, NODE_PATH: join(cwdForSpawn, "node_modules") },
+        cwd: projectRoot,
+        env: { ...process.env, NODE_PATH: join(projectRoot, "node_modules") },
       });
 
       let stderr = "";

@@ -1,35 +1,31 @@
 {
   "status": "in_progress",
   "phase": "14-animation-engine",
-  "plan": "GAP-01",
-  "task": "Fix path-with-spaces issue in video-renderer.ts",
-  "total_tasks": 1,
-  "next_action": "Sync packages/renderer/src/remotion/ components to demo-e2e/.remotion-project/src/",
-  "completed_tasks": [
-    "Added --root flag to video-renderer.ts",
-    "Changed cwd to demo-e2e/.remotion-project",
-    "Added props file approach to avoid E2BIG"
-  ],
-  "blockers": [
-    "Path with spaces /Volumes/SN350-1T 1/dev/video-script/ breaks Remotion webpack bundler",
-    "packages/renderer/src/remotion/ doesn't have proper TypeScript resolution in demo-e2e context"
-  ],
+  "plan": "GAP-04",
+  "task": "Implement Programmatic SSR API (bundle + selectComposition + renderMedia)",
+  "total_tasks": 6,
+  "next_action": "Create test data in packages/renderer/test-render/",
+  "completed_tasks": [],
+  "blockers": [],
   "human_actions_pending": [
-    "Approve final implementation approach"
+    "Approve GAP-04 plan"
   ],
   "context_notes": [
-    "demo-e2e/.remotion-project verified working - renders 11.8MB video",
-    "packages/renderer/src/remotion/ has full animation components but fails to bundle",
-    "Solution: Use demo-e2e/.remotion-project as base, copy components from packages/renderer/src/remotion/"
+    "GAP-04 plan created at .planning/phases/14-animation-engine/14-GAP-04-PLAN.md",
+    "Solution: Use Programmatic SSR API with bundle() + webpackOverride for polyfills",
+    "NOT using Rspack - Webpack + webpackOverride is official recommended approach",
+    "bundle() outDir: /tmp/video-script-bundles (system temp, reusable)",
+    "Test dir: packages/renderer/test-render/",
+    "Decision: Programmatic SSR API because it's officially documented, stable, and webpackOverride handles polyfills"
   ],
-  "files_modified": [
-    "packages/renderer/src/video-renderer.ts",
-    "packages/renderer/src/remotion/remotion.config.ts",
-    "packages/renderer/src/remotion/tsconfig.json",
-    "packages/renderer/package.json",
-    "demo-e2e/.remotion-project/src/Root.tsx"
+  "files_to_modify": [
+    "packages/renderer/src/video-renderer.ts"
+  ],
+  "files_to_create": [
+    "packages/renderer/test-render/input.json",
+    "packages/renderer/test-render/output/.gitkeep"
   ],
   "uncommitted_files": [
-    "Multiple files modified but not committed"
+    "Multiple files from previous session still need commit"
   ]
 }

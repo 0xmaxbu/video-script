@@ -2,7 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { Config } from "@remotion/cli/config";
 import { z } from "zod";
-import { VideoComposition } from "./Composition.js";
+import { VideoComposition } from "./Composition";
 import { ScriptOutputSchema } from "../types.js";
 
 // Configure default video settings

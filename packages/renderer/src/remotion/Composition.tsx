@@ -8,8 +8,8 @@ import { wipe } from "@remotion/transitions/wipe";
 import { flip } from "@remotion/transitions/flip";
 import { clockWipe } from "@remotion/transitions/clock-wipe";
 import { iris } from "@remotion/transitions/iris";
-import { ScriptOutput, SceneNarrativeType } from "../types.js";
-import { Scene } from "./Scene.js";
+import { ScriptOutput, SceneNarrativeType } from "../types";
+import { Scene } from "./Scene";
 
 const BlurTransition: React.FC<{
   presentationProgress: number;

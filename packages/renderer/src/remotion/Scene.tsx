@@ -1,13 +1,13 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { SceneScript as SceneType, VisualLayer } from "../types.js";
-import { KineticSubtitle } from "./components/KineticSubtitle.js";
-import { VisualLayerRenderer } from "./components/VisualLayerRenderer.js";
-import { CodeAnimation } from "./components/CodeAnimation.js";
-import { AnnotationRenderer } from "./annotations/AnnotationRenderer.js";
+import { SceneScript as SceneType, VisualLayer } from "../types";
+import { KineticSubtitle } from "./components/KineticSubtitle";
+import { VisualLayerRenderer } from "./components/VisualLayerRenderer";
+import { CodeAnimation } from "./components/CodeAnimation";
+import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
 import type { Annotation } from "@video-script/types";
-import { getLayoutComponent } from "./layouts/index.js";
-import { convertToVisualScene } from "../utils/sceneAdapter.js";
+import { getLayoutComponent } from "./layouts/index";
+import { convertToVisualScene } from "../utils/sceneAdapter";
 
 interface SceneProps {
   scene: SceneType;

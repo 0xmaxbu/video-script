@@ -361,7 +361,9 @@ const clockWipe = require("@remotion/transitions/clock-wipe").clockWipe;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const iris = require("@remotion/transitions/iris").iris;
 import { Scene } from "./Scene";
-import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
+
+// Note: AnnotationRenderer not included in generated project
+// Annotations are defined but not rendered in this simplified version
 
 interface Annotation {
   type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
@@ -487,7 +489,9 @@ export const VideoComposition: React.FC<VideoCompositionProps> = ({
     const sceneContent = `import React from "react";
 import { AbsoluteFill, Img, interpolate, useCurrentFrame } from "remotion";
 import { Subtitle } from "./Subtitle";
-import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
+
+// Note: AnnotationRenderer not included in generated project
+// Annotations are defined but not rendered in this simplified version
 
 interface Annotation {
   type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
@@ -661,9 +665,6 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths, annotations }) 
       <AbsoluteFill style={containerStyle}>
         <h1 style={titleStyle}>{title}</h1>
         <Subtitle text={narration} />
-        {annotations && annotations.length > 0 && (
-          <AnnotationRenderer annotations={annotations} />
-        )}
       </AbsoluteFill>
     );
   }
@@ -683,9 +684,6 @@ export const Scene: React.FC<SceneProps> = ({ scene, imagePaths, annotations }) 
       })}
       <h1 style={{ ...titleStyle, fontSize: 60 }}>{title}</h1>
       <Subtitle text={narration} />
-      {annotations && annotations.length > 0 && (
-        <AnnotationRenderer annotations={annotations} />
-      )}
     </AbsoluteFill>
   );
 };

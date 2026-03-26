@@ -91,6 +91,96 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 | 5 pipeline stages            | Each stage independently testable/rerunnable         | ✓ Locked |
 | Mastra agents                | AI orchestration framework                           | ✓ Locked |
 
+## Locked Architectural Decisions
+
+**These decisions are LOCKED. Agents must NOT change these without explicit user permission.**
+
+---
+
+### ⚠️ CRITICAL: USE packages/renderer Remotion PROJECT DIRECTLY — NEVER GENERATE SIMPLIFIED PROJECTS ⚠️
+
+**THIS IS NOT OPEN FOR DISCUSSION. THIS IS NOT NEGOTIABLE. THIS IS FINAL.**
+
+**DECISION: Use `packages/renderer/src/remotion/` directly — NO generated simplified projects.**
+
+**RATIONALE:**
+Phase 14 animation engine was implemented in `packages/renderer/src/remotion/` with full Ken Burns, parallax, exit animations, kinetic subtitles, and centralized `animation-utils.ts`. However, `remotion-project-generator.ts` was generating COMPLETE SEPARATE SIMPLIFIED CODE that IGNORED all Phase 14 work. The generated `Scene.tsx` used only basic `opacity` fade — not `ScreenshotLayer`, not `TextLayer`, not `CodeLayer`, not `KineticSubtitle`, not `animation-utils.ts`. This caused ALL animation work to be SILENTLY DISCARDED while UAT tests PASSED (testing source files, not rendered output).
+
+**ABSOLUTELY FORBIDDEN — NEVER DO THESE THINGS:**
+1. ❌ NEVER generate simplified `Scene.tsx`, `Subtitle.tsx`, or `Composition.tsx` in a temp project
+2. ❌ NEVER copy "simplified" versions of Remotion components to generated projects
+3. ❌ NEVER create new Remotion projects with inline component definitions that duplicate existing work in `packages/renderer/src/remotion/`
+4. ❌ NEVER use generated temp projects as the rendering target when `packages/renderer` already has complete implementations
+
+**REQUIRED APPROACH:**
+- ✅ ALWAYS use `packages/renderer/src/remotion/` as the Remotion project
+- ✅ **Pass props (script, images) to the existing components in `packages/renderer/src/remotion/`** — this is how data flows from the CLI to the Remotion rendering pipeline
+- ✅ The Remotion entry point should be `packages/renderer/src/remotion/index.ts` or `packages/renderer/src/remotion/Root.tsx`
+- ✅ All animation work (Ken Burns, parallax, kinetic subtitles, transitions) must go through `packages/renderer/src/utils/animation-utils.ts`
+- ✅ If a new animation feature is needed, add it to `packages/renderer/src/remotion/` AND update the renderer to use it directly
+- ✅ **Props-based data flow: CLI → renderVideo(input) → Remotion Root via calculateMetadata/defaultProps → Scene → visualLayers/components**
+
+**VIOLATION OF THIS RULE IS A CATASTROPHIC MISTAKE:**
+- Phase 14 animation work was SILENTLY DESTROYED because someone generated simplified projects
+- UAT tests passed but actual video output had NO animations — completely misleading
+- This wastes days of development time and produces broken results
+- Anyone who violates this should expect harsh consequences
+
+**Write this down three times so it sinks in:**
+1. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
+2. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
+3. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
+
+---
+
+| **Props-based data flow to Remotion** | Data (script, images) MUST be passed via Remotion props system — use calculateMetadata/defaultProps | Animations and layouts receive no content if data doesn't flow through props |
+| **ESM requires .js extension** on relative imports in packages/types | TypeScript ESM compatibility requirement | Module resolution failures in packages |
+| **@video-script/types as workspace:\*** dependency | Allows local development without npm publish; renderer uses local types | Version conflicts if published to npm |
+| **Scene adapter converts visual.json → visualLayers** | visualAgent outputs visual.json, must be converted to visualLayers format for layout components | Layouts receive empty data, nothing renders |
+| **layoutTemplate optional field** with 9 values (8 layouts + inline fallback) | Agent-driven layout selection; Scene.tsx routes to layout components when set | Layout system cannot be used by agents |
+| **CRF 20 for H.264 encoding** | High quality H.264 at reasonable file size | Quality degradation or larger file sizes |
+| **deviceScaleFactor 2** for screenshot capture | Retina-quality screenshots at 2x resolution | Blurry/low-res screenshots |
+| **30-frame settling buffer** for spring animations | Ensures spring animations fully settle before scene ends | Animation extrapolation artifacts |
+| **Slide direction alternates**: odd scenes from-left, even scenes from-right | Visual variety, professional pacing | Repetitive transitions feel mechanical |
+| **First/last scene handling**: no enter transition for first, no exit for last | Clean scene boundaries | Awkward transitions at video start/end |
+| **Turndown + Readability for article extraction** | Proper article content extraction vs regex-based htmlToMarkdown | Shallow/incorrect content extraction |
+| **linkedom for DOM parsing** | Required by Readability in Node.js environment | Readability fails on complex pages |
+| **KineticSubtitle per-word highlighting component** | Animated subtitles synchronized with narration | Static SRT subtitles only |
+| **Non-blocking quality evaluation** pattern | Quality agent runs async with callbacks; warns but never blocks pipeline | Research/script quality not measured |
+
+## Uncertain Technical Decisions
+
+**These decisions have KNOWN UNCERTAINTY. They may need revision based on testing or user feedback. Agents should FLAG before changing.**
+
+| Decision | Uncertainty | Investigation Needed |
+| -------- | ----------- | ------------------- |
+| **linkedom DOM parser** | May have compatibility issues with complex JavaScript-rendered pages | Test with more websites; may need JSDOM or Playwright's.evaluate |
+| **30-frame spring settling buffer** | Derived empirically; may need tuning for different animation types | Benchmark with actual renders; adjust per animation type |
+| **Non-blocking quality evaluation** | Pattern established but not fully integrated into main pipeline | Verify it doesn't block but still provides useful feedback |
+| **Single render path (npx remotion render)** | CONCERNS.md notes duplicate rendering paths exist (process-manager.ts vs video-renderer.ts) | Consolidate to single path after Phase 14 |
+
+**RESOLVED:**
+- ~~AnnotationRenderer excluded from generated projects~~ — RESOLVED: The entire "generated project" approach was fundamentally wrong. Use `packages/renderer/src/remotion/` directly instead.
+
+---
+
+_Architecture decisions locked: 2026-03-24_
+
+---
+
+## CRITICAL INCIDENT: Phase 14 Animation Work Was Silently Destroyed
+
+**Date:** 2026-03-24
+**Issue:** Phase 14 animation engine (Ken Burns, parallax, exit animations, kinetic subtitles) was fully implemented and UAT passed (11/11), but actual video rendering produced videos with NO animations.
+
+**Root Cause:** `remotion-project-generator.ts` generated completely separate simplified code that IGNORED all Phase 14 work in `packages/renderer/src/remotion/`. The generated `Scene.tsx` used only basic `opacity` fade — not the real components with animation logic.
+
+**Fix Required:** Use `packages/renderer/src/remotion/` directly as the Remotion project instead of generating simplified copies. This is now LOCKED in the architecture decisions above.
+
+**Lesson Learned:** UAT tests that only check source code files will PASS even if the rendered video is completely broken. Always verify actual rendered output matches expected behavior.
+
+---
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
