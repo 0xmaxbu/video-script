@@ -25,3 +25,10 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Generated video output
+*.mp4
+*.srt
+.remotion-bundle/
+.remotion-project/
+

@@ -1,0 +1,236 @@
+{
+  "title": "React Server Components 深度解析",
+  "totalDuration": 64,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "type": "intro",
+      "title": "React Server Components 深度解析",
+      "narration": "欢迎来到本次深度解析。React Server Components 是 React 团队耗时三年打造的全新架构范式，它彻底改变了前端应用的数据获取方式。今天我们从原理到实战，带你完整理解这一革命性技术。",
+      "duration": 12,
+      "visualLayers": [
+        {
+          "id": "react-homepage",
+          "type": "screenshot",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "content": "React 官网首页",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "fadeOut",
+            "exitAt": 11
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "id": "scene-2",
+      "type": "feature",
+      "title": "传统 CSR 的痛点",
+      "narration": "传统客户端渲染下，用户看到的是一段时间的白屏。浏览器需要先下载 JavaScript bundle，执行代码，再发起数据请求，最后才能渲染页面。这个瀑布式的请求链条严重影响了性能。",
+      "duration": 15,
+      "visualLayers": [
+        {
+          "id": "csr-diagram",
+          "type": "screenshot",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "content": "CSR 渲染流程示意",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "fadeOut",
+            "exitAt": 14
+          }
+        },
+        {
+          "id": "csr-code",
+          "type": "code",
+          "position": {
+            "x": "right",
+            "y": "center",
+            "width": 800,
+            "height": 500,
+            "zIndex": 2
+          },
+          "content": "// 传统 CSR — 瀑布式请求\nfunction Dashboard() {\n  const [data, setData] = useState(null);\n\n  useEffect(() => {\n    // 1. JS 加载完才开始请求\n    fetch('/api/dashboard')\n      .then(r => r.json())\n      .then(setData);\n  }, []);\n\n  // 白屏等待...\n  if (!data) return <Spinner />;\n\n  return <DashboardUI data={data} />;\n}",
+          "animation": {
+            "enter": "slideLeft",
+            "enterDelay": 2,
+            "exit": "fadeOut",
+            "exitAt": 13
+          }
+        }
+      ],
+      "transition": { "type": "slide", "duration": 1 }
+    },
+    {
+      "id": "scene-3",
+      "type": "code",
+      "title": "Server Component 核心原理",
+      "narration": "Server Components 在服务器端运行，可以直接访问数据库和文件系统，完全避免了客户端的数据瀑布。看这段代码，直接 await 数据库查询，没有 useEffect，没有 loading 状态，代码更简洁，性能更优秀。",
+      "duration": 18,
+      "visualLayers": [
+        {
+          "id": "rsc-code",
+          "type": "code",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 1
+          },
+          "content": "// React Server Component — 直接访问数据库\nasync function Dashboard() {\n  // 服务器端直接查询，零客户端 JS\n  const user = await db.user.findUnique({\n    where: { id: session.userId }\n  });\n  const stats = await analytics.getStats(user.id);\n  const notifications = await getNotifications(user.id);\n\n  // 并行获取多个数据源\n  const [posts, comments] = await Promise.all([\n    db.post.findMany({ where: { authorId: user.id } }),\n    db.comment.findMany({ where: { userId: user.id } })\n  ]);\n\n  return (\n    <DashboardLayout>\n      <UserProfile user={user} stats={stats} />\n      <PostList posts={posts} />\n      <CommentFeed comments={comments} />\n    </DashboardLayout>\n  );\n}",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "none",
+            "exitAt": 17
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "id": "scene-4",
+      "type": "feature",
+      "title": "Next.js App Router 实战",
+      "narration": "在 Next.js 13+ 的 App Router 中，所有组件默认都是 Server Component。你只需在文件顶部添加 use client 指令，才会转变为客户端组件。这种设计让开发者能精确控制每个组件的渲染环境，打造出真正高性能的应用。",
+      "duration": 14,
+      "visualLayers": [
+        {
+          "id": "nextjs-docs",
+          "type": "screenshot",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "content": "Next.js App Router 文档",
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "fadeOut",
+            "exitAt": 13
+          }
+        },
+        {
+          "id": "hybrid-code",
+          "type": "code",
+          "position": {
+            "x": "right",
+            "y": "center",
+            "width": 750,
+            "height": 400,
+            "zIndex": 2
+          },
+          "content": "// app/page.tsx — 默认 Server Component\nexport default async function Page() {\n  const data = await fetchData(); // 服务器端\n  return <ClientComponent data={data} />;\n}\n\n// components/client.tsx\n'use client'; // 声明客户端组件\nimport { useState } from 'react';\n\nexport function ClientComponent({ data }) {\n  const [active, setActive] = useState(0);\n  return <InteractiveUI data={data} />;\n}",
+          "animation": {
+            "enter": "slideLeft",
+            "enterDelay": 3,
+            "exit": "fadeOut",
+            "exitAt": 13
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
+    },
+    {
+      "id": "scene-5",
+      "type": "outro",
+      "title": "核心收益总结",
+      "narration": "总结一下 React Server Components 带来的四大核心收益：零 Bundle 体积增量，数据库直连，自动代码分割，以及显著提升的首屏加载速度。这些优势让 RSC 成为现代 Web 应用的首选架构。",
+      "duration": 10,
+      "visualLayers": [
+        {
+          "id": "bullet-1",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 200,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "零 Bundle 体积增量 — Server 组件不增加客户端 JS 大小",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0,
+            "exit": "none",
+            "exitAt": 9
+          }
+        },
+        {
+          "id": "bullet-2",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 300,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "数据库直连 — 在组件中直接 await 查询，消除 API 层",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0.3,
+            "exit": "none",
+            "exitAt": 9
+          }
+        },
+        {
+          "id": "bullet-3",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 400,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "自动代码分割 — 框架精确控制每段代码的加载时机",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0.6,
+            "exit": "none",
+            "exitAt": 9
+          }
+        },
+        {
+          "id": "bullet-4",
+          "type": "text",
+          "position": {
+            "x": "center",
+            "y": 500,
+            "width": "full",
+            "height": "auto",
+            "zIndex": 1
+          },
+          "content": "更快首屏 — 服务端生成 HTML，用户立刻看到内容",
+          "animation": {
+            "enter": "slideUp",
+            "enterDelay": 0.9,
+            "exit": "none",
+            "exitAt": 9
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
+    }
+  ]
+}
