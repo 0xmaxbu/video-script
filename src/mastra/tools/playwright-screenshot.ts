@@ -3,6 +3,7 @@ import { z } from "zod";
 import { chromium } from "playwright";
 import { mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import sharp from "sharp";
 import { withRetry } from "../../utils/retry.js";
 
 export interface SemanticRegion {
@@ -27,7 +28,19 @@ export const playwrightScreenshotTool = createTool({
     selector: z
       .string()
       .optional()
-      .describe("CSS selector to capture a specific element"),
+      .describe("CSS selector to capture a specific element directly"),
+    zoomToSelector: z
+      .string()
+      .optional()
+      .describe(
+        "CSS selector to zoom into: captures full page then crops to element bounding box using sharp",
+      ),
+    darkMode: z
+      .boolean()
+      .optional()
+      .describe(
+        "Emulate dark color scheme via prefers-color-scheme media query (default: false)",
+      ),
     viewport: z
       .object({
         width: z.number().int().positive(),
@@ -58,6 +71,8 @@ export const playwrightScreenshotTool = createTool({
   execute: async ({
     url,
     selector,
+    zoomToSelector,
+    darkMode = false,
     viewport = { width: 1920, height: 1080 },
     outputDir = "./output/screenshots",
     filename,
@@ -73,9 +88,16 @@ export const playwrightScreenshotTool = createTool({
 
         try {
           const page = await browser.newPage({ viewport });
+
+          // D-01: Dark mode emulation via prefers-color-scheme
+          if (darkMode) {
+            await page.emulateMedia({ colorScheme: "dark" });
+          }
+
           await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
 
           if (selector) {
+            // Direct element capture (existing behavior)
             await page.waitForSelector(selector, { timeout: 10000 });
             const element = await page.$(selector);
             if (element) {
@@ -84,6 +106,43 @@ export const playwrightScreenshotTool = createTool({
               throw new Error(
                 `SELECTOR_NOT_FOUND: Element with selector "${selector}" not found`,
               );
+            }
+          } else if (zoomToSelector) {
+            // D-02: Zoom-to-region: full-page capture + sharp crop to element bounding box
+            const fullPagePath = join(outputDir, `_full_${Date.now()}.png`);
+            await page.screenshot({ path: fullPagePath, fullPage: true });
+
+            await page.waitForSelector(zoomToSelector, { timeout: 10000 });
+            const element = await page.$(zoomToSelector);
+            if (!element) {
+              throw new Error(
+                `SELECTOR_NOT_FOUND: Element with selector "${zoomToSelector}" not found`,
+              );
+            }
+
+            const boundingBox = await element.boundingBox();
+            if (!boundingBox) {
+              throw new Error(
+                `BOUNDING_BOX_FAILED: Could not get bounding box for "${zoomToSelector}"`,
+              );
+            }
+
+            const padding = 16;
+            const left = Math.max(0, Math.floor(boundingBox.x - padding));
+            const top = Math.max(0, Math.floor(boundingBox.y - padding));
+            const width = Math.floor(boundingBox.width + padding * 2);
+            const height = Math.floor(boundingBox.height + padding * 2);
+
+            await sharp(fullPagePath)
+              .extract({ left, top, width, height })
+              .toFile(imagePath);
+
+            // Clean up full-page temp file
+            const { unlinkSync } = await import("fs");
+            try {
+              unlinkSync(fullPagePath);
+            } catch {
+              // Non-critical cleanup failure
             }
           } else {
             await page.screenshot({ path: imagePath, fullPage: true });
@@ -96,7 +155,10 @@ export const playwrightScreenshotTool = createTool({
           };
         } catch (error) {
           if (error instanceof Error) {
-            if (error.message.includes("SELECTOR_NOT_FOUND")) {
+            if (
+              error.message.includes("SELECTOR_NOT_FOUND") ||
+              error.message.includes("BOUNDING_BOX_FAILED")
+            ) {
               throw error;
             }
             if (error.message.includes("Timeout")) {
