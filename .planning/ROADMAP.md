@@ -151,14 +151,15 @@ Plans:
 4. Staggered bullet/step reveal with configurable delay per item
 5. Scene transition variety: blur, slide, wipe with configurable easing
 6. Per-word kinetic typography subtitle component
-   **Plans:** 3 plans + 1 GAP
+   **Plans:** 3 plans + GAP-01, GAP-03, GAP-04, GAP-05, GAP-06
 
 Plans:
 
 - [x] 14-01-PLAN.md — Create animation-utils.ts foundation and complete Composition.tsx transitions (ANIM-01, ANIM-02) — COMPLETE (no video output due to broken renderer)
 - [x] 14-02-PLAN.md — Add Ken Burns, parallax, exit animations, and stagger to layer components (ANIM-01, ANIM-03, ANIM-04, ANIM-05) — COMPLETE (no video output due to broken renderer)
 - [x] 14-03-PLAN.md — Create KineticSubtitle component and wire into scene rendering (ANIM-06, ANIM-01) — COMPLETE (no video output due to broken renderer)
-- [ ] 14-GAP-05-PLAN.md — Resolve Remotion/pnpm conflict via Playwright renderer (wire puppeteer-renderer.ts as primary path)
+- [x] 14-GAP-05-PLAN.md — Resolve Remotion/pnpm conflict via Playwright renderer (wire puppeteer-renderer.ts as primary path)
+- [ ] 14-GAP-06-PLAN.md — Close verification gaps: export ENTER_ANIMATION_CONFIG, fix KineticSubtitle word spacing, add screenshot+bullet fixture scenes (ANIM-01, ANIM-03, ANIM-04, ANIM-05, ANIM-06)
 
 ### Phase 15: Screenshot Intelligence + Content Depth
 
