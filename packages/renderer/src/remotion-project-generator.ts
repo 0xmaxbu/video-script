@@ -1,8 +1,13 @@
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, cp } from "fs/promises";
 import { spawn } from "child_process";
-import { join, resolve } from "path";
+import { join, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { z } from "zod";
 import { ScriptOutput, ScriptOutputSchema } from "./types.js";
+
+// __dirname equivalent for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // D-02c: Use proper schemas instead of z.any() for transition and annotations
 const GenerateProjectInputSchema = z.object({
@@ -39,7 +44,8 @@ export async function generateRemotionProject(
 ): Promise<GenerateProjectOutput> {
   try {
     const validated = GenerateProjectInputSchema.parse(input);
-    const { script, screenshotResources, outputPath, width, height } = validated;
+    const { script, screenshotResources, outputPath, width, height } =
+      validated;
 
     const projectPath = resolve(outputPath);
     const srcPath = join(projectPath, "src");
@@ -194,7 +200,7 @@ Config.overrideWebpackConfig((currentConfiguration) => {
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Player } from "@remotion/player";
-import { VideoComposition } from "./Composition";
+import { VideoComposition } from "./remotion/Composition";
 
 // Expose variables for puppeteer renderer setup
 const script = (window as any).remotion_script || { scenes: [{ duration: 10 }] };
@@ -262,7 +268,7 @@ if (container) {
     const rootContent = `import React from "react";
 import { Composition } from "remotion";
 import { z } from "zod";
-import { VideoComposition } from "./Composition";
+import { VideoComposition } from "./remotion/Composition";
 
 // D-02c: Proper schema definitions instead of z.any()
 const PositionSchema = z.object({
@@ -377,383 +383,17 @@ export const RemotionRoot: React.FC = () => {
 
     await writeFile(join(srcPath, "Root.tsx"), rootContent);
 
-    const compositionContent = `import React from "react";
-import { useVideoConfig, AbsoluteFill } from "remotion";
-import { TransitionSeries, linearTiming } from "@remotion/transitions";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const fade = require("@remotion/transitions/fade").fade;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const slide = require("@remotion/transitions/slide").slide;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const wipe = require("@remotion/transitions/wipe").wipe;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const flip = require("@remotion/transitions/flip").flip;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const clockWipe = require("@remotion/transitions/clock-wipe").clockWipe;
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const iris = require("@remotion/transitions/iris").iris;
-import { Scene } from "./Scene";
+    // Copy Phase 14 compiled components to temp project.
+    // At runtime, __dirname = packages/renderer/dist/
+    // These compiled .js files have all type-only imports erased and only
+    // depend on remotion + @remotion/transitions (already in temp package.json).
+    await cp(join(__dirname, "utils"), join(srcPath, "utils"), {
+      recursive: true,
+    });
+    await cp(join(__dirname, "remotion"), join(srcPath, "remotion"), {
+      recursive: true,
+    });
 
-// Note: AnnotationRenderer not included in generated project
-// Annotations are defined but not rendered in this simplified version
-
-interface Annotation {
-  type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
-  target: {
-    type: "text" | "region" | "code-line";
-    textMatch?: string;
-    lineNumber?: number;
-    region?: "top-left" | "top-right" | "center" | "bottom-left" | "bottom-right";
-  };
-  style: {
-    color: "attention" | "highlight" | "info" | "success";
-    size: "small" | "medium" | "large";
-  };
-  narrationBinding: {
-    triggerText: string;
-    segmentIndex: number;
-    appearAt: number;
-  };
-}
-
-export interface VideoCompositionProps {
-  script: {
-    title: string;
-    totalDuration: number;
-    scenes: Array<{
-      id: string;
-      type: "intro" | "feature" | "code" | "outro";
-      title: string;
-      narration: string;
-      duration: number;
-      transition?: {
-        type: "fade" | "slide" | "wipe" | "none";
-        duration: number;
-      };
-      visualLayers?: Array<{
-        id: string;
-        type: string;
-        position: any;
-        content: string;
-        animation: any;
-      }>;
-      annotations?: Annotation[];
-      }>;
-  };
-  images?: Record<string, string>;
-}
-
-const getTransitionPresentation = (type: string) => {
-  switch (type) {
-    case "fade":
-      return fade();
-    case "slide":
-      return slide({ direction: "from-left" });
-    case "wipe":
-      return wipe();
-    case "flip":
-      return flip();
-    case "clockWipe":
-      return clockWipe();
-    case "iris":
-      return iris();
-    case "none":
-      return undefined;
-    default:
-      return undefined;
-  }
-};
-
-export const VideoComposition: React.FC<VideoCompositionProps> = ({
-  script,
-  images,
-}) => {
-  const { fps } = useVideoConfig();
-
-  if (!script || !script.scenes) {
-    return (
-      <AbsoluteFill
-        style={{
-          backgroundColor: "red",
-          justifyContent: "center",
-          alignItems: "center",
-          color: "white",
-          fontSize: 50,
-        }}
-      >
-        No Script Data
-      </AbsoluteFill>
-    );
-  }
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: "black" }}>
-      <TransitionSeries>
-        {script.scenes.map((scene, index) => {
-          const durationInFrames = Math.ceil(scene.duration * fps);
-          const transition = scene.transition;
-          const nextScene = script.scenes[index + 1];
-
-          return (
-            <React.Fragment key={scene.id}>
-              <TransitionSeries.Sequence durationInFrames={durationInFrames}>
-                <Scene scene={scene} imagePaths={images} annotations={scene.annotations} />
-              </TransitionSeries.Sequence>
-              {nextScene && transition && transition.type !== "none" && (
-                <TransitionSeries.Transition
-                  timing={linearTiming({
-                    durationInFrames: Math.ceil(transition.duration * fps),
-                  })}
-                  presentation={getTransitionPresentation(transition.type)}
-                />
-              )}
-            </React.Fragment>
-          );
-        })}
-      </TransitionSeries>
-    </AbsoluteFill>
-  );
-};
-`;
-
-    await writeFile(join(srcPath, "Composition.tsx"), compositionContent);
-
-    const sceneContent = `import React from "react";
-import { AbsoluteFill, Img, interpolate, useCurrentFrame } from "remotion";
-import { Subtitle } from "./Subtitle";
-
-// Note: AnnotationRenderer not included in generated project
-// Annotations are defined but not rendered in this simplified version
-
-interface Annotation {
-  type: "circle" | "underline" | "arrow" | "box" | "highlight" | "number" | "crossout" | "checkmark";
-  target: {
-    type: "text" | "region" | "code-line";
-    textMatch?: string;
-    lineNumber?: number;
-    region?: "top-left" | "top-right" | "center" | "bottom-left" | "bottom-right";
-  };
-  style: {
-    color: "attention" | "highlight" | "info" | "success";
-    size: "small" | "medium" | "large";
-  };
-  narrationBinding: {
-    triggerText: string;
-    segmentIndex: number;
-    appearAt: number;
-  };
-}
-
-interface VisualLayer {
-  id: string;
-  type: "screenshot" | "code" | "text" | "diagram" | "image";
-  position: {
-    x: number | "left" | "center" | "right";
-    y: number | "top" | "center" | "bottom";
-    width: number | "auto" | "full";
-    height: number | "auto" | "full";
-    zIndex: number;
-  };
-  content: string;
-  animation: {
-    enter: "fadeIn" | "slideLeft" | "slideRight" | "slideUp" | "slideDown" | "slideIn" | "zoomIn" | "typewriter" | "none";
-    enterDelay: number;
-    exit: "fadeOut" | "slideOut" | "zoomOut" | "none";
-    exitAt?: number;
-  };
-}
-
-interface SceneData {
-  id: string;
-  type: "intro" | "feature" | "code" | "outro";
-  title: string;
-  narration: string;
-  duration: number;
-  visualLayers?: VisualLayer[];
-  annotations?: Annotation[];
-}
-
-interface SceneProps {
-  scene: SceneData;
-  imagePaths?: Record<string, string>;
-  annotations?: Annotation[];
-}
-
-const getPositionStyle = (pos: VisualLayer["position"]) => {
-  const style: React.CSSProperties = {
-    position: "absolute" as const,
-    zIndex: pos.zIndex || 0,
-  };
-
-  if (typeof pos.x === "number") style.left = pos.x;
-  else if (pos.x === "center") style.left = "50%";
-  else if (pos.x === "left") style.left = 0;
-  else if (pos.x === "right") style.right = 0;
-
-  if (typeof pos.y === "number") style.top = pos.y;
-  else if (pos.y === "center") style.top = "50%";
-  else if (pos.y === "top") style.top = 0;
-  else if (pos.y === "bottom") style.bottom = 0;
-
-  if (typeof pos.width === "number") style.width = pos.width;
-  else if (pos.width === "full") style.width = "100%";
-  else if (pos.width === "auto") style.width = "auto";
-
-  if (typeof pos.height === "number") style.height = pos.height;
-  else if (pos.height === "full") style.height = "100%";
-  else if (pos.height === "auto") style.height = "auto";
-
-  return style;
-};
-
-const AnimatedLayer: React.FC<{ layer: VisualLayer; imagePath?: string }> = ({ layer, imagePath }) => {
-  const frame = useCurrentFrame();
-  const { animation, position, type, content } = layer;
-
-  const enterFrame = animation.enterDelay * 30;
-  const enterDuration = 15;
-  const progress = interpolate(Math.max(0, frame - enterFrame), [0, enterDuration], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-
-  const style = getPositionStyle(position);
-
-  if ((type === "screenshot" || type === "diagram" || type === "image") && (imagePath || content)) {
-    return (
-      <div style={{ ...style, opacity: progress }}>
-        <Img
-          src={imagePath || content}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (type === "text") {
-    return (
-      <div style={{ ...style, opacity: progress }}>
-        <span style={{
-          fontSize: type === "text" ? 40 : 24,
-          fontWeight: "bold",
-          color: type === "text" ? "#333" : "#fff",
-        }}>
-          {content}
-        </span>
-      </div>
-    );
-  }
-
-  if (type === "code") {
-    return (
-      <div style={{ ...style, opacity: progress }}>
-        <pre style={{
-          backgroundColor: "#1e1e1e",
-          color: "#d4d4d4",
-          padding: 20,
-          borderRadius: 8,
-          fontSize: 16,
-          fontFamily: "monospace",
-          overflow: "hidden",
-          width: "100%",
-          height: "100%",
-        }}>
-          {content}
-        </pre>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-export const Scene: React.FC<SceneProps> = ({ scene, imagePaths, annotations }) => {
-  const { type, title, narration, visualLayers } = scene;
-
-  const containerStyle: React.CSSProperties = {
-    backgroundColor: type === "intro" || type === "outro" ? "#1a1a1a" : "white",
-    color: type === "intro" || type === "outro" ? "white" : "black",
-    fontFamily: "sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 40,
-    textAlign: "center",
-    width: "100%",
-    height: "100%",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: 80,
-    fontWeight: "bold",
-    marginBottom: 40,
-    zIndex: 100,
-  };
-
-  if (type === "intro" || type === "outro") {
-    return (
-      <AbsoluteFill style={containerStyle}>
-        <h1 style={titleStyle}>{title}</h1>
-        <Subtitle text={narration} />
-      </AbsoluteFill>
-    );
-  }
-
-  return (
-    <AbsoluteFill style={containerStyle}>
-      {visualLayers?.map((layer) => {
-        const imageKey = \`\${scene.id}-\${layer.id}\`;
-        const imagePath = imagePaths?.[imageKey];
-        return (
-          <AnimatedLayer
-            key={layer.id}
-            layer={layer}
-            imagePath={imagePath}
-          />
-        );
-      })}
-      <h1 style={{ ...titleStyle, fontSize: 60 }}>{title}</h1>
-      <Subtitle text={narration} />
-    </AbsoluteFill>
-  );
-};
-`;
-
-    await writeFile(join(srcPath, "Scene.tsx"), sceneContent);
-
-    const subtitleContent = `import React from "react";
-import { useCurrentFrame, interpolate } from "remotion";
-
-interface SubtitleProps {
-  text: string;
-}
-
-export const Subtitle: React.FC<SubtitleProps> = ({ text }) => {
-  const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, 10], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <div
-      style={{
-        fontSize: 32,
-        color: "white",
-        textAlign: "center",
-        maxWidth: "90%",
-        opacity,
-      }}
-    >
-      {text}
-    </div>
-  );
-};
-`;
-
-    await writeFile(join(srcPath, "Subtitle.tsx"), subtitleContent);
 
     const gitignore = `node_modules/
 dist/

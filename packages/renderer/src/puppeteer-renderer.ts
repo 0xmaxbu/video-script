@@ -18,8 +18,13 @@ import {
   rmSync,
   writeFileSync,
 } from "fs";
-import { join, extname, isAbsolute, resolve } from "path";
+import { join, extname, isAbsolute, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import { spawn } from "child_process";
+
+// __dirname equivalent for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import {
   chromium,
   type Browser,
@@ -183,6 +188,17 @@ async function bundleRemotionProjectWithEsbuild(
   try {
     const entryPoint = join(projectPath, "src", "index.tsx");
 
+    // Remove stub node_modules from the temp project so esbuild walks up
+    // to the workspace root node_modules which has the real package files.
+    const stubNodeModules = join(projectPath, "node_modules");
+    if (existsSync(stubNodeModules)) {
+      rmSync(stubNodeModules, { recursive: true, force: true });
+    }
+
+    // Workspace root: at runtime __dirname = packages/renderer/dist/
+    // so ../../.. = workspace root
+    const workspaceRoot = join(__dirname, "..", "..", "..");
+
     const esbuildOptions: any = {
       entryPoints: [entryPoint],
       bundle: true,
@@ -192,7 +208,7 @@ async function bundleRemotionProjectWithEsbuild(
       splitting: false,
       sourcemap: false,
       minify: false,
-      absWorkingDir: projectPath,
+      absWorkingDir: workspaceRoot,
       loader: {
         ".tsx": "tsx",
         ".ts": "ts",
@@ -211,6 +227,33 @@ async function bundleRemotionProjectWithEsbuild(
         "process.env.NODE_ENV": '"production"',
       },
       resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".mjs"],
+      // Point esbuild to workspace root node_modules (react/remotion live there).
+      nodePaths: [join(workspaceRoot, "node_modules")],
+      // Force all React/ReactDOM imports to resolve to the same single copy at
+      // workspace root — prevents the dual-React "invalid hook call" error that
+      // occurs when @remotion/player ships its own nested node_modules/react.
+      alias: {
+        react: join(workspaceRoot, "node_modules", "react"),
+        "react-dom": join(workspaceRoot, "node_modules", "react-dom"),
+        "react-dom/client": join(
+          workspaceRoot,
+          "node_modules",
+          "react-dom",
+          "client",
+        ),
+        "react/jsx-runtime": join(
+          workspaceRoot,
+          "node_modules",
+          "react",
+          "jsx-runtime",
+        ),
+        "react/jsx-dev-runtime": join(
+          workspaceRoot,
+          "node_modules",
+          "react",
+          "jsx-dev-runtime",
+        ),
+      },
     };
 
     await esbuild.build(esbuildOptions);
@@ -490,8 +533,10 @@ export async function renderVideoWithPuppeteer(
     });
 
     page = await context.newPage();
-    page.on('console', msg => console.log(`[Browser Console]: ${msg.text()}`));
-    page.on('pageerror', err => console.error(`[Browser Error]:`, err));
+    page.on("console", (msg) =>
+      console.log(`[Browser Console]: ${msg.text()}`),
+    );
+    page.on("pageerror", (err) => console.error(`[Browser Error]:`, err));
 
     onProgress?.(35, "Loading Remotion bundle");
 
