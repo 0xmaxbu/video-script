@@ -181,6 +181,45 @@ function createBundleServer(bundleDir: string, port: number): Promise<Server> {
 }
 
 /**
+ * Generate Tailwind CSS v4 from source files in the project.
+ *
+ * Uses @tailwindcss/node (compile API) and @tailwindcss/oxide (Scanner)
+ * to scan all TSX/TS files for class candidates and emit only the CSS
+ * that is actually used.  Falls back to an empty string on any error so
+ * the renderer can still proceed without Tailwind.
+ */
+async function generateTailwindCSS(projectSrcDir: string): Promise<string> {
+  try {
+    const { compile } = await import("@tailwindcss/node");
+    const { Scanner } = await import("@tailwindcss/oxide");
+
+    const result = await compile('@import "tailwindcss";', {
+      base: projectSrcDir,
+      onDependency: () => {},
+    });
+
+    const scanner = new Scanner({
+      sources: [
+        { base: projectSrcDir, pattern: "**/*.tsx", negated: false },
+        { base: projectSrcDir, pattern: "**/*.ts", negated: false },
+        { base: projectSrcDir, pattern: "**/*.jsx", negated: false },
+        { base: projectSrcDir, pattern: "**/*.js", negated: false },
+        { base: projectSrcDir, pattern: "**/*.html", negated: false },
+      ],
+    });
+
+    const candidates = scanner.scan();
+    return result.build(candidates);
+  } catch (error) {
+    console.warn(
+      "[Tailwind] Failed to generate CSS, continuing without:",
+      error,
+    );
+    return "";
+  }
+}
+
+/**
  * Bundle the Remotion project using esbuild
  */
 async function bundleRemotionProjectWithEsbuild(
@@ -216,6 +255,7 @@ async function bundleRemotionProjectWithEsbuild(
         ".ts": "ts",
         ".jsx": "jsx",
         ".js": "js",
+        ".css": "text",
         ".png": "file",
         ".jpg": "file",
         ".jpeg": "file",
@@ -260,6 +300,13 @@ async function bundleRemotionProjectWithEsbuild(
 
     await esbuild.build(esbuildOptions);
 
+    // Generate Tailwind CSS v4 from project source files
+    const projectSrcDir = join(projectPath, "src");
+    const tailwindCSS = await generateTailwindCSS(projectSrcDir);
+    const tailwindStyle = tailwindCSS
+      ? `\n  <style>\n${tailwindCSS}\n  </style>`
+      : "";
+
     // Create a basic index.html to load the bundle
     const htmlContent = `<!DOCTYPE html>
 <html>
@@ -269,7 +316,7 @@ async function bundleRemotionProjectWithEsbuild(
   <style>
     html, body { margin: 0; padding: 0; overflow: hidden; background: white; }
     #root { width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
-  </style>
+  </style>${tailwindStyle}
 </head>
 <body>
   <div id="root"></div>
