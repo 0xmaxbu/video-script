@@ -61,10 +61,18 @@ export const KenBurnsWaypointSchema = z.object({
 });
 export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
 
+// CalloutContent schema (for parsing the JSON content field of callout layers)
+export const CalloutContentSchema = z.object({
+  text: z.string().min(1),
+  style: z.enum(["highlight", "box", "arrow-label"]),
+  arrowDirection: z.enum(["left", "right", "up", "down"]).optional(),
+});
+export type CalloutContent = z.infer<typeof CalloutContentSchema>;
+
 // VisualLayer schema
 export const VisualLayerSchema = z.object({
   id: z.string(),
-  type: z.enum(["screenshot", "code", "text", "diagram", "image"]),
+  type: z.enum(["screenshot", "code", "text", "diagram", "image", "callout"]),
   position: PositionSchema,
   content: z.string(),
   animation: AnimationConfigSchema,
