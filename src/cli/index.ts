@@ -3,6 +3,7 @@
 import "dotenv/config";
 
 import { Command } from "commander";
+import { workspace } from "../mastra/index.js";
 import {
   readFileSync,
   writeFileSync,
@@ -1775,4 +1776,11 @@ program
     }
   });
 
-program.parse();
+(async () => {
+  await workspace.init();
+  program.parse();
+})().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error("\n\u274c Failed to initialize: " + (err instanceof Error ? err.message : String(err)) + "\n");
+  process.exit(1);
+});

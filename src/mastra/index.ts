@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 const skillsPath = path.resolve(__dirname, "../../.agents/skills");
 
-const workspace = new Workspace({
+export const workspace = new Workspace({
   name: "video-script-workspace",
   filesystem: new LocalFilesystem({ basePath: process.cwd() }),
   skills: [skillsPath],
