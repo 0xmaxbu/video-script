@@ -4,6 +4,10 @@
   "description": "Playwright-based video renderer for video-script",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./remotion": "./dist/remotion/Composition.js"
+  },
   "bin": {
     "video-script-render": "./bin/video-script-render.js"
   },

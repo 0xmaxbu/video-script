@@ -2,6 +2,7 @@ import path from "node:path";
 import { bundle } from "@remotion/bundler";
 import { selectComposition, renderMedia } from "@remotion/renderer";
 import type { Configuration as WebpackConfig } from "webpack";
+import { enableTailwind } from "@remotion/tailwind-v4";
 import type { ScriptOutput } from "../types.js";
 import { generateProject } from "./project-generator.js";
 
@@ -55,7 +56,7 @@ export async function renderWithNodeRenderer(
   // Step 2: Bundle with webpack override to fix @remotion/studio alias bug
   const bundleLocation = await bundle({
     entryPoint: project.entryPoint,
-    webpackOverride: removeStudioAlias,
+    webpackOverride: (config) => enableTailwind(removeStudioAlias(config)),
     onProgress: (progress) => onProgress?.(progress * 30), // 0–30% for bundling
   });
 
@@ -97,11 +98,23 @@ export async function renderWithNodeRenderer(
  * @remotion/bundler aliases @remotion/studio → dist/index.js, which breaks
  * the @remotion/studio/renderEntry subpath import used internally by Remotion.
  * Deleting the alias lets Node's module resolution find the correct subpath export.
+ *
+ * Also disables webpack's strict ESM "fullySpecified" enforcement for .js files,
+ * because the renderer dist uses "type":"module" but imports without .js extensions
+ * (TypeScript bundler moduleResolution output). Without this webpack errors with
+ * "The request './Scene' failed to resolve only because it was resolved as fully specified".
  */
 function removeStudioAlias(config: WebpackConfig): WebpackConfig {
   const alias = config.resolve?.alias as Record<string, string> | undefined;
   if (alias?.["@remotion/studio"]) {
     delete alias["@remotion/studio"];
   }
+  // Allow extensionless relative imports in strict-ESM (.js) files
+  if (!config.module) config.module = { rules: [] };
+  if (!config.module.rules) config.module.rules = [];
+  config.module.rules.push({
+    test: /\.js$/,
+    resolve: { fullySpecified: false },
+  });
   return config;
 }

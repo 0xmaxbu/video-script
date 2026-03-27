@@ -30,6 +30,7 @@ program
       const result = await renderVideo({
         script: input.script,
         outputDir: input.outputDir ?? DEFAULT_OUTPUT_DIR,
+        ...(input.images !== undefined && { images: input.images }),
         showSubtitles: input.showSubtitles ?? false,
         onProgress: (pct: number) => {
           process.stdout.write(JSON.stringify({ progress: pct }) + "\n");
