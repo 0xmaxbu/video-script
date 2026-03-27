@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { ScriptOutput, SceneScriptSchema } from "./types.js";
-import { renderVideoWithPuppeteer } from "./puppeteer-renderer.js";
-import type {
-  PuppeteerRenderInput,
-  PuppeteerRenderOutput,
-} from "./puppeteer-renderer.js";
+import { renderWithNodeRenderer } from "./utils/remotion-renderer.js";
 
 export function calculateTotalDuration(
   scenes: z.infer<typeof SceneScriptSchema>[],
@@ -18,20 +14,16 @@ export const RenderVideoInputSchema = z.object({
     totalDuration: z.number().positive(),
     scenes: z.array(SceneScriptSchema),
   }),
-  screenshotResources: z.record(z.string(), z.string()),
-  outputDir: z.string().optional(),
-  videoFileName: z.string().optional(),
-  compositionId: z.string().default("Video"),
+  outputDir: z.string(),
+  images: z.record(z.string(), z.string()).optional(),
   showSubtitles: z.boolean().default(false),
   onProgress: z.function().optional(),
 });
 
 export interface RenderVideoInput {
   script: ScriptOutput;
-  screenshotResources: Record<string, string>;
-  outputDir?: string;
-  videoFileName?: string;
-  compositionId?: string;
+  outputDir: string;
+  images?: Record<string, string>;
   showSubtitles?: boolean;
   onProgress?: (progress: number) => void;
 }
@@ -40,8 +32,12 @@ export const RenderVideoOutputSchema = z.object({
   videoPath: z.string(),
   duration: z.number(),
   fps: z.number(),
-  resolution: z.string(),
+  resolution: z.object({
+    width: z.number(),
+    height: z.number(),
+  }),
   success: z.boolean(),
+  framesRendered: z.number(),
   error: z.string().optional(),
 });
 
@@ -49,57 +45,43 @@ export interface RenderVideoOutput {
   videoPath: string;
   duration: number;
   fps: number;
-  resolution: string;
+  resolution: { width: number; height: number };
   success: boolean;
+  framesRendered: number;
   error?: string;
 }
 
 /**
- * Render video using Playwright-based frame renderer + FFmpeg.
+ * Render video using Remotion's official Node.js API.
  *
- * This delegates to `renderVideoWithPuppeteer()` which:
- * 1. Generates a Remotion React project from the script
- * 2. Bundles it with esbuild (bypasses the broken @remotion/bundler webpack)
- * 3. Serves the bundle via local HTTP server
- * 4. Renders each frame with Playwright/Chrome headless via CDP
- * 5. Stitches frames into MP4 with FFmpeg
+ * This delegates to `renderWithNodeRenderer()` which:
+ * 1. Generates a permanent per-video Remotion project at outputDir
+ * 2. Bundles it via @remotion/bundler (webpack-based)
+ * 3. Selects the composition via @remotion/renderer
+ * 4. Renders to MP4 via @remotion/renderer renderMedia()
  *
- * Requires: ffmpeg installed on the system.
+ * The generated project remains at outputDir for Remotion Studio preview.
  */
 export async function renderVideo(
   input: RenderVideoInput,
 ): Promise<RenderVideoOutput> {
-  const puppeteerInput: PuppeteerRenderInput = {
+  const renderInput = {
     script: input.script,
-    screenshotResources: input.screenshotResources,
-    outputDir: input.outputDir || "",
+    outputDir: input.outputDir,
+    ...(input.images !== undefined && { images: input.images }),
+    ...(input.showSubtitles !== undefined && {
+      showSubtitles: input.showSubtitles,
+    }),
+    ...(input.onProgress !== undefined && { onProgress: input.onProgress }),
   };
-  if (input.videoFileName !== undefined) {
-    puppeteerInput.videoFileName = input.videoFileName;
-  }
-  if (input.compositionId !== undefined) {
-    puppeteerInput.compositionId = input.compositionId;
-  }
-  if (input.showSubtitles !== undefined) {
-    puppeteerInput.showSubtitles = input.showSubtitles;
-  }
-  if (input.onProgress) {
-    puppeteerInput.onProgress = (pct: number) => input.onProgress!(pct);
-  }
+  const result = await renderWithNodeRenderer(renderInput);
 
-  const result: PuppeteerRenderOutput =
-    await renderVideoWithPuppeteer(puppeteerInput);
-
-  // Map PuppeteerRenderOutput → RenderVideoOutput (drop framesRendered)
-  const output: RenderVideoOutput = {
+  return {
     videoPath: result.videoPath,
     duration: result.duration,
     fps: result.fps,
     resolution: result.resolution,
     success: result.success,
+    framesRendered: result.framesRendered,
   };
-  if (result.error !== undefined) {
-    output.error = result.error;
-  }
-  return output;
 }
