@@ -53,7 +53,7 @@
 
 ### Visual Polish
 
-- [ ] **VIS-11**: Dark mode theme system — dark backgrounds as default for maximum contrast
+- [x] **VIS-11**: Dark mode theme system — dark backgrounds as default for maximum contrast
 - [x] **VIS-12**: Callout/highlight system — colored rounded rectangles (yellow accent), annotation arrows for key concepts
 - [x] **VIS-13**: Progress indicators — numbered circles, checkmarks for multi-step tutorial content
 - [x] **VIS-14**: Responsive text sizing — fitText pattern for consistent rendering across aspect ratios
@@ -116,27 +116,27 @@
 
 ### v1.2 Traceability
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| ANIM-01     | 14    | Pending |
-| ANIM-02     | 14    | Pending |
-| ANIM-03     | 14    | Pending |
-| ANIM-04     | 14    | Pending |
-| ANIM-05     | 14    | Pending |
-| ANIM-06     | 14    | Pending |
-| VIS-11      | 16    | Pending |
+| Requirement | Phase | Status   |
+| ----------- | ----- | -------- |
+| ANIM-01     | 14    | Pending  |
+| ANIM-02     | 14    | Pending  |
+| ANIM-03     | 14    | Pending  |
+| ANIM-04     | 14    | Pending  |
+| ANIM-05     | 14    | Pending  |
+| ANIM-06     | 14    | Pending  |
+| VIS-11      | 16    | Complete |
 | VIS-12      | 16    | Complete |
 | VIS-13      | 16    | Complete |
 | VIS-14      | 16    | Complete |
-| SCR-03      | 15    | Pending |
-| SCR-04      | 15    | Pending |
-| SCR-05      | 15    | Pending |
-| RES-04      | 15    | Pending |
-| RES-05      | 15    | Pending |
-| SCR-06      | 15    | Pending |
-| TEST-01     | 17    | Pending |
-| TEST-02     | 17    | Pending |
-| TEST-03     | 17    | Pending |
+| SCR-03      | 15    | Pending  |
+| SCR-04      | 15    | Pending  |
+| SCR-05      | 15    | Pending  |
+| RES-04      | 15    | Pending  |
+| RES-05      | 15    | Pending  |
+| SCR-06      | 15    | Pending  |
+| TEST-01     | 17    | Pending  |
+| TEST-02     | 17    | Pending  |
+| TEST-03     | 17    | Pending  |
 
 **Coverage:**
 
