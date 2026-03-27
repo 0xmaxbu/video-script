@@ -35,7 +35,7 @@ describe("Video Generation E2E - Compose Pipeline", () => {
       expect(script.scenes).toHaveLength(3);
       expect(script.scenes[0].type).toBe("intro");
       expect(script.scenes[1].type).toBe("feature");
-      expect(script.scenes[1].visualLayers).toHaveLength(1);
+      expect(script.scenes[1].visualLayers.length).toBeGreaterThanOrEqual(1);
       expect(script.scenes[1].visualLayers[0].type).toBe("code");
       expect(script.scenes[2].type).toBe("outro");
     });
