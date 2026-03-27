@@ -56,7 +56,7 @@
 - [ ] **VIS-11**: Dark mode theme system — dark backgrounds as default for maximum contrast
 - [x] **VIS-12**: Callout/highlight system — colored rounded rectangles (yellow accent), annotation arrows for key concepts
 - [x] **VIS-13**: Progress indicators — numbered circles, checkmarks for multi-step tutorial content
-- [ ] **VIS-14**: Responsive text sizing — fitText pattern for consistent rendering across aspect ratios
+- [x] **VIS-14**: Responsive text sizing — fitText pattern for consistent rendering across aspect ratios
 
 ### Screenshot Intelligence
 
@@ -127,7 +127,7 @@
 | VIS-11      | 16    | Pending |
 | VIS-12      | 16    | Complete |
 | VIS-13      | 16    | Complete |
-| VIS-14      | 16    | Pending |
+| VIS-14      | 16    | Complete |
 | SCR-03      | 15    | Pending |
 | SCR-04      | 15    | Pending |
 | SCR-05      | 15    | Pending |

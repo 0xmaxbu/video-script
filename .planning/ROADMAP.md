@@ -135,7 +135,7 @@ Plans:
 | ------------------------ | --------- | ----------- | --------- |
 | 14. Animation Engine     | 3 + 1 GAP | In Progress | -         |
 | 15. Screenshot + Content | TBD       | Planned     | -         |
-| 16. Visual Polish        | 4/5 | In Progress|  |
+| 16. Visual Polish        | 5/5 | Complete   | 2026-03-27 |
 | 17. E2E Testing          | TBD       | Planned     | -         |
 
 ### Phase 14: Animation Engine
@@ -188,14 +188,14 @@ Plans:
 3. Progress indicators for multi-step tutorials (numbered circles, checkmarks)
 4. Responsive text sizing via fitText pattern across aspect ratios
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 
 - [x] 16-01-PLAN.md — Create theme.ts + migrate all 9 layouts to THEME constants (VIS-11)
 - [x] 16-02-PLAN.md — Callout VisualLayer: schema extension, CalloutLayer component, renderer wiring (VIS-12)
 - [x] 16-03-PLAN.md — ProgressIndicator component + SceneScript schema extension (VIS-13)
-- [ ] 16-04-PLAN.md — fitText integration via @remotion/layout-utils (VIS-14)
+- [x] 16-04-PLAN.md — fitText integration via @remotion/layout-utils (VIS-14)
 
 ### Phase 17: E2E Testing
 
