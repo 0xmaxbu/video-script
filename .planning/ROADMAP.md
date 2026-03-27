@@ -187,7 +187,15 @@ Plans:
 2. Callout/highlight components (yellow rounded rects, annotation arrows)
 3. Progress indicators for multi-step tutorials (numbered circles, checkmarks)
 4. Responsive text sizing via fitText pattern across aspect ratios
-   **Plans:** TBD
+
+**Plans:** 4 plans
+
+Plans:
+
+- [ ] 16-01-PLAN.md — Create theme.ts + migrate all 9 layouts to THEME constants (VIS-11)
+- [ ] 16-02-PLAN.md — Callout VisualLayer: schema extension, CalloutLayer component, renderer wiring (VIS-12)
+- [ ] 16-03-PLAN.md — ProgressIndicator component + SceneScript schema extension (VIS-13)
+- [ ] 16-04-PLAN.md — fitText integration via @remotion/layout-utils (VIS-14)
 
 ### Phase 17: E2E Testing
 
