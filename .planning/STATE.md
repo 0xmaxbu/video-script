@@ -123,7 +123,7 @@ From research (2026-03-22):
 - [Phase 09-types-schema-fix]: @video-script/types added as workspace:\* dependency to renderer package
 - [Phase 14]: Programmatic SSR API approach abandoned - Remotion webpack bundler fundamentally incompatible with pnpm monorepo. Use existing puppeteer-renderer.ts (esbuild + Playwright + FFmpeg) instead.
 - [Phase 16-visual-polish]: Use ../types.js import in project-generator.ts instead of @video-script/types — renderer package has its own ScriptOutput
-- [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for __dirname throughout new utils files
+- [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for \_\_dirname throughout new utils files
 - [Phase 16]: Centralized dark mode colors into theme.ts; FrostedCard now uses THEME.glass.bg as fixed default (removed opacity/color props)
 - [Phase 16-03]: Optional progressIndicator field on SceneScriptSchema avoids breaking existing scripts
 - [Phase 16-visual-polish]: Followed TextLayer animation pattern for CalloutLayer (useEnterAnimation + useExitAnimation with exit.opacity guard)
@@ -132,6 +132,13 @@ From research (2026-03-22):
 - [Phase 16]: TextElement uses .content not .text per sceneAdapter type
 
 ### Pending Todos
+
+4 pending todos (2 quality, 2 new):
+
+- `2026-03-27-integrate-skills-into-mastra-agents.md` — Skills (ui-ux-pro-max etc.) not injected into Mastra Agent instructions
+- `2026-03-27-integrate-tailwind-css-into-scene-layout-system.md` — Tailwind installed but not wired into Remotion bundler or layout components
+- `2026-03-23-user-verifies-video-quality.md` — Video quality verification
+- `2026-03-23-verify-video-quality-meets-professional-standard.md` — Professional standard verification
 
 ### Roadmap Evolution
 
