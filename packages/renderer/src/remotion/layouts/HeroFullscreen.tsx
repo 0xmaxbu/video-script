@@ -7,9 +7,10 @@ import {
   interpolate,
   spring,
 } from "remotion";
+import { fitText } from "@remotion/layout-utils";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
-import { TYPOGRAPHY } from "./grid-utils.js";
+import { TYPOGRAPHY, GRID_CONSTANTS } from "./grid-utils.js";
 import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 import type {
@@ -38,6 +39,27 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
   const titleElement = scene.textElements.find(
     (t: TextElement) => t.role === "title",
   );
+
+  // fitText for hero title — fit within safe-zone width, capped at TYPOGRAPHY.title.hero
+  const heroTitleWidth =
+    GRID_CONSTANTS.width -
+    GRID_CONSTANTS.safeZone.left -
+    GRID_CONSTANTS.safeZone.right; // 1920 - 120 - 120 = 1680
+
+  const titleFontSize = titleElement?.content
+    ? Math.max(
+        36, // minimum readable size for hero
+        Math.min(
+          TYPOGRAPHY.title.hero, // cap at 80px
+          fitText({
+            text: titleElement.content,
+            withinWidth: heroTitleWidth,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: "700",
+          }).fontSize,
+        ),
+      )
+    : TYPOGRAPHY.title.hero;
 
   // 标题动画
   const titleAppearFrame = titleElement?.narrationBinding.appearAt
@@ -109,7 +131,7 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
           >
             <h1
               style={{
-                fontSize: TYPOGRAPHY.title.hero,
+                fontSize: titleFontSize,
                 fontWeight: "bold",
                 color: THEME.text.primary,
                 textAlign: "center",

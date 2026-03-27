@@ -6,6 +6,7 @@ import {
   interpolate,
   spring,
 } from "remotion";
+import { fitText } from "@remotion/layout-utils";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
@@ -39,6 +40,22 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
     GRID_CONSTANTS.safeZone.top -
     GRID_CONSTANTS.safeZone.bottom;
 
+  // fitText for title — fit within usable width, capped at TYPOGRAPHY.title.section max
+  const titleFontSize = titleElement?.content
+    ? Math.max(
+        24, // minimum readable size
+        Math.min(
+          TYPOGRAPHY.title.section, // cap at 60px
+          fitText({
+            text: titleElement.content,
+            withinWidth: usableWidth,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: "700",
+          }).fontSize,
+        ),
+      )
+    : TYPOGRAPHY.title.section;
+
   return (
     <Grid>
       {/* Full-bleed dark background */}
@@ -66,7 +83,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
         {titleElement && (
           <h1
             style={{
-              fontSize: TYPOGRAPHY.title.section,
+              fontSize: titleFontSize,
               fontWeight: "bold",
               color: THEME.text.primary,
               marginBottom: "2rem",
