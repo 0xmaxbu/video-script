@@ -28,9 +28,8 @@ export async function generateProject(
 
   // Resolve paths to shared packages
   // At runtime: __dirname = packages/renderer/dist/utils/
-  // So rendererDir = packages/renderer/dist/ → we want packages/renderer/
-  // Use src layout path: __dirname in src = packages/renderer/src/utils/
-  const rendererDir = path.resolve(__dirname, "../../.."); // packages/renderer
+  // ../.. from dist/utils/ → dist/ → packages/renderer/
+  const rendererDir = path.resolve(__dirname, "../.."); // packages/renderer
   const typesDir = path.resolve(rendererDir, "../types"); // packages/types (if exists)
   const hasTypes = fs.existsSync(typesDir);
 
@@ -39,6 +38,16 @@ export async function generateProject(
   // 1. Scaffold directory structure
   fs.mkdirSync(path.join(outputDir, "src"), { recursive: true });
   fs.mkdirSync(path.join(outputDir, "out"), { recursive: true });
+  fs.mkdirSync(path.join(outputDir, "public"), { recursive: true });
+
+  // Copy images to public/ so Remotion's webpack dev server can serve them.
+  // Convert absolute paths → filenames only (e.g. "/abs/path/foo.png" → "foo.png").
+  const resolvedImages: Record<string, string> = {};
+  for (const [key, absPath] of Object.entries(images)) {
+    const filename = path.basename(absPath);
+    fs.copyFileSync(absPath, path.join(outputDir, "public", filename));
+    resolvedImages[key] = filename;
+  }
 
   // 2. Write package.json with file: protocol
   const packageJson: Record<string, unknown> = {
@@ -79,17 +88,20 @@ export async function generateProject(
   );
 
   // 4. Write src/index.ts (Remotion entry point)
+  // Use extensionless import './Root' — webpack resolves .tsx, tsc resolves .tsx too
+  // Do NOT use './Root.js' — webpack cannot remap .js → .tsx like tsc can
   const indexContent = `import { registerRoot } from 'remotion';
-import { RemotionRoot } from './Root.js';
+import { RemotionRoot } from './Root';
 
 registerRoot(RemotionRoot);
 `;
   fs.writeFileSync(path.join(outputDir, "src", "index.ts"), indexContent);
 
   // 5. Write src/Root.tsx (embeds script data as defaultProps)
+  // Use resolvedImages (filename-only values) so staticFile() works at render time
   const rootContent = generateRootTsx({
     script,
-    images,
+    images: resolvedImages,
     showSubtitles,
     compositionId,
   });
@@ -131,8 +143,8 @@ function generateRootTsx(opts: {
   const propsJson = JSON.stringify({ script, images, showSubtitles }, null, 2);
 
   return `import { Composition } from 'remotion';
-import { VideoComposition } from '@video-script/renderer';
-import type { VideoCompositionProps } from '@video-script/renderer';
+import { VideoComposition } from '@video-script/renderer/remotion';
+import type { VideoCompositionProps } from '@video-script/renderer/remotion';
 
 const defaultProps: VideoCompositionProps = ${propsJson};
 

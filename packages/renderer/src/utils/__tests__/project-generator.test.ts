@@ -55,10 +55,10 @@ describe("generateProject", () => {
     expect(index).toContain("RemotionRoot");
   });
 
-  it("generates src/Root.tsx importing from @video-script/renderer", async () => {
+  it("generates src/Root.tsx importing from @video-script/renderer/remotion", async () => {
     await generateProject({ script: mockScript, outputDir: tmpDir });
     const root = fs.readFileSync(path.join(tmpDir, "src", "Root.tsx"), "utf8");
-    expect(root).toContain("from '@video-script/renderer'");
+    expect(root).toContain("from '@video-script/renderer/remotion'");
     expect(root).toContain("VideoComposition");
     expect(root).toContain("Test Video"); // script title embedded
   });

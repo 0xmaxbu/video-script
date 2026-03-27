@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Img } from "remotion";
+import { AbsoluteFill, Img, staticFile } from "remotion";
 import { VisualLayer, SceneNarrativeType } from "../../types.js";
 import {
   useKenBurns,
@@ -101,7 +101,9 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
     opacity,
   };
 
-  const imageSrc = imagePath || content;
+  // imagePath is now a filename (e.g. "scene-001-foo.png") served from public/
+  // staticFile() converts it to the localhost:3000 URL Remotion's webpack server exposes
+  const imageSrc = imagePath ? staticFile(imagePath) : content;
 
   return (
     <AbsoluteFill style={style}>
