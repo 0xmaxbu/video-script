@@ -57,6 +57,8 @@ export async function generateProject(
     dependencies: {
       "@video-script/renderer": `file:${rendererDir}`,
       ...(hasTypes ? { "@video-script/types": `file:${typesDir}` } : {}),
+      react: "^19.0.0",
+      "react-dom": "^19.0.0",
       remotion: "4.0.436",
       "@remotion/bundler": "4.0.436",
       "@remotion/renderer": "4.0.436",

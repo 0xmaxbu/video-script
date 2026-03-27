@@ -59,6 +59,24 @@ export const CodeAnimation: React.FC<CodeAnimationProps> = ({
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
+  // Guard: empty code string would cause interpolate([0,0]) crash
+  if (!code || code.trim() === "") {
+    return (
+      <AbsoluteFill
+        style={{
+          backgroundColor: "#0f1117",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span style={{ color: "#666", fontFamily: "monospace", fontSize: 18 }}>
+          // No code content
+        </span>
+      </AbsoluteFill>
+    );
+  }
+
   const lines = code.split("\n");
   const totalChars = code.length;
 
