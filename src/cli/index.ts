@@ -97,6 +97,7 @@ function generateWebPageWaypoints(
       focalY: 0.5,
       scale: overviewScale,
       holdFrames: overviewHoldFrames,
+      travelFrames: 15, // 0.5 s zoom-in: overview → first section
     },
   ];
 
@@ -108,6 +109,7 @@ function generateWebPageWaypoints(
       focalY,
       scale: 1.0,
       holdFrames: sectionHoldFrames,
+      travelFrames: 12, // 0.4 s camera travel: section → next section
     });
   }
 
@@ -135,8 +137,25 @@ async function augmentScreenshotLayers(
 
           try {
             const metadata = await sharp(imgPath).metadata();
-            const imgW = metadata.width ?? 1920;
-            const imgH = metadata.height ?? 1080;
+            let imgW = metadata.width ?? 1920;
+            let imgH = metadata.height ?? 1080;
+
+            // Cap image to 4800×2700 before rendering (crop, not scale)
+            const MAX_W = 4800;
+            const MAX_H = 2700;
+            if (imgW > MAX_W || imgH > MAX_H) {
+              const cropW = Math.min(imgW, MAX_W);
+              const cropH = Math.min(imgH, MAX_H);
+              await sharp(imgPath)
+                .extract({ left: 0, top: 0, width: cropW, height: cropH })
+                .toFile(imgPath + ".tmp.png");
+              // Atomically replace original
+              const { rename } = await import("fs/promises");
+              await rename(imgPath + ".tmp.png", imgPath);
+              imgW = cropW;
+              imgH = cropH;
+            }
+
             const waypoints = generateWebPageWaypoints(
               imgW,
               imgH,
@@ -1099,6 +1118,9 @@ program
               ...(scene.transition !== undefined && {
                 transition: scene.transition,
               }),
+              ...(scene.annotations !== undefined && {
+                annotations: scene.annotations,
+              }),
             })),
           },
           images,
@@ -1756,6 +1778,9 @@ async function runScreenshotAndCompose(
           ...(scene.transition !== undefined && {
             transition: scene.transition,
           }),
+          ...(scene.annotations !== undefined && {
+            annotations: scene.annotations,
+          }),
         })),
       },
       images,
@@ -2086,6 +2111,9 @@ program
               duration: scene.duration,
               ...(scene.visualLayers !== undefined && {
                 visualLayers: scene.visualLayers,
+              }),
+              ...(scene.annotations !== undefined && {
+                annotations: scene.annotations,
               }),
             })),
           },

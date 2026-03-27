@@ -8,6 +8,7 @@ import {
   SceneNarrativeType,
   SceneHighlightSchema,
   CodeHighlightSchema,
+  AnnotationSchema,
 } from "./index.js";
 export {
   ScreenshotSpecSchema,
@@ -57,6 +58,8 @@ export const SceneScriptSchema = z.object({
   sourceRef: z.string().optional(),
   // Layout template selection (optional - falls back to inline if absent)
   layoutTemplate: z.string().optional(),
+  // Annotations for visual callouts (circles, arrows, boxes, etc.)
+  annotations: z.array(AnnotationSchema).optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 

@@ -244,7 +244,7 @@ export function useWebPagePan(
   naturalSize: { width: number; height: number },
 ): { scale: number; translateX: number; translateY: number } {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  useVideoConfig(); // required for React hook rules; durationInFrames unused here
 
   const CONTAINER_W = 1920;
   const CONTAINER_H = 1080;
@@ -270,14 +270,13 @@ export function useWebPagePan(
     return { scale: wp.scale, ...toXY(wp.scale, wp.focalX, wp.focalY) };
   }
 
-  // ── Build timeline (identical structure to useAdvancedKenBurns) ──────────
-  const totalHoldFrames = waypoints.reduce((sum, wp) => sum + wp.holdFrames, 0);
-  const numTravelSegments = waypoints.length - 1;
-  const totalTravelFrames = Math.max(
-    numTravelSegments,
-    durationInFrames - totalHoldFrames,
-  );
-  const travelFramesPerSegment = totalTravelFrames / numTravelSegments;
+  // ── Build timeline with fixed per-waypoint travel durations ────────────────
+  // Each waypoint may carry an explicit travelFrames field (set by the CLI when
+  // generating web-page waypoints).  Fall back to sensible defaults:
+  //   · first segment (overview → section):  15 frames (0.5 s @ 30 fps)
+  //   · subsequent segments (section → section): 12 frames (0.4 s @ 30 fps)
+  const DEFAULT_FIRST_TRAVEL = 15;
+  const DEFAULT_TRAVEL = 12;
 
   interface Seg {
     startFrame: number;
@@ -301,14 +300,17 @@ export function useWebPagePan(
       cursor += waypoints[i].holdFrames;
     }
     if (i < waypoints.length - 1) {
+      const tf =
+        waypoints[i].travelFrames ??
+        (i === 0 ? DEFAULT_FIRST_TRAVEL : DEFAULT_TRAVEL);
       timeline.push({
         startFrame: cursor,
-        endFrame: cursor + travelFramesPerSegment,
+        endFrame: cursor + tf,
         type: "travel",
         fromIdx: i,
         toIdx: i + 1,
       });
-      cursor += travelFramesPerSegment;
+      cursor += tf;
     }
   }
 

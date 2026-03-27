@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { SceneHighlightSchema, CodeHighlightSchema } from "./visual.js";
+import {
+  SceneHighlightSchema,
+  CodeHighlightSchema,
+  AnnotationSchema,
+} from "./visual.js";
 import {
   VisualTypeEnum,
   PositionSchema,
@@ -15,6 +19,7 @@ export const KenBurnsWaypointSchema = z.object({
   focalY: z.number().min(0).max(1).default(0.5),
   scale: z.number().min(0.01).max(5),
   holdFrames: z.number().int().min(0).default(0),
+  travelFrames: z.number().int().min(1).optional(), // frames to travel FROM here TO next waypoint (default 12)
 });
 export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
 
@@ -54,6 +59,8 @@ export const SceneScriptSchema = z.object({
   highlights: z.array(SceneHighlightSchema).optional(),
   // D-02a: codeHighlights - marks code line annotations with timing
   codeHighlights: z.array(CodeHighlightSchema).optional(),
+  // D-02: Annotation overlays (circles, arrows, boxes, etc.)
+  annotations: z.array(AnnotationSchema).optional(),
   sourceRef: z.string().optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;

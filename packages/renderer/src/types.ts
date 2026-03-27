@@ -59,6 +59,7 @@ export const KenBurnsWaypointSchema = z.object({
   focalY: z.number().min(0).max(1).default(0.5), // 0=top, 0.5=center, 1=bottom
   scale: z.number().min(0.01).max(5), // zoom level; <1 = overview for tall pages
   holdFrames: z.number().int().min(0).default(0), // frames to linger at this waypoint
+  travelFrames: z.number().int().min(1).optional(), // frames to travel FROM here TO next waypoint (default 12)
 });
 export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
 

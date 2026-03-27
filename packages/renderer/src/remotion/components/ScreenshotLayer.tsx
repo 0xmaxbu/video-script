@@ -9,6 +9,7 @@ import {
   useEnterAnimation,
   useExitAnimation,
 } from "../../utils/animation-utils.js";
+import { AnnotationRenderer } from "../annotations/AnnotationRenderer.js";
 
 interface ScreenshotLayerProps {
   layer: VisualLayer;
@@ -21,8 +22,14 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   imagePath,
   sceneType,
 }) => {
-  const { content, position, animation, kenBurnsWaypoints, naturalSize } =
-    layer;
+  const {
+    content,
+    position,
+    animation,
+    kenBurnsWaypoints,
+    naturalSize,
+    annotations,
+  } = layer;
 
   const enter = useEnterAnimation(animation);
   const exit = useExitAnimation(animation);
@@ -75,6 +82,9 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
             transformOrigin: "0 0",
           }}
         />
+        {annotations && annotations.length > 0 && (
+          <AnnotationRenderer annotations={annotations} />
+        )}
       </div>
     );
   }
