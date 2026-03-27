@@ -54,7 +54,7 @@
 ### Visual Polish
 
 - [ ] **VIS-11**: Dark mode theme system — dark backgrounds as default for maximum contrast
-- [ ] **VIS-12**: Callout/highlight system — colored rounded rectangles (yellow accent), annotation arrows for key concepts
+- [x] **VIS-12**: Callout/highlight system — colored rounded rectangles (yellow accent), annotation arrows for key concepts
 - [x] **VIS-13**: Progress indicators — numbered circles, checkmarks for multi-step tutorial content
 - [ ] **VIS-14**: Responsive text sizing — fitText pattern for consistent rendering across aspect ratios
 
@@ -125,7 +125,7 @@
 | ANIM-05     | 14    | Pending |
 | ANIM-06     | 14    | Pending |
 | VIS-11      | 16    | Pending |
-| VIS-12      | 16    | Pending |
+| VIS-12      | 16    | Complete |
 | VIS-13      | 16    | Complete |
 | VIS-14      | 16    | Pending |
 | SCR-03      | 15    | Pending |

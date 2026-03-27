@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Completed 16-03-PLAN.md (progress-indicator)
-last_updated: "2026-03-27T02:21:53.701Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-27T02:22:00.102Z"
 progress:
   total_phases: 17
   completed_phases: 13
@@ -125,6 +125,8 @@ From research (2026-03-22):
 - [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for __dirname throughout new utils files
 - [Phase 16]: Centralized dark mode colors into theme.ts; FrostedCard now uses THEME.glass.bg as fixed default (removed opacity/color props)
 - [Phase 16-03]: Optional progressIndicator field on SceneScriptSchema avoids breaking existing scripts
+- [Phase 16-visual-polish]: Followed TextLayer animation pattern for CalloutLayer (useEnterAnimation + useExitAnimation with exit.opacity guard)
+- [Phase 16-visual-polish]: Used CSS border trick for directional arrow triangles in CalloutLayer (no extra dependencies)
 
 ### Pending Todos
 
@@ -138,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:21:42.471Z
-Stopped at: Completed 16-03-PLAN.md (progress-indicator)
+Last session: 2026-03-27T02:22:00.097Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
