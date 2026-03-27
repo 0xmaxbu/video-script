@@ -173,6 +173,14 @@ export const SceneScriptSchema = z.object({
   sourceRef: z.string().optional(),
   // D-02: Optional layout template selection
   layoutTemplate: LayoutTemplateEnum.optional(),
+  // VIS-13: Optional progress indicator for multi-step tutorial scenes
+  progressIndicator: z
+    .object({
+      enabled: z.boolean(),
+      total: z.number().int().min(1),
+      current: z.number().int().min(1),
+    })
+    .optional(),
 });
 export type SceneScript = z.infer<typeof SceneScriptSchema>;
 
