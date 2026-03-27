@@ -64,9 +64,8 @@ export interface RenderProcessInput {
       }>;
     }>;
   };
-  screenshotResources: Record<string, string>;
+  images?: Record<string, string>;
   outputDir: string;
-  videoFileName?: string;
   srtOutputPath?: string;
   showSubtitles?: boolean;
 }
@@ -76,7 +75,8 @@ export interface RenderProcessOutput {
   videoPath?: string;
   duration?: number;
   fps?: number;
-  resolution?: string;
+  resolution?: { width: number; height: number } | string;
+  framesRendered?: number;
   error?: string;
 }
 

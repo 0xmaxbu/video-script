@@ -786,13 +786,18 @@ program
     "Generate final video and subtitles from script.json and screenshots",
   )
   .option("--subtitles", "Include narration subtitles in video output")
-  .action(async (dir, options: { subtitles?: boolean }) => {
+  .option("--output <path>", "Custom output path for rendered video")
+  .action(async (dir, options: { subtitles?: boolean; output?: string }) => {
     const spinner = ora();
     gracefulShutdown.setSpinner(spinner);
 
     try {
       const scriptPath = join(dir, "script.json");
       const screenshotsDir = join(dir, "screenshots");
+      const outputDir = options.output ? resolve(options.output) : resolve(dir);
+      if (options.output) {
+        mkdirSync(outputDir, { recursive: true });
+      }
 
       if (!existsSync(scriptPath)) {
         throw new Error(
@@ -838,7 +843,7 @@ program
         visualPlan as Parameters<typeof adaptScriptForRenderer>[1],
       );
 
-      const screenshotResources: Record<string, string> = {};
+      const images: Record<string, string> = {};
       adaptedScript.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
@@ -848,13 +853,13 @@ program
               layer.id,
             );
             if (filepath) {
-              screenshotResources[`${scene.id}-${layer.id}`] = filepath;
+              images[`${scene.id}-${layer.id}`] = filepath;
             }
           }
         });
       });
 
-      const srtPath = join(dir, "output.srt");
+      const srtPath = join(outputDir, "output.srt");
 
       spinner.start("🎬 Rendering video...");
 
@@ -893,9 +898,8 @@ program
               }),
             })),
           },
-          screenshotResources,
-          outputDir: dir,
-          videoFileName: "output.mp4",
+          images,
+          outputDir: outputDir,
           srtOutputPath: srtPath,
           showSubtitles: options.subtitles ?? false,
         },
@@ -1413,7 +1417,7 @@ async function runScreenshotAndCompose(
   spinner.start("🎬 Rendering video...");
   workflowStateManager.startStep("compose");
 
-  const screenshotResources: Record<string, string> = {};
+  const images: Record<string, string> = {};
   script.scenes.forEach((scene, sceneIndex) => {
     scene.visualLayers?.forEach((layer) => {
       if (layer.type === "screenshot" || layer.type === "code") {
@@ -1423,8 +1427,7 @@ async function runScreenshotAndCompose(
           layer.id,
         );
         if (filepath) {
-          screenshotResources[`${scene.id}-${layer.id}`] =
-            `file://${resolve(filepath)}`;
+          images[`${scene.id}-${layer.id}`] = `file://${resolve(filepath)}`;
         }
       }
     });
@@ -1467,9 +1470,8 @@ async function runScreenshotAndCompose(
           }),
         })),
       },
-      screenshotResources,
+      images,
       outputDir,
-      videoFileName: "output.mp4",
       srtOutputPath: srtPath,
     },
     { onProgress },
@@ -1670,7 +1672,7 @@ program
       spinner.start("🎬 Rendering video...");
       workflowStateManager.startStep("compose");
 
-      const screenshotResources: Record<string, string> = {};
+      const images: Record<string, string> = {};
       script.scenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
@@ -1680,7 +1682,7 @@ program
               layer.id,
             );
             if (filepath) {
-              screenshotResources[`${scene.id}-${layer.id}`] = filepath;
+              images[`${scene.id}-${layer.id}`] = filepath;
             }
           }
         });
@@ -1723,9 +1725,8 @@ program
               }),
             })),
           },
-          screenshotResources,
+          images,
           outputDir,
-          videoFileName: "output.mp4",
           srtOutputPath: srtPath,
         },
         { onProgress },

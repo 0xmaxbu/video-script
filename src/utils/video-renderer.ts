@@ -2,8 +2,8 @@
  * Root-level video rendering orchestrator.
  *
  * Delegates all rendering to @video-script/renderer which uses:
- * - esbuild for bundling (bypasses broken Remotion webpack bundler)
- * - Playwright/Chrome headless for frame rendering via CDP
+ * - Remotion's Node.js API (@remotion/bundler + @remotion/renderer)
+ * - Chrome headless for frame rendering
  * - FFmpeg for stitching frames into MP4
  *
  * Requires: ffmpeg installed on the system.
@@ -16,11 +16,13 @@ import {
 } from "@video-script/renderer";
 
 export function calculateTotalDuration(scenes: SceneScript[]): number {
-  return rendererCalculateTotalDuration(scenes as Parameters<typeof rendererCalculateTotalDuration>[0]);
+  return rendererCalculateTotalDuration(
+    scenes as Parameters<typeof rendererCalculateTotalDuration>[0],
+  );
 }
 
 /**
- * Input schema for video rendering - matches new ScriptOutputSchema format
+ * Input schema for video rendering - matches renderer's RenderVideoInputSchema
  */
 export const RenderVideoInputSchema = z.object({
   script: z.object({
@@ -37,9 +39,9 @@ export const RenderVideoInputSchema = z.object({
       }),
     ),
   }),
-  screenshotResources: z.record(z.string(), z.string()),
+  images: z.record(z.string(), z.string()).optional(),
   outputDir: z.string().min(1),
-  videoFileName: z.string().optional(),
+  showSubtitles: z.boolean().optional(),
   onProgress: z.function().optional(),
 });
 
@@ -48,9 +50,9 @@ export const RenderVideoInputSchema = z.object({
  */
 export interface RenderVideoInput {
   script: ScriptOutput;
-  screenshotResources: Record<string, string>;
+  images?: Record<string, string>;
   outputDir: string;
-  videoFileName?: string;
+  showSubtitles?: boolean;
   onProgress?: (progress: number) => void;
 }
 
@@ -61,8 +63,12 @@ export const RenderVideoOutputSchema = z.object({
   videoPath: z.string(),
   duration: z.number(),
   fps: z.number(),
-  resolution: z.string(),
+  resolution: z.object({
+    width: z.number(),
+    height: z.number(),
+  }),
   success: z.boolean(),
+  framesRendered: z.number(),
   error: z.string().optional(),
 });
 
@@ -73,27 +79,29 @@ export interface RenderVideoOutput {
   videoPath: string;
   duration: number;
   fps: number;
-  resolution: string;
+  resolution: { width: number; height: number };
   success: boolean;
+  framesRendered: number;
   error?: string;
 }
 
 /**
  * Orchestrates the complete video rendering process by delegating
- * to @video-script/renderer's Playwright-based renderer.
+ * to @video-script/renderer's Remotion-based renderer.
  */
 export async function renderVideo(
   input: RenderVideoInput,
 ): Promise<RenderVideoOutput> {
   const args: Parameters<typeof rendererRenderVideo>[0] = {
     script: input.script as Parameters<typeof rendererRenderVideo>[0]["script"],
-    screenshotResources: input.screenshotResources,
     outputDir: input.outputDir,
   };
-  
-  if (input.videoFileName !== undefined) args.videoFileName = input.videoFileName;
+
+  if (input.images !== undefined) args.images = input.images;
+  if (input.showSubtitles !== undefined)
+    args.showSubtitles = input.showSubtitles;
   if (input.onProgress !== undefined) args.onProgress = input.onProgress;
-  
-  // Delegate to @video-script/renderer which uses Playwright + FFmpeg
+
+  // Delegate to @video-script/renderer which uses Remotion Node.js API
   return rendererRenderVideo(args);
 }
