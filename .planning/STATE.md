@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Completed 16-visual-polish-16-05-PLAN.md
-last_updated: "2026-03-27T02:13:02.605Z"
+stopped_at: Completed 16-01-PLAN.md (theme.ts + layout migration)
+last_updated: "2026-03-27T02:13:11.906Z"
 progress:
   total_phases: 17
   completed_phases: 13
@@ -68,6 +68,7 @@ _Updated after each plan completion_
 | Phase 09-types-schema-fix P02 | 5min | 2 tasks | 4 files |
 | Phase 14 PGAP-04 | 15 | 6 tasks | 3 files |
 | Phase 16-visual-polish P05 | 15 | 4 tasks | 7 files |
+| Phase 16 P01 | 15 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,7 @@ From research (2026-03-22):
 - [Phase 14]: Programmatic SSR API approach abandoned - Remotion webpack bundler fundamentally incompatible with pnpm monorepo. Use existing puppeteer-renderer.ts (esbuild + Playwright + FFmpeg) instead.
 - [Phase 16-visual-polish]: Use ../types.js import in project-generator.ts instead of @video-script/types — renderer package has its own ScriptOutput
 - [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for __dirname throughout new utils files
+- [Phase 16]: Centralized dark mode colors into theme.ts; FrostedCard now uses THEME.glass.bg as fixed default (removed opacity/color props)
 
 ### Pending Todos
 
@@ -133,6 +135,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:12:47.604Z
-Stopped at: Completed 16-visual-polish-16-05-PLAN.md
+Last session: 2026-03-27T02:13:11.904Z
+Stopped at: Completed 16-01-PLAN.md (theme.ts + layout migration)
 Resume file: None
