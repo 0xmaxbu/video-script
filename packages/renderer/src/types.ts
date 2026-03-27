@@ -53,10 +53,11 @@ export const AnimationConfigSchema = z.object({
 });
 
 // Ken Burns waypoint for multi-focal animation
+// scale ≥ 1 for traditional Ken Burns; scale < 1 allowed for web-page overview
 export const KenBurnsWaypointSchema = z.object({
   focalX: z.number().min(0).max(1).default(0.5), // 0=left, 0.5=center, 1=right
   focalY: z.number().min(0).max(1).default(0.5), // 0=top, 0.5=center, 1=bottom
-  scale: z.number().min(1).max(2.5), // zoom level ≥1
+  scale: z.number().min(0.01).max(5), // zoom level; <1 = overview for tall pages
   holdFrames: z.number().int().min(0).default(0), // frames to linger at this waypoint
 });
 export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
@@ -77,6 +78,13 @@ export const VisualLayerSchema = z.object({
   content: z.string(),
   animation: AnimationConfigSchema,
   kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
+  // Natural (pixel) dimensions of the source image — enables web-page pan mode
+  naturalSize: z
+    .object({
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 

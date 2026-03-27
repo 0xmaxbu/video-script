@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  SceneHighlightSchema,
-  CodeHighlightSchema,
-} from "./visual.js";
+import { SceneHighlightSchema, CodeHighlightSchema } from "./visual.js";
 import {
   VisualTypeEnum,
   PositionSchema,
@@ -12,12 +9,29 @@ import {
 export const SceneNarrativeType = z.enum(["intro", "feature", "code", "outro"]);
 export type SceneNarrativeType = z.infer<typeof SceneNarrativeType>;
 
+// Ken Burns waypoint (shared, web-page pan uses scale < 1 for overview)
+export const KenBurnsWaypointSchema = z.object({
+  focalX: z.number().min(0).max(1).default(0.5),
+  focalY: z.number().min(0).max(1).default(0.5),
+  scale: z.number().min(0.01).max(5),
+  holdFrames: z.number().int().min(0).default(0),
+});
+export type KenBurnsWaypoint = z.infer<typeof KenBurnsWaypointSchema>;
+
 export const VisualLayerSchema = z.object({
   id: z.string(),
   type: VisualTypeEnum,
   position: PositionSchema,
   content: z.string(),
   animation: AnimationConfigSchema,
+  // Natural (pixel) dimensions of the source image — enables web-page pan mode
+  naturalSize: z
+    .object({
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
+  kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 

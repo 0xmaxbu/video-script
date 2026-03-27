@@ -220,6 +220,126 @@ export function staggerDelay(index: number, delayPerItem: number = 10): number {
 }
 
 /**
+ * Web-page pan animation: camera travels between focal waypoints on a
+ * 1:1-pixel web screenshot.
+ *
+ * Coordinate model:
+ *   container = 1920 × 1080 (video frame), overflow: hidden
+ *   image     = naturalSize.width × naturalSize.height at CSS scale `scale`
+ *   focalX/Y  = 0-1 fractions of the image
+ *
+ * Translation formula (transform-origin: 0 0):
+ *   tx = containerW/2  − focalX * imgW * scale
+ *   ty = containerH/2  − focalY * imgH * scale
+ *
+ * Overview waypoint: scale = min(1920/imgW, 1080/effectiveImgH)
+ * Zoom-in waypoint:  scale = 1.0  (1 image pixel = 1 screen pixel)
+ *
+ * Maximum image height considered for overview: MAX_WEB_HEIGHT (5 × 1080 px).
+ */
+export const MAX_WEB_HEIGHT = 5400;
+
+export function useWebPagePan(
+  waypoints: KenBurnsWaypoint[],
+  naturalSize: { width: number; height: number },
+): { scale: number; translateX: number; translateY: number } {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  const CONTAINER_W = 1920;
+  const CONTAINER_H = 1080;
+  const imgW = naturalSize.width;
+  const imgH = naturalSize.height;
+
+  const toXY = (s: number, fx: number, fy: number) => ({
+    translateX: CONTAINER_W / 2 - fx * imgW * s,
+    translateY: CONTAINER_H / 2 - fy * imgH * s,
+  });
+
+  if (!waypoints || waypoints.length === 0) {
+    const effectiveH = Math.min(imgH, MAX_WEB_HEIGHT);
+    const overviewScale = Math.min(
+      CONTAINER_W / imgW,
+      CONTAINER_H / effectiveH,
+    );
+    return { scale: overviewScale, ...toXY(overviewScale, 0.5, 0.5) };
+  }
+
+  if (waypoints.length === 1) {
+    const wp = waypoints[0];
+    return { scale: wp.scale, ...toXY(wp.scale, wp.focalX, wp.focalY) };
+  }
+
+  // ── Build timeline (identical structure to useAdvancedKenBurns) ──────────
+  const totalHoldFrames = waypoints.reduce((sum, wp) => sum + wp.holdFrames, 0);
+  const numTravelSegments = waypoints.length - 1;
+  const totalTravelFrames = Math.max(
+    numTravelSegments,
+    durationInFrames - totalHoldFrames,
+  );
+  const travelFramesPerSegment = totalTravelFrames / numTravelSegments;
+
+  interface Seg {
+    startFrame: number;
+    endFrame: number;
+    type: "hold" | "travel";
+    waypointIdx?: number;
+    fromIdx?: number;
+    toIdx?: number;
+  }
+
+  const timeline: Seg[] = [];
+  let cursor = 0;
+  for (let i = 0; i < waypoints.length; i++) {
+    if (waypoints[i].holdFrames > 0) {
+      timeline.push({
+        startFrame: cursor,
+        endFrame: cursor + waypoints[i].holdFrames,
+        type: "hold",
+        waypointIdx: i,
+      });
+      cursor += waypoints[i].holdFrames;
+    }
+    if (i < waypoints.length - 1) {
+      timeline.push({
+        startFrame: cursor,
+        endFrame: cursor + travelFramesPerSegment,
+        type: "travel",
+        fromIdx: i,
+        toIdx: i + 1,
+      });
+      cursor += travelFramesPerSegment;
+    }
+  }
+
+  const seg =
+    timeline.find((s) => frame >= s.startFrame && frame < s.endFrame) ??
+    timeline[timeline.length - 1];
+
+  let scale: number, focalX: number, focalY: number;
+
+  if (seg.type === "hold") {
+    const wp = waypoints[seg.waypointIdx!];
+    scale = wp.scale;
+    focalX = wp.focalX;
+    focalY = wp.focalY;
+  } else {
+    const fromWp = waypoints[seg.fromIdx!];
+    const toWp = waypoints[seg.toIdx!];
+    const segLen = seg.endFrame - seg.startFrame;
+    const rawProgress = segLen > 0 ? (frame - seg.startFrame) / segLen : 1;
+    const eased = Easing.inOut(Easing.ease)(
+      Math.min(1, Math.max(0, rawProgress)),
+    );
+    scale = interpolate(eased, [0, 1], [fromWp.scale, toWp.scale]);
+    focalX = interpolate(eased, [0, 1], [fromWp.focalX, toWp.focalX]);
+    focalY = interpolate(eased, [0, 1], [fromWp.focalY, toWp.focalY]);
+  }
+
+  return { scale, ...toXY(scale, focalX, focalY) };
+}
+
+/**
  * Multi-focal Ken Burns: camera travels between focal waypoints with optional
  * hold phases at each waypoint. Each waypoint specifies a focal point
  * (focalX/focalY as 0-1 fractions of the image) and zoom scale.

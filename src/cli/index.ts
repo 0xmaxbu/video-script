@@ -43,6 +43,124 @@ import {
   type ResearchOutput,
 } from "../types/research.js";
 import { ScriptOutputSchema, type ScriptOutput } from "../types/script.js";
+import type { SceneScript } from "../types/script.js";
+import type { KenBurnsWaypoint } from "../types/index.js";
+import sharp from "sharp";
+
+// ─── Web-page pan helpers ───────────────────────────────────────────────────
+
+const MAX_WEB_HEIGHT_CLI = 5400;
+
+/**
+ * Auto-generate pan waypoints for a web screenshot.
+ * Produces an overview waypoint followed by one waypoint per 1080-px section.
+ */
+function generateWebPageWaypoints(
+  imgW: number,
+  imgH: number,
+  durationSeconds: number,
+  fps: number,
+): KenBurnsWaypoint[] {
+  const CONTAINER_W = 1920;
+  const CONTAINER_H = 1080;
+  const effectiveH = Math.min(imgH, MAX_WEB_HEIGHT_CLI);
+  const overviewScale = Math.min(CONTAINER_W / imgW, CONTAINER_H / effectiveH);
+  const totalFrames = Math.round(durationSeconds * fps);
+
+  // Image already fits in the frame — no panning needed
+  if (imgH <= CONTAINER_H) {
+    return [
+      {
+        focalX: 0.5,
+        focalY: 0.5,
+        scale: overviewScale,
+        holdFrames: totalFrames,
+      },
+    ];
+  }
+
+  const numSections = Math.ceil(effectiveH / CONTAINER_H);
+
+  // Allocate ≈0.5 s for the overview, 70% of total for section holds, rest for travel
+  const overviewHoldFrames = Math.min(
+    Math.round(fps * 0.5),
+    Math.round(totalFrames * 0.15),
+  );
+  const sectionHoldFrames = Math.round((totalFrames * 0.7) / numSections);
+
+  // Maximum focalY so the bottom of the image stays on-screen at scale = 1
+  const maxFocalY = Math.max(0.5, 1 - CONTAINER_H / 2 / imgH);
+
+  const waypoints: KenBurnsWaypoint[] = [
+    {
+      focalX: 0.5,
+      focalY: 0.5,
+      scale: overviewScale,
+      holdFrames: overviewHoldFrames,
+    },
+  ];
+
+  for (let i = 0; i < numSections; i++) {
+    const sectionCenterY = (i + 0.5) * CONTAINER_H;
+    const focalY = Math.min(maxFocalY, sectionCenterY / imgH);
+    waypoints.push({
+      focalX: 0.5,
+      focalY,
+      scale: 1.0,
+      holdFrames: sectionHoldFrames,
+    });
+  }
+
+  return waypoints;
+}
+
+/**
+ * For each screenshot-type layer in scenes, read the image dimensions and
+ * inject `naturalSize` + `kenBurnsWaypoints` so the renderer can pan/zoom.
+ */
+async function augmentScreenshotLayers(
+  scenes: SceneScript[],
+  images: Record<string, string>,
+  fps: number,
+): Promise<SceneScript[]> {
+  return Promise.all(
+    scenes.map(async (scene) => {
+      if (!scene.visualLayers || scene.visualLayers.length === 0) return scene;
+
+      const augmentedLayers = await Promise.all(
+        scene.visualLayers.map(async (layer) => {
+          if (layer.type !== "screenshot") return layer;
+          const imgPath = images[`${scene.id}-${layer.id}`];
+          if (!imgPath) return layer;
+
+          try {
+            const metadata = await sharp(imgPath).metadata();
+            const imgW = metadata.width ?? 1920;
+            const imgH = metadata.height ?? 1080;
+            const waypoints = generateWebPageWaypoints(
+              imgW,
+              imgH,
+              scene.duration,
+              fps,
+            );
+            return {
+              ...layer,
+              naturalSize: { width: imgW, height: imgH },
+              kenBurnsWaypoints: waypoints,
+            };
+          } catch {
+            // If sharp fails, leave the layer untouched
+            return layer;
+          }
+        }),
+      );
+
+      return { ...scene, visualLayers: augmentedLayers };
+    }),
+  );
+}
+
+// ─── End web-page pan helpers ────────────────────────────────────────────────
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -938,6 +1056,12 @@ program
         });
       });
 
+      const finalScenesAugmented = await augmentScreenshotLayers(
+        finalScenes as SceneScript[],
+        images,
+        30,
+      );
+
       const srtPath = join(outputDir, "output.srt");
 
       spinner.start("🎬 Rendering video...");
@@ -963,7 +1087,7 @@ program
           script: {
             title: adaptedScript.title,
             totalDuration: adaptedScript.totalDuration,
-            scenes: finalScenes.map((scene) => ({
+            scenes: finalScenesAugmented.map((scene) => ({
               id: scene.id,
               type: scene.type,
               title: scene.title,
@@ -1591,6 +1715,12 @@ async function runScreenshotAndCompose(
     });
   });
 
+  const finalScenes2Augmented = await augmentScreenshotLayers(
+    finalScenes2 as SceneScript[],
+    images,
+    30,
+  );
+
   const srtPath = join(outputDir, "output.srt");
 
   const onProgress = (progress: number) => {
@@ -1614,7 +1744,7 @@ async function runScreenshotAndCompose(
       script: {
         title: script.title,
         totalDuration: script.scenes.reduce((sum, s) => sum + s.duration, 0),
-        scenes: finalScenes2.map((scene) => ({
+        scenes: finalScenes2Augmented.map((scene) => ({
           id: scene.id,
           type: scene.type,
           title: scene.title,
@@ -1916,6 +2046,12 @@ program
         });
       });
 
+      const finalScenes3Augmented = await augmentScreenshotLayers(
+        finalScenes3 as SceneScript[],
+        images,
+        30,
+      );
+
       const srtPath = join(outputDir, "output.srt");
 
       const onProgress = (progress: number) => {
@@ -1942,7 +2078,7 @@ program
               (sum, s) => sum + s.duration,
               0,
             ),
-            scenes: finalScenes3.map((scene) => ({
+            scenes: finalScenes3Augmented.map((scene) => ({
               id: scene.id,
               type: scene.type,
               title: scene.title,
