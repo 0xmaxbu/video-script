@@ -361,11 +361,19 @@ program
               }>;
             };
             for (const scene of output.scenes) {
-              // Flatten narration object to string
+              // Flatten narration object to string (LLM may use different keys)
               if (scene.narration && typeof scene.narration === "object") {
-                const narrationObj = scene.narration as { fullText?: string };
+                const narrationObj = scene.narration as Record<string, unknown>;
                 scene.narration =
-                  narrationObj.fullText || JSON.stringify(narrationObj);
+                  (typeof narrationObj.fullText === "string" &&
+                    narrationObj.fullText) ||
+                  (typeof narrationObj.text === "string" &&
+                    narrationObj.text) ||
+                  (typeof narrationObj.content === "string" &&
+                    narrationObj.content) ||
+                  (typeof narrationObj.value === "string" &&
+                    narrationObj.value) ||
+                  JSON.stringify(narrationObj);
               }
               // Filter out incomplete codeHighlights
               if (scene.codeHighlights && Array.isArray(scene.codeHighlights)) {
@@ -1222,11 +1230,19 @@ program
               }>;
             };
             for (const scene of output.scenes) {
-              // Flatten narration object to string
+              // Flatten narration object to string (LLM may use different keys)
               if (scene.narration && typeof scene.narration === "object") {
-                const narrationObj = scene.narration as { fullText?: string };
+                const narrationObj = scene.narration as Record<string, unknown>;
                 scene.narration =
-                  narrationObj.fullText || JSON.stringify(narrationObj);
+                  (typeof narrationObj.fullText === "string" &&
+                    narrationObj.fullText) ||
+                  (typeof narrationObj.text === "string" &&
+                    narrationObj.text) ||
+                  (typeof narrationObj.content === "string" &&
+                    narrationObj.content) ||
+                  (typeof narrationObj.value === "string" &&
+                    narrationObj.value) ||
+                  JSON.stringify(narrationObj);
               }
               // Filter out incomplete codeHighlights
               if (scene.codeHighlights && Array.isArray(scene.codeHighlights)) {
@@ -1781,6 +1797,10 @@ program
   program.parse();
 })().catch((err: unknown) => {
   // eslint-disable-next-line no-console
-  console.error("\n\u274c Failed to initialize: " + (err instanceof Error ? err.message : String(err)) + "\n");
+  console.error(
+    "\n\u274c Failed to initialize: " +
+      (err instanceof Error ? err.message : String(err)) +
+      "\n",
+  );
   process.exit(1);
 });
