@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Completed 16-01-PLAN.md (theme.ts + layout migration)
-last_updated: "2026-03-27T02:13:11.906Z"
+stopped_at: Completed 16-03-PLAN.md (progress-indicator)
+last_updated: "2026-03-27T02:21:53.701Z"
 progress:
   total_phases: 17
   completed_phases: 13
   total_plans: 46
-  completed_plans: 45
+  completed_plans: 47
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 16 (visual-polish) — EXECUTING
-Plan: 3 of 5
+Plan: 5 of 5
 
 ## Blocker (RESOLVED)
 
@@ -69,6 +69,8 @@ _Updated after each plan completion_
 | Phase 14 PGAP-04 | 15 | 6 tasks | 3 files |
 | Phase 16-visual-polish P05 | 15 | 4 tasks | 7 files |
 | Phase 16 P01 | 15 | 3 tasks | 9 files |
+| Phase 16-visual-polish P16-03 | 35 | 3 tasks | 5 files |
+| Phase 16-visual-polish P02 | 10 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -122,6 +124,7 @@ From research (2026-03-22):
 - [Phase 16-visual-polish]: Use ../types.js import in project-generator.ts instead of @video-script/types — renderer package has its own ScriptOutput
 - [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for __dirname throughout new utils files
 - [Phase 16]: Centralized dark mode colors into theme.ts; FrostedCard now uses THEME.glass.bg as fixed default (removed opacity/color props)
+- [Phase 16-03]: Optional progressIndicator field on SceneScriptSchema avoids breaking existing scripts
 
 ### Pending Todos
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:13:11.904Z
-Stopped at: Completed 16-01-PLAN.md (theme.ts + layout migration)
+Last session: 2026-03-27T02:21:42.471Z
+Stopped at: Completed 16-03-PLAN.md (progress-indicator)
 Resume file: None
