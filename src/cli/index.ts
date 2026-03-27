@@ -1587,7 +1587,7 @@ async function runScreenshotAndCompose(
           layer.id,
         );
         if (filepath) {
-          images[`${scene.id}-${layer.id}`] = `file://${resolve(filepath)}`;
+          images[`${scene.id}-${layer.id}`] = filepath;
         }
       }
     });
