@@ -8,6 +8,7 @@ import { AnnotationRenderer } from "./annotations/AnnotationRenderer";
 import type { Annotation } from "../types.js";
 import { getLayoutComponent } from "./layouts/index";
 import { convertToVisualScene } from "../utils/sceneAdapter";
+import { ProgressIndicator } from "./components/ProgressIndicator.js";
 
 interface SceneProps {
   scene: SceneType;
@@ -144,6 +145,12 @@ const InlineScene: React.FC<SceneProps> = ({
           })}
         <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={narration} />}
+        {scene.progressIndicator?.enabled && (
+          <ProgressIndicator
+            total={scene.progressIndicator.total}
+            current={scene.progressIndicator.current}
+          />
+        )}
       </AbsoluteFill>
     );
   }
@@ -199,6 +206,12 @@ const InlineScene: React.FC<SceneProps> = ({
           })}
         <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={narration} />}
+        {scene.progressIndicator?.enabled && (
+          <ProgressIndicator
+            total={scene.progressIndicator.total}
+            current={scene.progressIndicator.current}
+          />
+        )}
       </AbsoluteFill>
     );
   }
@@ -232,6 +245,12 @@ const InlineScene: React.FC<SceneProps> = ({
           })}
         <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={narration} />}
+        {scene.progressIndicator?.enabled && (
+          <ProgressIndicator
+            total={scene.progressIndicator.total}
+            current={scene.progressIndicator.current}
+          />
+        )}
       </AbsoluteFill>
     );
   }
@@ -293,6 +312,12 @@ export const Scene: React.FC<SceneProps> = ({
       <LayoutComponent scene={visualScene} screenshots={screenshotsMap}>
         <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={scene.narration} />}
+        {scene.progressIndicator?.enabled && (
+          <ProgressIndicator
+            total={scene.progressIndicator.total}
+            current={scene.progressIndicator.current}
+          />
+        )}
       </LayoutComponent>
     );
   } catch (error) {
