@@ -3,6 +3,7 @@ import { VisualLayer, SceneNarrativeType } from "../../types.js";
 import { ScreenshotLayer } from "./ScreenshotLayer.js";
 import { TextLayer } from "./TextLayer.js";
 import { CodeLayer } from "./CodeLayer.js";
+import { CalloutLayer } from "./CalloutLayer.js";
 
 interface VisualLayerRendererProps {
   layer: VisualLayer;
@@ -31,6 +32,8 @@ export const VisualLayerRenderer: React.FC<VisualLayerRendererProps> = ({
       return <ScreenshotLayer {...screenshotProps} />;
     case "image":
       return <ScreenshotLayer {...screenshotProps} />;
+    case "callout":
+      return <CalloutLayer layer={layer} />;
     default:
       return null;
   }
