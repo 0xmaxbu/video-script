@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
-status: complete
-stopped_at: Completed 14-GAP-05-PLAN.md
-last_updated: "2026-03-26T14:30:00.000Z"
+status: unknown
+stopped_at: Completed 16-visual-polish-16-05-PLAN.md
+last_updated: "2026-03-27T02:13:02.605Z"
 progress:
   total_phases: 17
-  completed_phases: 14
-  total_plans: 39
-  completed_plans: 42
+  completed_phases: 13
+  total_plans: 46
+  completed_plans: 45
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Polished technical tutorial videos that feel professional and engaging
-**Current focus:** Phase 14 — Animation Engine (GAP-05: wire puppeteer-renderer)
+**Current focus:** Phase 16 — visual-polish
 
 ## Current Position
 
-Phase: 14 (Animation Engine) — COMPLETE
-Plan: GAP-05 — COMPLETE (puppeteer-renderer produces valid MP4 + SRT)
+Phase: 16 (visual-polish) — EXECUTING
+Plan: 3 of 5
 
 ## Blocker (RESOLVED)
 
@@ -67,6 +67,7 @@ _Updated after each plan completion_
 | Phase 09-types-schema-fix P01 | 2min | 2 tasks | 3 files |
 | Phase 09-types-schema-fix P02 | 5min | 2 tasks | 4 files |
 | Phase 14 PGAP-04 | 15 | 6 tasks | 3 files |
+| Phase 16-visual-polish P05 | 15 | 4 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,8 @@ From research (2026-03-22):
 - [Phase 09-types-schema-fix]: ESM requires .js extension on relative imports in packages/types
 - [Phase 09-types-schema-fix]: @video-script/types added as workspace:\* dependency to renderer package
 - [Phase 14]: Programmatic SSR API approach abandoned - Remotion webpack bundler fundamentally incompatible with pnpm monorepo. Use existing puppeteer-renderer.ts (esbuild + Playwright + FFmpeg) instead.
+- [Phase 16-visual-polish]: Use ../types.js import in project-generator.ts instead of @video-script/types — renderer package has its own ScriptOutput
+- [Phase 16-visual-polish]: Use fileURLToPath(import.meta.url) ESM pattern for __dirname throughout new utils files
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-24T09:42:46.429Z
-Stopped at: Completed 14-GAP-01-PLAN.md
+Last session: 2026-03-27T02:12:47.604Z
+Stopped at: Completed 16-visual-polish-16-05-PLAN.md
 Resume file: None
