@@ -1,8 +1,15 @@
 import React from "react";
-import { Img, useCurrentFrame, useVideoConfig, spring } from "remotion";
+import {
+  AbsoluteFill,
+  Img,
+  useCurrentFrame,
+  useVideoConfig,
+  spring,
+} from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 import type {
   ScreenshotResource,
@@ -38,7 +45,7 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
   const rightSrc = resources[1] ? screenshots.get(resources[1].id) : undefined;
 
   return (
-    <Grid style={{ backgroundColor: "#0a0a0a" }}>
+    <Grid style={{ backgroundColor: THEME.bg.primary }}>
       {/* 标题 */}
       {titleElement && (
         <div
@@ -51,7 +58,7 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
             style={{
               fontSize: TYPOGRAPHY.title.section,
               fontWeight: "bold",
-              color: "white",
+              color: THEME.text.primary,
               margin: 0,
             }}
           >
@@ -73,7 +80,6 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
         {/* 左侧 - Before */}
         {leftSrc && (
           <FrostedCard
-            opacity={0.1}
             blur={20}
             radius={24}
             style={{
@@ -87,7 +93,7 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
             <span
               style={{
                 fontSize: TYPOGRAPHY.body.secondary,
-                color: "rgba(255,255,255,0.6)",
+                color: THEME.text.muted,
                 marginBottom: "0.75rem",
               }}
             >
@@ -107,7 +113,6 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
 
         {/* VS */}
         <FrostedCard
-          opacity={0.3}
           blur={25}
           radius={32}
           style={{
@@ -123,7 +128,7 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
             style={{
               fontSize: TYPOGRAPHY.title.section,
               fontWeight: "bold",
-              color: "white",
+              color: THEME.text.primary,
             }}
           >
             VS
@@ -133,7 +138,6 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
         {/* 右侧 - After */}
         {rightSrc && (
           <FrostedCard
-            opacity={0.1}
             blur={20}
             radius={24}
             style={{
@@ -147,7 +151,7 @@ export const Comparison: React.FC<LayoutProps> = ({ scene, screenshots }) => {
             <span
               style={{
                 fontSize: TYPOGRAPHY.body.secondary,
-                color: "rgba(255,255,255,0.6)",
+                color: THEME.text.muted,
                 marginBottom: "0.75rem",
               }}
             >

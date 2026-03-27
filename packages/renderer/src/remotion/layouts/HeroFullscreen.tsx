@@ -10,6 +10,7 @@ import {
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 import type {
   ScreenshotResource,
@@ -110,7 +111,7 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
               style={{
                 fontSize: TYPOGRAPHY.title.hero,
                 fontWeight: "bold",
-                color: "white",
+                color: THEME.text.primary,
                 textAlign: "center",
                 textShadow: "0 2px 20px rgba(0,0,0,0.5)",
                 margin: 0,
@@ -124,7 +125,7 @@ export const HeroFullscreen: React.FC<LayoutProps> = ({
               <p
                 style={{
                   fontSize: TYPOGRAPHY.body.secondary,
-                  color: "rgba(255,255,255,0.8)",
+                  color: THEME.text.secondary,
                   marginTop: "0.5rem",
                 }}
               >

@@ -10,6 +10,7 @@ import {
 import type { LayoutProps } from "./index.js";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
+import { THEME } from "../theme.js";
 import {
   GRID_CONSTANTS,
   TYPOGRAPHY,
@@ -71,7 +72,7 @@ export const SplitHorizontal: React.FC<LayoutProps> = ({
     GRID_CONSTANTS.safeZone.bottom;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg.primary }}>
       <Grid>
         {/* 左侧 FrostedCard */}
         <FrostedCard
@@ -143,7 +144,7 @@ export const SplitHorizontal: React.FC<LayoutProps> = ({
               style={{
                 fontSize: TYPOGRAPHY.title.card,
                 fontWeight: "bold",
-                color: "white",
+                color: THEME.text.primary,
                 marginTop: "1rem",
                 textAlign: "center",
               }}

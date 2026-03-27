@@ -1,8 +1,15 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
+import {
+  AbsoluteFill,
+  useCurrentFrame,
+  useVideoConfig,
+  interpolate,
+  spring,
+} from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 import type { TextElement } from "../../utils/sceneAdapter.js";
 
@@ -37,7 +44,10 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
   });
 
   return (
-    <Grid style={{ backgroundColor: "#1e1e1e" }}>
+    <Grid>
+      {/* Full-bleed dark background */}
+      <AbsoluteFill style={{ backgroundColor: THEME.bg.primary }} />
+
       {/* 标题 */}
       {titleElement && (
         <div
@@ -51,7 +61,7 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
             style={{
               fontSize: TYPOGRAPHY.title.section,
               fontWeight: "bold",
-              color: "white",
+              color: THEME.text.primary,
               margin: 0,
             }}
           >
@@ -61,7 +71,7 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
             <p
               style={{
                 fontSize: TYPOGRAPHY.body.primary,
-                color: "rgba(255,255,255,0.7)",
+                color: THEME.text.secondary,
                 marginTop: "0.5rem",
               }}
             >
@@ -73,17 +83,16 @@ export const CodeFocus: React.FC<LayoutProps> = ({ scene }) => {
 
       {/* 代码区域 - 使用 FrostedCard 包装 */}
       <FrostedCard
-        opacity={0.05}
         blur={20}
         radius={24}
         style={{
           flex: 1,
-          backgroundColor: "#0d0d0d",
+          backgroundColor: THEME.bg.card,
           padding: "2rem",
           opacity: codeProgress,
           transform: `scale(${interpolate(codeProgress, [0, 1], [0.95, 1])})`,
           overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: `1px solid ${THEME.glass.border}`,
         }}
       >
         {/* 代码内容占位 - 实际由 Screenshot Agent 生成的代码截图填充 */}

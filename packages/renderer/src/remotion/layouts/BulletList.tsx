@@ -9,6 +9,7 @@ import {
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import { staggerDelay, SPRING_PRESETS } from "../../utils/animation-utils.js";
 import type { LayoutProps } from "./index.js";
 import type { TextElement } from "../../utils/sceneAdapter.js";
@@ -43,7 +44,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
       {/* Full-bleed dark background */}
       <AbsoluteFill
         style={{
-          backgroundColor: "#0a0a0a",
+          backgroundColor: THEME.bg.primary,
         }}
       />
 
@@ -67,7 +68,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
             style={{
               fontSize: TYPOGRAPHY.title.section,
               fontWeight: "bold",
-              color: "white",
+              color: THEME.text.primary,
               marginBottom: "2rem",
               lineHeight: 1.2,
               flexShrink: 0,
@@ -115,7 +116,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
                     width: "12px",
                     height: "12px",
                     borderRadius: "50%",
-                    backgroundColor: "#3b82f6",
+                    backgroundColor: THEME.accent.blue,
                     marginRight: "1.25rem",
                     flexShrink: 0,
                   }}
@@ -124,7 +125,7 @@ export const BulletList: React.FC<LayoutProps> = ({ scene }) => {
                 <span
                   style={{
                     fontSize: TYPOGRAPHY.body.primary,
-                    color: "white",
+                    color: THEME.text.primary,
                     lineHeight: 1.4,
                   }}
                 >

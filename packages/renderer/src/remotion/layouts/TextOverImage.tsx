@@ -14,6 +14,7 @@ import type {
 } from "../../utils/sceneAdapter.js";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
+import { THEME } from "../theme.js";
 import {
   GRID_CONSTANTS,
   TYPOGRAPHY,
@@ -69,7 +70,7 @@ export const TextOverImage: React.FC<LayoutProps> = ({
     GRID_CONSTANTS.safeZone.bottom;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <AbsoluteFill style={{ backgroundColor: THEME.bg.primary }}>
       {/* 背景图片 */}
       {bgScreenshot && (
         <AbsoluteFill>
@@ -119,7 +120,7 @@ export const TextOverImage: React.FC<LayoutProps> = ({
               style={{
                 fontSize: TYPOGRAPHY.title.section,
                 fontWeight: "bold",
-                color: "white",
+                color: THEME.text.primary,
                 textAlign: "center",
                 textShadow: "0 4px 30px rgba(0,0,0,0.5)",
                 marginBottom: "1rem",
@@ -132,7 +133,7 @@ export const TextOverImage: React.FC<LayoutProps> = ({
             <p
               style={{
                 fontSize: TYPOGRAPHY.body.primary,
-                color: "rgba(255,255,255,0.85)",
+                color: THEME.text.secondary,
                 textAlign: "center",
                 maxWidth: "80%",
               }}

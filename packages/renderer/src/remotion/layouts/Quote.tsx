@@ -10,6 +10,7 @@ import {
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY, getGridSpanPx, GRID_CONSTANTS } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 
 /**
@@ -54,15 +55,13 @@ export const Quote: React.FC<LayoutProps> = ({ scene, screenshots }) => {
   // Centered card dimensions (60% of usable area for visual impact)
   const cardWidth = Math.round(usableWidth * 0.7);
   const cardHeight = Math.round(usableHeight * 0.6);
-  const cardLeft =
-    GRID_CONSTANTS.safeZone.left + (usableWidth - cardWidth) / 2;
-  const cardTop =
-    GRID_CONSTANTS.safeZone.top + (usableHeight - cardHeight) / 2;
+  const cardLeft = GRID_CONSTANTS.safeZone.left + (usableWidth - cardWidth) / 2;
+  const cardTop = GRID_CONSTANTS.safeZone.top + (usableHeight - cardHeight) / 2;
 
   return (
     <Grid>
       {/* Full-bleed dark background */}
-      <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }} />
+      <AbsoluteFill style={{ backgroundColor: THEME.bg.primary }} />
 
       {/* Background image (blurred, dimmed) */}
       {bgScreenshot && (
@@ -120,7 +119,7 @@ export const Quote: React.FC<LayoutProps> = ({ scene, screenshots }) => {
             style={{
               fontSize: TYPOGRAPHY.title.section,
               fontWeight: "500",
-              color: "white",
+              color: THEME.text.primary,
               textAlign: "center",
               lineHeight: 1.4,
               fontStyle: "italic",
@@ -147,13 +146,13 @@ export const Quote: React.FC<LayoutProps> = ({ scene, screenshots }) => {
               style={{
                 width: "50px",
                 height: "2px",
-                backgroundColor: "rgba(255,255,255,0.5)",
+                backgroundColor: THEME.text.secondary,
               }}
             />
             <span
               style={{
                 fontSize: TYPOGRAPHY.body.secondary,
-                color: "rgba(255,255,255,0.8)",
+                color: THEME.text.secondary,
               }}
             >
               {authorElement.content}

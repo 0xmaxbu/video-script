@@ -1,14 +1,16 @@
 import React from "react";
 import {
+  AbsoluteFill,
   Img,
   useCurrentFrame,
   useVideoConfig,
-  spring,
   interpolate,
+  spring,
 } from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";
+import { THEME } from "../theme.js";
 import type { LayoutProps } from "./index.js";
 import type {
   ScreenshotResource,
@@ -62,6 +64,9 @@ export const SplitVertical: React.FC<LayoutProps> = ({
 
   return (
     <Grid>
+      {/* Full-bleed dark background */}
+      <AbsoluteFill style={{ backgroundColor: THEME.bg.primary }} />
+
       <div
         style={{
           display: "flex",
@@ -105,7 +110,7 @@ export const SplitVertical: React.FC<LayoutProps> = ({
             alignItems: "center",
             justifyContent: "center",
             padding: "2rem",
-            borderTop: "1px solid rgba(255,255,255,0.1)",
+            borderTop: `1px solid ${THEME.glass.border}`,
           }}
         >
           {secondaryScreenshot && (
@@ -133,7 +138,7 @@ export const SplitVertical: React.FC<LayoutProps> = ({
                   key={index}
                   style={{
                     fontSize: TYPOGRAPHY.body.primary,
-                    color: "white",
+                    color: THEME.text.primary,
                     lineHeight: 1.4,
                     margin: 0,
                   }}
@@ -148,7 +153,7 @@ export const SplitVertical: React.FC<LayoutProps> = ({
                 style={{
                   fontSize: TYPOGRAPHY.title.section,
                   fontWeight: "600",
-                  color: "white",
+                  color: THEME.text.primary,
                   textAlign: "center",
                 }}
               >
