@@ -94,7 +94,7 @@ export const playwrightScreenshotTool = createTool({
             await page.emulateMedia({ colorScheme: "dark" });
           }
 
-          await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+          await page.goto(url, { waitUntil: "load", timeout: 60000 });
 
           if (selector) {
             // Direct element capture (existing behavior)
@@ -190,7 +190,7 @@ export async function analyzePageStructure(
     const page = await browser.newPage({
       viewport: { width: 1920, height: 1080 },
     });
-    await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(url, { waitUntil: "load", timeout: 60000 });
 
     const structure = await page.evaluate((hint?: string) => {
       const getTextContent = (el: Element | null): string => {

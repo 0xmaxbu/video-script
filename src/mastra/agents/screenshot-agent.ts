@@ -14,95 +14,39 @@ import { analyzePageStructure } from "../tools/playwright-screenshot.js";
 export const screenshotAgent = new Agent({
   id: "screenshot-agent",
   name: "Screenshot Agent",
-  instructions: `You are a professional screenshot capture specialist.
+  instructions: `You are a screenshot capture specialist. Your job is to capture full-page screenshots of web pages for video scenes.
 
-## Task Flow:
-1. Receive Visual Plan with mediaResources
-2. For each resource:
-   - If type is decorative (hero/ambient): capture full page
-   - If type is informational: use AI-generated selector for precise capture
-3. Save screenshots with consistent naming
-4. Output screenshot manifest
+## Task:
+You receive a script with scenes and a list of source URLs. For each scene that needs a screenshot, call playwrightScreenshotTool to capture the page.
 
-## Screenshot Types & Strategies:
+## CRITICAL RULES:
+1. NEVER pass a "selector" parameter — always capture the full page
+2. Call playwrightScreenshotTool once per scene that needs a screenshot
+3. Use exactly this parameter structure:
 
-### Decorative (Full Page):
-- **hero**: Full page screenshot, 1920x1080 viewport
-- **ambient**: Full page screenshot, may use smaller viewport
-
-### Informational (With AI-Guided Selector):
-- **IMPORTANT**: Always prefer AI-generated selectors over DEFAULT_SELECTORS when available
-- **headline**: Capture title area - AI analyzes page and generates precise selector
-- **article**: Capture article content - AI selects best semantic region
-- **documentation**: Capture docs content - AI finds relevant documentation sections
-- **codeSnippet**: Capture code blocks - AI identifies syntax-highlighted regions
-- **changelog**: Capture release notes - AI locates changelog sections
-- **feature**: Capture feature list - AI detects feature showcases
-
-## AI-Guided Selector Generation:
-
-For informational screenshots:
-1. Call generateAISelector({ url, contentHint: type, narrationContext })
-2. Use the returned selector when calling playwrightScreenshotTool
-3. If AI selector fails, fall back to DEFAULT_SELECTORS
-
-## Tool Usage:
-
-For each screenshot, call playwrightScreenshotTool with:
 \`\`\`json
 {
-  "url": "https://example.com",
-  "selector": "h1, .headline",  // AI-generated or fallback
+  "url": "https://example.com/some-page",
   "viewport": { "width": 1920, "height": 1080 },
-  "outputDir": "/path/to/output",
-  "filename": "scene-1-shot-1.png"
+  "outputDir": "/absolute/path/to/screenshots/",
+  "filename": "scene-001.png"
 }
 \`\`\`
 
-## Output Format:
+4. filename format: "scene-001.png", "scene-002.png", etc. (zero-padded 3 digits)
+5. Skip intro and outro scenes — no screenshot needed for them
+6. For feature and code scenes: pick the most relevant URL from the provided list
 
+## Output:
+After all screenshots are captured, return ONLY a JSON object:
 \`\`\`json
 {
   "screenshots": [
-    {
-      "sceneId": "scene-1",
-      "resourceId": "shot-1",
-      "filename": "scene-1-shot-1.png",
-      "type": "headline",
-      "selectorUsed": "article.docs-content",
-      "success": true,
-      "dimensions": { "width": 1920, "height": 600 },
-      "capturedAt": "2024-03-22T10:30:00Z"
-    }
-  ],
-  "summary": {
-    "total": 5,
-    "successful": 4,
-    "failed": 1,
-    "aiSelectorSuccess": 3,
-    "fallbackUsed": 1,
-    "errors": [
-      { "sceneId": "scene-3", "error": "Timeout waiting for selector" }
-    ]
-  }
+    { "sceneOrder": 1, "filename": "scene-001.png", "success": true },
+    { "sceneOrder": 2, "filename": "scene-002.png", "success": true }
+  ]
 }
 \`\`\`
-
-## CRITICAL REQUIREMENTS:
-1. **ALWAYS** call playwrightScreenshotTool for EVERY mediaResource
-2. For informational screenshots, call generateAISelector first
-3. Handle errors gracefully - don't fail the entire batch
-4. Use consistent naming: {sceneId}-{resourceId}.png
-5. Return valid JSON only (no markdown blocks)
-
-## Selector Fallback Strategy:
-If primary selector doesn't work, try fallbacks:
-- headline: ["h1", "header h1", ".headline", ".title"]
-- article: ["article", "main", ".content", ".post-body"]
-- documentation: [".docs-content", ".markdown-body", "article", "main"]
-- codeSnippet: ["pre", "code", ".highlight", ".code-block"]
-- changelog: [".changelog", ".release-notes", "#releases", "article"]
-- feature: [".features", ".feature-list", "ul.features", ".grid"]
 `,
   model: "minimax-cn-coding-plan/MiniMax-M2.5",
   tools: {

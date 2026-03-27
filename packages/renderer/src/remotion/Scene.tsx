@@ -125,6 +125,21 @@ const InlineScene: React.FC<SceneProps> = ({
   if (type === "intro" || type === "outro") {
     return (
       <AbsoluteFill style={containerStyle}>
+        {/* Screenshot/diagram/image layers fill the background */}
+        {visualLayers
+          ?.filter((l) => ["screenshot", "diagram", "image"].includes(l.type))
+          .map((layer) => {
+            const imageKey = `${scene.id}-${layer.id}`;
+            const imagePath = imagePaths?.[imageKey];
+            return (
+              <VisualLayerRenderer
+                key={layer.id}
+                layer={layer}
+                imagePath={imagePath}
+                sceneType={scene.type}
+              />
+            );
+          })}
         <div style={contentStyle}>
           <h1 style={titleStyle}>{title}</h1>
         </div>

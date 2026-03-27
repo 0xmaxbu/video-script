@@ -746,33 +746,31 @@ program
         }>;
       }
 
-      let screenshotResult: ScreenshotResult;
+      // Always verify success by checking disk — agent text output is unreliable
+      const screenshotResult: ScreenshotResult = {
+        screenshots: script.scenes.map((_scene, index) => {
+          const filename =
+            "scene-" + String(index + 1).padStart(3, "0") + ".png";
+          const filePath = join(screenshotsDir, filename);
+          const success = existsSync(filePath);
+          return { sceneOrder: index + 1, filename, success };
+        }),
+      };
+
+      // Log agent text for debugging if available
       try {
         const textContent =
           typeof result.text === "string"
             ? result.text
             : JSON.stringify(result.text);
-
-        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          screenshotResult = {
-            screenshots: script.scenes.map((_scene, index) => ({
-              sceneOrder: index + 1,
-              filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
-              success: true,
-            })),
-          };
-        } else {
-          screenshotResult = JSON.parse(jsonMatch[0]);
+        if (textContent && textContent.length > 0) {
+          const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            // Agent didn't return valid JSON — rely on disk scan above
+          }
         }
       } catch {
-        screenshotResult = {
-          screenshots: script.scenes.map((_scene, index) => ({
-            sceneOrder: index + 1,
-            filename: "scene-" + String(index + 1).padStart(3, "0") + ".png",
-            success: true,
-          })),
-        };
+        // Ignore parse errors — disk scan is the source of truth
       }
 
       spinner.succeed("✅ Screenshots captured!");
