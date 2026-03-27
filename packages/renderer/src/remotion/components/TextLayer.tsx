@@ -1,9 +1,11 @@
 import React from "react";
+import { fitText } from "@remotion/layout-utils";
 import { VisualLayer } from "../../types.js";
 import {
   useEnterAnimation,
   useExitAnimation,
 } from "../../utils/animation-utils.js";
+import { TYPOGRAPHY } from "../layouts/grid-utils.js";
 
 interface TextLayerProps {
   layer: VisualLayer;
@@ -14,6 +16,22 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
 
   const enter = useEnterAnimation(animation);
   const exit = useExitAnimation(animation);
+
+  // Compute font size: use fitText when container width is known
+  const containerWidth =
+    typeof position.width === "number" ? position.width : null;
+  const fontSize =
+    containerWidth !== null
+      ? Math.max(
+          12,
+          fitText({
+            text: content,
+            withinWidth: containerWidth,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: "400",
+          }).fontSize,
+        )
+      : TYPOGRAPHY.body.primary; // fallback: 24px
 
   const opacity =
     exit.opacity !== undefined
@@ -78,7 +96,7 @@ export const TextLayer: React.FC<TextLayerProps> = ({ layer }) => {
       <span
         style={{
           color: "white",
-          fontSize: 32,
+          fontSize,
           fontWeight: "bold",
           textAlign: "center",
           textShadow: "0 2px 10px rgba(0,0,0,0.5)",
