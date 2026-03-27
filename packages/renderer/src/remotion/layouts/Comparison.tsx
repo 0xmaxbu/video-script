@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  AbsoluteFill,
-  Img,
-  useCurrentFrame,
-  useVideoConfig,
-  spring,
-} from "remotion";
+import { Img, useCurrentFrame, useVideoConfig, spring } from "remotion";
 import { Grid } from "./Grid.js";
 import { FrostedCard } from "./FrostedCard.js";
 import { TYPOGRAPHY } from "./grid-utils.js";

@@ -13,7 +13,7 @@ import { ProgressIndicator } from "./components/ProgressIndicator.js";
 interface SceneProps {
   scene: SceneType;
   imagePaths: Record<string, string> | undefined;
-  annotations?: Annotation[];
+  annotations?: Annotation[] | undefined;
   showSubtitles?: boolean;
 }
 
