@@ -689,6 +689,38 @@ program
 
       spinner.start("📸 Running screenshot agent...");
 
+      // Build a URL map from research.json to give the screenshot agent concrete URLs
+      const researchPathScreenshot = join(dir, "research.json");
+      let screenshotSourceUrls: string[] = [];
+      if (existsSync(researchPathScreenshot)) {
+        try {
+          const researchData = JSON.parse(
+            readFileSync(researchPathScreenshot, "utf-8"),
+          ) as { segments?: Array<{ links?: Array<{ url: string }> }> };
+          const urlSet = new Set<string>();
+          researchData.segments?.forEach((seg) => {
+            seg.links?.forEach((l) => {
+              if (l.url && !l.url.includes("example.com")) urlSet.add(l.url);
+            });
+          });
+          screenshotSourceUrls = Array.from(urlSet);
+        } catch {
+          // research.json is optional
+        }
+      }
+
+      const screenshotCmdInstructions =
+        screenshotSourceUrls.length > 0
+          ? `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+            `Use the most relevant URL from the source list below based on the scene title/narration.\n\n` +
+            `Source URLs:\n${screenshotSourceUrls.map((u, i) => `${i + 1}. ${u}`).join("\n")}\n\n` +
+            `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+            `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`
+          : `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+            `Use the URL from the scene's sourceRef field if available, or search for a relevant page based on the scene title.\n` +
+            `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+            `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`;
+
       const result = await screenshotAgent.generate([
         {
           role: "user",
@@ -697,7 +729,9 @@ program
             JSON.stringify(script, null, 2) +
             "\n\nOutput directory: " +
             screenshotsDir +
-            '\n\nFor each scene:\n- If type is "url", capture a webpage screenshot using playwrightScreenshot tool\n- If type is "text", generate a text image\n- Save files as scene-001.png, scene-002.png, etc.\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
+            "\n\n" +
+            screenshotCmdInstructions +
+            '\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
         },
       ]);
 
@@ -852,8 +886,46 @@ program
         visualPlan as Parameters<typeof adaptScriptForRenderer>[1],
       );
 
+      // Auto-inject screenshot visualLayers for scenes that have no visual content.
+      // When visual.json is absent and script.json has no visualLayers, fall back to
+      // mapping screenshots/scene-001.png → scene-1 etc. so the renderer shows content.
+      const finalScenes = adaptedScript.scenes.map((scene, sceneIndex) => {
+        if (!scene.visualLayers || scene.visualLayers.length === 0) {
+          const screenshotPath = findScreenshotFile(
+            screenshotsDir,
+            sceneIndex,
+            "bg",
+          );
+          if (screenshotPath) {
+            return {
+              ...scene,
+              visualLayers: [
+                {
+                  id: "bg",
+                  type: "screenshot" as const,
+                  position: {
+                    x: "center" as const,
+                    y: "center" as const,
+                    width: "full" as const,
+                    height: "full" as const,
+                    zIndex: 0,
+                  },
+                  content: screenshotPath,
+                  animation: {
+                    enter: "fadeIn" as const,
+                    enterDelay: 0,
+                    exit: "none" as const,
+                  },
+                },
+              ],
+            };
+          }
+        }
+        return scene;
+      });
+
       const images: Record<string, string> = {};
-      adaptedScript.scenes.forEach((scene, sceneIndex) => {
+      finalScenes.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
             const filepath = findScreenshotFile(
@@ -893,7 +965,7 @@ program
           script: {
             title: adaptedScript.title,
             totalDuration: adaptedScript.totalDuration,
-            scenes: adaptedScript.scenes.map((scene) => ({
+            scenes: finalScenes.map((scene) => ({
               id: scene.id,
               type: scene.type,
               title: scene.title,
@@ -1374,6 +1446,38 @@ async function runScreenshotAndCompose(
   spinner.start("📸 Running screenshot agent...");
   workflowStateManager.startStep("screenshot");
 
+  // Build a URL map from research.json to give the screenshot agent concrete URLs
+  const researchPath = join(outputDir, "research.json");
+  let researchSourceUrls: string[] = [];
+  if (existsSync(researchPath)) {
+    try {
+      const researchData = JSON.parse(readFileSync(researchPath, "utf-8")) as {
+        segments?: Array<{ links?: Array<{ url: string }> }>;
+      };
+      const urlSet = new Set<string>();
+      researchData.segments?.forEach((seg) => {
+        seg.links?.forEach((l) => {
+          if (l.url && !l.url.includes("example.com")) urlSet.add(l.url);
+        });
+      });
+      researchSourceUrls = Array.from(urlSet);
+    } catch {
+      // research.json is optional
+    }
+  }
+
+  const screenshotInstructions =
+    researchSourceUrls.length > 0
+      ? `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+        `Use the most relevant URL from the source list below based on the scene title/narration.\n\n` +
+        `Source URLs:\n${researchSourceUrls.map((u, i) => `${i + 1}. ${u}`).join("\n")}\n\n` +
+        `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+        `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`
+      : `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+        `Use the URL from the scene's sourceRef field if available, or search for a relevant page based on the scene title.\n` +
+        `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+        `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`;
+
   const screenshotResult = await screenshotAgent.generate([
     {
       role: "user",
@@ -1382,7 +1486,9 @@ async function runScreenshotAndCompose(
         JSON.stringify(script, null, 2) +
         "\n\nOutput directory: " +
         screenshotsDir +
-        '\n\nFor each scene:\n- If type is "url", capture a webpage screenshot using playwrightScreenshot tool\n- If type is "text", generate a text image\n- Save files as scene-001.png, scene-002.png, etc.\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
+        "\n\n" +
+        screenshotInstructions +
+        '\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
     },
   ]);
 
@@ -1434,8 +1540,45 @@ async function runScreenshotAndCompose(
   spinner.start("🎬 Rendering video...");
   workflowStateManager.startStep("compose");
 
+  // Auto-inject screenshot visualLayers for scenes that have no visual content.
+  // When script.json has no visualLayers, fall back to mapping screenshots/scene-001.png etc.
+  const finalScenes2 = script.scenes.map((scene, sceneIndex) => {
+    if (!scene.visualLayers || scene.visualLayers.length === 0) {
+      const screenshotPath = findScreenshotFile(
+        screenshotsDir,
+        sceneIndex,
+        "bg",
+      );
+      if (screenshotPath) {
+        return {
+          ...scene,
+          visualLayers: [
+            {
+              id: "bg",
+              type: "screenshot" as const,
+              position: {
+                x: "center" as const,
+                y: "center" as const,
+                width: "full" as const,
+                height: "full" as const,
+                zIndex: 0,
+              },
+              content: screenshotPath,
+              animation: {
+                enter: "fadeIn" as const,
+                enterDelay: 0,
+                exit: "none" as const,
+              },
+            },
+          ],
+        };
+      }
+    }
+    return scene;
+  });
+
   const images: Record<string, string> = {};
-  script.scenes.forEach((scene, sceneIndex) => {
+  finalScenes2.forEach((scene, sceneIndex) => {
     scene.visualLayers?.forEach((layer) => {
       if (layer.type === "screenshot" || layer.type === "code") {
         const filepath = findScreenshotFile(
@@ -1473,7 +1616,7 @@ async function runScreenshotAndCompose(
       script: {
         title: script.title,
         totalDuration: script.scenes.reduce((sum, s) => sum + s.duration, 0),
-        scenes: script.scenes.map((scene) => ({
+        scenes: finalScenes2.map((scene) => ({
           id: scene.id,
           type: scene.type,
           title: scene.title,
@@ -1627,6 +1770,38 @@ program
           mkdirSync(screenshotsDir, { recursive: true });
         }
 
+        // Build a URL map from research.json to give the screenshot agent concrete URLs
+        const researchPathResume = join(outputDir, "research.json");
+        let resumeSourceUrls: string[] = [];
+        if (existsSync(researchPathResume)) {
+          try {
+            const researchData = JSON.parse(
+              readFileSync(researchPathResume, "utf-8"),
+            ) as { segments?: Array<{ links?: Array<{ url: string }> }> };
+            const urlSet = new Set<string>();
+            researchData.segments?.forEach((seg) => {
+              seg.links?.forEach((l) => {
+                if (l.url && !l.url.includes("example.com")) urlSet.add(l.url);
+              });
+            });
+            resumeSourceUrls = Array.from(urlSet);
+          } catch {
+            // research.json is optional
+          }
+        }
+
+        const resumeScreenshotInstructions =
+          resumeSourceUrls.length > 0
+            ? `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+              `Use the most relevant URL from the source list below based on the scene title/narration.\n\n` +
+              `Source URLs:\n${resumeSourceUrls.map((u, i) => `${i + 1}. ${u}`).join("\n")}\n\n` +
+              `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+              `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`
+            : `For each scene with type "feature" or "code", capture a webpage screenshot using the playwrightScreenshot tool. ` +
+              `Use the URL from the scene's sourceRef field if available, or search for a relevant page based on the scene title.\n` +
+              `For scenes with type "intro" or "outro", skip screenshot capture.\n` +
+              `Save files as scene-001.png, scene-002.png, etc. (matching scene order, including skipped scenes).`;
+
         const screenshotResult = await screenshotAgent.generate([
           {
             role: "user",
@@ -1635,7 +1810,9 @@ program
               JSON.stringify(script, null, 2) +
               "\n\nOutput directory: " +
               screenshotsDir +
-              '\n\nFor each scene:\n- If type is "url", capture a webpage screenshot using playwrightScreenshot tool\n- If type is "text", generate a text image\n- Save files as scene-001.png, scene-002.png, etc.\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
+              "\n\n" +
+              resumeScreenshotInstructions +
+              '\n\nReturn a JSON object with the list of captured screenshots:\n{\n  "screenshots": [\n    { "sceneOrder": 1, "filename": "scene-001.png", "success": true }\n  ]\n}',
           },
         ]);
 
@@ -1689,8 +1866,44 @@ program
       spinner.start("🎬 Rendering video...");
       workflowStateManager.startStep("compose");
 
+      // Auto-inject screenshot visualLayers for scenes that have no visual content.
+      const finalScenes3 = script.scenes.map((scene, sceneIndex) => {
+        if (!scene.visualLayers || scene.visualLayers.length === 0) {
+          const screenshotPath = findScreenshotFile(
+            screenshotsDir,
+            sceneIndex,
+            "bg",
+          );
+          if (screenshotPath) {
+            return {
+              ...scene,
+              visualLayers: [
+                {
+                  id: "bg",
+                  type: "screenshot" as const,
+                  position: {
+                    x: "center" as const,
+                    y: "center" as const,
+                    width: "full" as const,
+                    height: "full" as const,
+                    zIndex: 0,
+                  },
+                  content: screenshotPath,
+                  animation: {
+                    enter: "fadeIn" as const,
+                    enterDelay: 0,
+                    exit: "none" as const,
+                  },
+                },
+              ],
+            };
+          }
+        }
+        return scene;
+      });
+
       const images: Record<string, string> = {};
-      script.scenes.forEach((scene, sceneIndex) => {
+      finalScenes3.forEach((scene, sceneIndex) => {
         scene.visualLayers?.forEach((layer) => {
           if (layer.type === "screenshot" || layer.type === "code") {
             const filepath = findScreenshotFile(
@@ -1731,7 +1944,7 @@ program
               (sum, s) => sum + s.duration,
               0,
             ),
-            scenes: script.scenes.map((scene) => ({
+            scenes: finalScenes3.map((scene) => ({
               id: scene.id,
               type: scene.type,
               title: scene.title,
