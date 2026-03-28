@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Completed 16-04-PLAN.md
-last_updated: "2026-03-27T02:23:39.252Z"
+stopped_at: Completed 17-PLAN.md
+last_updated: "2026-03-28T18:27:00.000Z"
 progress:
   total_phases: 17
-  completed_phases: 14
-  total_plans: 46
-  completed_plans: 48
+  completed_phases: 17
+  total_plans: 47
+  completed_plans: 49
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Polished technical tutorial videos that feel professional and engaging
-**Current focus:** Phase 16 — visual-polish
+**Current focus:** Phase 17 — e2e-testing
 
 ## Current Position
 
-Phase: 16 (visual-polish) — EXECUTING
-Plan: 5 of 5
+Phase: 17 (e2e-testing) — EXECUTING
+Plan: 1 of 1
 
 ## Blocker (RESOLVED)
 
@@ -72,6 +72,7 @@ _Updated after each plan completion_
 | Phase 16-visual-polish P16-03 | 35 | 3 tasks | 5 files |
 | Phase 16-visual-polish P02 | 10 | 3 tasks | 4 files |
 | Phase 16 P04 | 25 min | 3 tasks | 5 files |
+| Phase 17 P17 | ~3 sessions | 10 tasks | 24 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,10 @@ From research (2026-03-22):
 - [Phase 16-visual-polish]: Used CSS border trick for directional arrow triangles in CalloutLayer (no extra dependencies)
 - [Phase 16]: fitText is browser-only; tests verify math patterns not live DOM calls
 - [Phase 16]: TextElement uses .content not .text per sceneAdapter type
+- [Phase 17]: Quality eval is non-blocking — failures emit warnings but never abort the pipeline
+- [Phase 17]: Suite execution assertion uses Vitest JSON reporter output, not file-name grep or pass/fail alone
+- [Phase 17]: test-output/ root is project-root/test-output/ in dev (not ~/simple-videos/) to avoid polluting user output
+- [Phase 17]: skipInstall option in GenerateProjectInput skips npm install only, not scaffolding — makes fixture contract tests fast and CI-safe
 
 ### Pending Todos
 
@@ -150,6 +155,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:23:39.249Z
-Stopped at: Completed 16-04-PLAN.md
+Last session: 2026-03-28T18:27:00.000Z
+Stopped at: Completed 17-PLAN.md (Phase 17 complete — all 10 steps committed)
 Resume file: None
