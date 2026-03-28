@@ -149,14 +149,18 @@ Note: Output must be compatible with NewSceneSchema from visual.ts for visual la
   - { "type": "text", "textMatch": "exact text from screenshot" } — for UI text labels
   - { "type": "code-line", "lineNumber": 5 } — for code scenes
   - { "type": "region", "region": "top-right" } — for regions (top-left/top-right/center/bottom-left/bottom-right)
+- IMPORTANT POSITIONING: When possible, prefer { "type": "region", "region": "..." } targets for best placement accuracy. Text targets will be auto-distributed across the viewport. Use "region" to hint where on the screenshot the annotation should appear:
+  - "top-left" / "top-right" for header/navigation areas
+  - "center" for main content
+  - "bottom-left" / "bottom-right" for footer/sidebar areas
 - Style colors: "attention" (红/橙，重点错误), "highlight" (黄，强调), "info" (蓝，信息), "success" (绿，正确)
 - Style sizes: "small", "medium", "large"
 - narrationBinding.triggerText: the sentence spoken when annotation should appear
 - narrationBinding.segmentIndex: which segment index triggers the annotation
 - narrationBinding.appearAt: seconds after scene start when annotation appears
 - IMPORTANT: intro and outro scenes do NOT need annotations (no screenshots)
-- For code scenes: use "circle" or "number" annotations on specific line numbers
-- For feature scenes: use "highlight" or "arrow" annotations on UI text that matches screenshot content
+- For code scenes: use "circle" or "number" annotations with region targets
+- For feature scenes: use "highlight" or "arrow" annotations with region targets for UI areas
 
 ## Code Highlights (for code scenes):
 - Mark specific lines that need emphasis
