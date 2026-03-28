@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnRectPath, generateHandDrawnRectPoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface BoxProps {
@@ -12,12 +12,14 @@ export interface BoxProps {
   strokeWidth?: number;
   wobble?: number;
   appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 手绘矩形框标注
+ * Hand-drawn box annotation
  *
- * 一笔画动画：使用 stroke-dashoffset 实现绘制效果
+ * Four smooth curved sides using cubic beziers.
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Box: React.FC<BoxProps> = ({
   x,
@@ -26,13 +28,14 @@ export const Box: React.FC<BoxProps> = ({
   height,
   color,
   strokeWidth = 3,
-  wobble = 10,
+  wobble: _wobble = 2,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -40,20 +43,20 @@ export const Box: React.FC<BoxProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘矩形路径
-  const points: Array<{ x: number; y: number }> = [
-    { x, y },
-    { x: x + width, y },
-    { x: x + width, y: y + height },
-    { x, y: y + height },
-    { x, y },
-  ];
-  const path = generateWobblyPath(points, wobble, 0);
-  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
-  const pathLength = 2 * (width + height);
+  // Primary stroke: smooth rect path
+  const path = generateHandDrawnRectPath(x, y, width, height, seed, 5);
+  // Second sketchy pass
+  const path2 = generateHandDrawnRectPath(x, y, width, height, seed + 1000, 4);
 
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // Estimate path length from points
+  const basePoints = generateHandDrawnRectPoints(x, y, width, height, seed, 5);
+  const pathLength = estimatePathLength(basePoints);
+
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
+
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
     extrapolateRight: "clamp",
   });
 

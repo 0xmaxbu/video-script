@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnEllipsePath, generateHandDrawnCirclePoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface CircleProps {
@@ -10,13 +10,15 @@ export interface CircleProps {
   color: AnnotationColor;
   strokeWidth?: number;
   wobble?: number;
-  appearAt?: number; // 帧数
+  appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 手绘圆圈标注
+ * Hand-drawn circle annotation
  *
- * 一笔画动画：使用 stroke-dashoffset 实现绘制效果
+ * Uses a tilted ellipse (smooth curve) instead of noisy points.
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Circle: React.FC<CircleProps> = ({
   x,
@@ -24,13 +26,14 @@ export const Circle: React.FC<CircleProps> = ({
   radius,
   color,
   strokeWidth = 3,
-  wobble = 10,
+  wobble: _wobble = 3,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -38,26 +41,20 @@ export const Circle: React.FC<CircleProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘圆圈路径
-  const points: Array<{ x: number; y: number }> = [];
-  const segments = 36;
+  // Primary stroke: tilted ellipse (smooth, no jitter)
+  const path = generateHandDrawnEllipsePath(x, y, radius, seed, 0.12);
+  // Second sketchy pass: different ellipse parameters
+  const path2 = generateHandDrawnEllipsePath(x, y, radius, seed + 1000, 0.10);
 
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI * 2;
-    points.push({
-      x: x + Math.cos(angle) * radius,
-      y: y + Math.sin(angle) * radius,
-    });
-  }
+  // Use estimated path length from points for dasharray
+  const basePoints = generateHandDrawnCirclePoints(x, y, radius, seed, 0.12);
+  const pathLength = estimatePathLength(basePoints);
 
-  // Primary stroke
-  const path = generateWobblyPath(points, wobble, 0);
-  // Second sketchy pass (lighter, slightly offset) for hand-drawn look
-  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
-  const pathLength = 2 * Math.PI * radius;
+  // Clamp progress to ensure full closure at end of animation
+  const clampedProgress = Math.min(progress, 1);
 
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
     extrapolateRight: "clamp",
   });
 
@@ -65,10 +62,10 @@ export const Circle: React.FC<CircleProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: x - radius - 15,
-        top: y - radius - 15,
-        width: radius * 2 + 30,
-        height: radius * 2 + 30,
+        left: x - radius - 20,
+        top: y - radius - 20,
+        width: radius * 2 + 40,
+        height: radius * 2 + 40,
         overflow: "visible",
       }}
     >

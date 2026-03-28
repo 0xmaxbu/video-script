@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnRectPath, generateHandDrawnRectPoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface HighlightProps {
@@ -11,12 +11,14 @@ export interface HighlightProps {
   color: AnnotationColor;
   opacity?: number;
   appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 手绘高亮标注
+ * Hand-drawn highlight annotation
  *
- * 使用 stroke-dashoffset 实现填充效果
+ * Smooth rect path using cubic beziers for each side.
+ * Stroke-dashoffset for drawing animation, fill fades in.
  */
 export const Highlight: React.FC<HighlightProps> = ({
   x,
@@ -26,11 +28,12 @@ export const Highlight: React.FC<HighlightProps> = ({
   color,
   opacity = 0.3,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -38,25 +41,21 @@ export const Highlight: React.FC<HighlightProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘矩形路径（填充）
-  const inset = 2;
-  const points: Array<{ x: number; y: number }> = [
-    { x: x + inset, y: y + inset },
-    { x: x + width - inset, y: y + inset },
-    { x: x + width - inset, y: y + height - inset },
-    { x: x + inset, y: y + height - inset },
-    { x: x + inset, y: y + inset },
-  ];
-  const path = generateWobblyPath(points, 6, 0);
-  const pathLength = 2 * ((width - 2 * inset) + (height - 2 * inset));
+  // Smooth rect path
+  const path = generateHandDrawnRectPath(x, y, width, height, seed, 4);
+  const basePoints = generateHandDrawnRectPoints(x, y, width, height, seed, 4);
+  const pathLength = estimatePathLength(basePoints);
 
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
+
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
     extrapolateRight: "clamp",
   });
 
-  // 填充透明度动画
-  const fillOpacity = interpolate(progress, [0, 1], [0, opacity], {
+  // Fill opacity animation
+  const fillOpacity = interpolate(clampedProgress, [0, 1], [0, opacity], {
     extrapolateRight: "clamp",
   });
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnWavePath, generateHandDrawnWavePoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface UnderlineProps {
@@ -11,12 +11,14 @@ export interface UnderlineProps {
   strokeWidth?: number;
   wobble?: number;
   appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 手绘下划线标注
+ * Hand-drawn underline annotation
  *
- * 一笔画动画：使用 stroke-dashoffset 实现绘制效果
+ * Smooth wave using cubic beziers, not per-point noise.
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Underline: React.FC<UnderlineProps> = ({
   x,
@@ -24,13 +26,14 @@ export const Underline: React.FC<UnderlineProps> = ({
   width,
   color,
   strokeWidth = 3,
-  wobble = 8,
+  wobble: _wobble = 2,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -38,17 +41,20 @@ export const Underline: React.FC<UnderlineProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘下划线路径
-  const points: Array<{ x: number; y: number }> = [
-    { x, y: y + 5 },
-    { x: x + width, y: y + 5 },
-  ];
-  const path = generateWobblyPath(points, wobble, 0);
-  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
-  const pathLength = width;
+  // Primary stroke: smooth wave path
+  const path = generateHandDrawnWavePath(x, y, width, seed, 4, 25);
+  // Second sketchy pass: different seed
+  const path2 = generateHandDrawnWavePath(x, y, width, seed + 1000, 3, 28);
 
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // Estimate path length from coarse wave points
+  const basePoints = generateHandDrawnWavePoints(x, y, width, seed, 4, 25);
+  const pathLength = estimatePathLength(basePoints);
+
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
+
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
     extrapolateRight: "clamp",
   });
 

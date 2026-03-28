@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnArrowPaths } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface ArrowProps {
@@ -12,12 +12,14 @@ export interface ArrowProps {
   strokeWidth?: number;
   wobble?: number;
   appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 手绘箭头标注
+ * Hand-drawn arrow annotation
  *
- * 一笔画动画：使用 stroke-dashoffset 实现绘制效果
+ * Smooth cubic bezier body with a V-shaped arrowhead.
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Arrow: React.FC<ArrowProps> = ({
   x1,
@@ -26,13 +28,14 @@ export const Arrow: React.FC<ArrowProps> = ({
   y2,
   color,
   strokeWidth = 3,
-  wobble = 8,
+  wobble: _wobble = 2,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -40,30 +43,24 @@ export const Arrow: React.FC<ArrowProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘箭头路径
-  const bodyPoints: Array<{ x: number; y: number }> = [
-    { x: x1, y: y1 },
-    { x: x2, y: y2 },
-  ];
-  const bodyPath = generateWobblyPath(bodyPoints, wobble, 0);
-  const bodyPath2 = generateWobblyPath(bodyPoints, wobble * 0.7, 1);
-  const pathLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  // Generate smooth arrow paths
+  const { bodyPath, headPath, bodyLength } = generateHandDrawnArrowPaths(
+    x1, y1, x2, y2, seed, 6, 12,
+  );
+  // Second sketchy pass
+  const pass2 = generateHandDrawnArrowPaths(
+    x1, y1, x2, y2, seed + 1000, 4, 10,
+  );
 
-  // 箭头头部
-  const arrowSize = 12;
-  const arrowPoints: Array<{ x: number; y: number }> = [
-    { x: x2, y: y2 },
-    { x: x2 - arrowSize, y: y2 + arrowSize / 2 },
-    { x: x2 - arrowSize, y: y2 - arrowSize / 2 },
-    { x: x2, y: y2 },
-  ];
-  const arrowPath = generateWobblyPath(arrowPoints, wobble * 0.5, 0);
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
 
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [bodyLength, 0], {
     extrapolateRight: "clamp",
   });
 
+  const arrowSize = 12;
   const minX = Math.min(x1, x2 - arrowSize);
   const maxX = Math.max(x1, x2 + arrowSize);
   const minY = Math.min(y1, y2 - arrowSize);
@@ -82,17 +79,17 @@ export const Arrow: React.FC<ArrowProps> = ({
     >
       {/* Second pass - sketchy overlay for body */}
       <path
-        d={bodyPath2}
+        d={pass2.bodyPath}
         stroke={getAnnotationColor(color)}
         strokeWidth={strokeWidth * 0.6}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
         opacity={0.4}
-        strokeDasharray={pathLength}
+        strokeDasharray={bodyLength}
         strokeDashoffset={strokeDashoffset}
       />
-      {/* 主线 */}
+      {/* Main line */}
       <path
         d={bodyPath}
         stroke={getAnnotationColor(color)}
@@ -100,15 +97,15 @@ export const Arrow: React.FC<ArrowProps> = ({
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeDasharray={pathLength}
+        strokeDasharray={bodyLength}
         strokeDashoffset={strokeDashoffset}
         style={{
           filter: `drop-shadow(0 0 4px ${getAnnotationColor(color)}40)`,
         }}
       />
-      {/* 箭头头部 */}
+      {/* Arrowhead */}
       <path
-        d={arrowPath}
+        d={headPath}
         stroke={getAnnotationColor(color)}
         strokeWidth={strokeWidth}
         fill="none"

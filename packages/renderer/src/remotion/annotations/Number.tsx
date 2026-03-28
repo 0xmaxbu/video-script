@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateWobblyPath } from "./index.js";
+import { getAnnotationColor, generateHandDrawnEllipsePath, generateHandDrawnCirclePoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface NumberProps {
@@ -11,12 +11,14 @@ export interface NumberProps {
   strokeWidth?: number;
   wobble?: number;
   appearAt?: number;
+  seed?: number;
 }
 
 /**
- * 数字标注（带数字的圆圈）
+ * Number annotation (circle with number)
  *
- * 一笔画动画：使用 stroke-dashoffset 实现绘制效果
+ * Uses tilted ellipse for the circle, smooth curve.
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Number: React.FC<NumberProps> = ({
   x,
@@ -24,13 +26,14 @@ export const Number: React.FC<NumberProps> = ({
   n,
   color,
   strokeWidth = 3,
-  wobble = 8,
+  wobble: _wobble = 2,
   appearAt = 0,
+  seed = 42,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // 动画进度
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
   const progress = spring({
     frame: effectiveFrame,
@@ -38,29 +41,22 @@ export const Number: React.FC<NumberProps> = ({
     config: { damping: 100, stiffness: 300 },
   });
 
-  // 生成手绘圆圈路径
+  // Generate smooth tilted ellipse
   const radius = 20;
-  const points: Array<{ x: number; y: number }> = [];
-  const segments = 36;
+  const path = generateHandDrawnEllipsePath(x, y, radius, seed, 0.15);
+  const path2 = generateHandDrawnEllipsePath(x, y, radius, seed + 1000, 0.12);
+  const basePoints = generateHandDrawnCirclePoints(x, y, radius, seed, 0.15);
+  const pathLength = estimatePathLength(basePoints);
 
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI * 2;
-    points.push({
-      x: x + Math.cos(angle) * radius,
-      y: y + Math.sin(angle) * radius,
-    });
-  }
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
 
-  const path = generateWobblyPath(points, wobble, 0);
-  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
-  const pathLength = 2 * Math.PI * radius;
-
-  // stroke-dashoffset 控制绘制进度
-  const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
     extrapolateRight: "clamp",
   });
 
-  // 文字颜色：highlight 用黑色，其他用白色
+  // Text color: highlight uses black, others use white
   const textFill = color === "highlight" ? "black" : "white";
 
   return (
@@ -86,7 +82,7 @@ export const Number: React.FC<NumberProps> = ({
         strokeDasharray={pathLength}
         strokeDashoffset={strokeDashoffset}
       />
-      {/* 圆圈路径 */}
+      {/* Circle path */}
       <path
         d={path}
         stroke={getAnnotationColor(color)}
@@ -100,7 +96,7 @@ export const Number: React.FC<NumberProps> = ({
           filter: `drop-shadow(0 0 4px ${getAnnotationColor(color)}40)`,
         }}
       />
-      {/* 数字文字 */}
+      {/* Number text */}
       <text
         x={x}
         y={y}

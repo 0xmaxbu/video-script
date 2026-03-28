@@ -84,6 +84,38 @@ function resolveTargetPosition(
 }
 
 /**
+ * Map annotation size to dimension scale factors.
+ * At 1920x1080, the hardcoded "small" sizes (radius=50, width=100) are tiny.
+ * Scale up based on size prop for visibility.
+ */
+function sizeToRadius(size: "small" | "medium" | "large"): number {
+  switch (size) {
+    case "small": return 60;
+    case "medium": return 80;
+    case "large": return 110;
+    default: return 80;
+  }
+}
+
+function sizeToWidth(size: "small" | "medium" | "large"): number {
+  switch (size) {
+    case "small": return 120;
+    case "medium": return 180;
+    case "large": return 260;
+    default: return 180;
+  }
+}
+
+function sizeToHeight(size: "small" | "medium" | "large"): number {
+  switch (size) {
+    case "small": return 40;
+    case "medium": return 50;
+    case "large": return 70;
+    default: return 50;
+  }
+}
+
+/**
  * Annotation renderer
  *
  * Renders all annotation types, sorted by appearAt time for correct z-order.
@@ -123,6 +155,8 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
         const color = style.color;
         const strokeWidth = sizeToStrokeWidth(style.size);
         const pos = resolveTargetPosition(target, index, sortedAnnotations.length);
+        // Each annotation gets a unique stable seed based on its position and index
+        const seed = Math.round(pos.x * 7 + pos.y * 13 + index * 31);
 
         switch (type) {
           case "circle":
@@ -131,10 +165,11 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
                 key={`${type}-${pos.x}-${pos.y}-${appearAtFrames}`}
                 x={pos.x}
                 y={pos.y}
-                radius={50}
+                radius={sizeToRadius(style.size)}
                 color={color}
                 strokeWidth={strokeWidth}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
@@ -142,12 +177,13 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
             return (
               <Underline
                 key={`${type}-${pos.x}-${pos.y}-${appearAtFrames}`}
-                x={pos.x}
+                x={pos.x - sizeToWidth(style.size) / 2}
                 y={pos.y}
-                width={100}
+                width={sizeToWidth(style.size)}
                 color={color}
                 strokeWidth={strokeWidth}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
@@ -155,13 +191,14 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
             return (
               <Arrow
                 key={`${type}-${pos.x}-${pos.y}-${appearAtFrames}`}
-                x1={pos.x}
+                x1={pos.x - 60}
                 y1={pos.y}
-                x2={pos.x + 100}
-                y2={pos.y + 50}
+                x2={pos.x + 60}
+                y2={pos.y + 40}
                 color={color}
                 strokeWidth={strokeWidth}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
@@ -169,13 +206,14 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
             return (
               <Box
                 key={`${type}-${pos.x}-${pos.y}-${appearAtFrames}`}
-                x={pos.x}
-                y={pos.y}
-                width={100}
-                height={60}
+                x={pos.x - sizeToWidth(style.size) / 2}
+                y={pos.y - sizeToHeight(style.size) / 2}
+                width={sizeToWidth(style.size)}
+                height={sizeToHeight(style.size)}
                 color={color}
                 strokeWidth={strokeWidth}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
@@ -183,12 +221,13 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
             return (
               <Highlight
                 key={`${type}-${pos.x}-${pos.y}-${appearAtFrames}`}
-                x={pos.x}
-                y={pos.y}
-                width={150}
-                height={30}
+                x={pos.x - sizeToWidth(style.size) / 2}
+                y={pos.y - sizeToHeight(style.size) / 2}
+                width={sizeToWidth(style.size)}
+                height={sizeToHeight(style.size)}
                 color={color}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
@@ -201,6 +240,7 @@ export const AnnotationRenderer: React.FC<AnnotationRendererProps> = ({
                 n={index + 1}
                 color={color}
                 appearAt={appearAtFrames}
+                seed={seed}
               />
             );
 
