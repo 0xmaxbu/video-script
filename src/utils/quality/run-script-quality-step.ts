@@ -13,7 +13,7 @@
  *   await runScriptQualityStep(outputDir);
  */
 
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, writeFileSync } from "fs";
 import { join } from "path";
 import type { QualityReport } from "../../types/quality.js";
 import { writeQualityReport } from "./report-writer.js";
@@ -60,4 +60,9 @@ export async function runScriptQualityStep(outputDir: string): Promise<void> {
   );
 
   writeQualityReport(updatedReport, reportPath);
+
+  // Write a sidecar JSON so the screenshot step can reconstruct this report's
+  // script quality section without re-parsing the markdown file.
+  const statePath = join(outputDir, "quality-report-state.json");
+  writeFileSync(statePath, JSON.stringify(updatedReport, null, 2), "utf-8");
 }

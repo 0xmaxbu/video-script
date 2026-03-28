@@ -46,6 +46,7 @@ import { ScriptOutputSchema, type ScriptOutput } from "../types/script.js";
 import type { SceneScript } from "../types/script.js";
 import { augmentScreenshotLayers } from "../utils/augment-screenshot-layers.js";
 import { runScriptQualityStep } from "../utils/quality/run-script-quality-step.js";
+import { runScreenshotQualityStep } from "../utils/quality/run-screenshot-quality-step.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1606,6 +1607,13 @@ async function runScreenshotAndCompose(
     });
   });
 
+  // Run screenshot quality eval (non-blocking — only writes to quality-report.md)
+  await runScreenshotQualityStep(
+    outputDir,
+    finalScenes2 as SceneScript[],
+    images,
+  );
+
   const finalScenes2Augmented = await augmentScreenshotLayers(
     finalScenes2 as SceneScript[],
     images,
@@ -1939,6 +1947,13 @@ program
           }
         });
       });
+
+      // Run screenshot quality eval (non-blocking — only writes to quality-report.md)
+      await runScreenshotQualityStep(
+        outputDir,
+        finalScenes3 as SceneScript[],
+        images,
+      );
 
       const finalScenes3Augmented = await augmentScreenshotLayers(
         finalScenes3 as SceneScript[],
