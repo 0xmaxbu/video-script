@@ -1,22 +1,127 @@
 {
-  "title": "Test Video",
-  "totalDuration": 20,
+  "title": "TypeScript 5.4 新特性",
+  "totalDuration": 50,
   "scenes": [
     {
-      "id": "scene-1",
+      "id": "scene-001",
       "type": "intro",
       "title": "Introduction",
-      "narration": "Welcome to this test video.",
-      "duration": 10,
-      "visualLayers": []
+      "narration": "Welcome to this deep dive on TypeScript 5.4 new features. Today we explore what this release brings to modern JavaScript development.",
+      "duration": 12,
+      "visualLayers": [
+        {
+          "id": "hero",
+          "type": "screenshot",
+          "content": "https://www.typescriptlang.org/",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "none"
+          }
+        },
+        {
+          "id": "title-text",
+          "type": "text",
+          "content": "TypeScript 5.4 新特性",
+          "position": {
+            "x": "center",
+            "y": "top",
+            "width": "auto",
+            "height": "auto",
+            "zIndex": 10
+          },
+          "animation": {
+            "enter": "slideDown",
+            "enterDelay": 0.5,
+            "exit": "fadeOut"
+          }
+        }
+      ]
     },
     {
-      "id": "scene-2",
+      "id": "scene-002",
       "type": "feature",
-      "title": "Feature Demo",
-      "narration": "Here is a cool feature.",
-      "duration": 10,
-      "visualLayers": []
+      "title": "NoInfer Utility Type",
+      "narration": "TypeScript 5.4 introduces the NoInfer utility type, which prevents TypeScript from inferring a generic type parameter from a specific usage site. This is especially useful in complex generic functions.",
+      "duration": 20,
+      "visualLayers": [
+        {
+          "id": "docs-screenshot",
+          "type": "screenshot",
+          "content": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "none"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scene-003",
+      "type": "code",
+      "title": "Code Example: NoInfer",
+      "narration": "Here is a practical example showing how NoInfer prevents unintended inference. The function signature uses NoInfer to ensure the default value type is inferred from the first argument only.",
+      "duration": 15,
+      "visualLayers": [
+        {
+          "id": "code-snippet",
+          "type": "code",
+          "content": "function createLogger<T>(options: { level: T; defaultLevel: NoInfer<T> }) {\n  return options;\n}\n\nconst logger = createLogger({\n  level: 'debug',\n  defaultLevel: 'info', // TypeScript error: 'info' not assignable to 'debug'\n});",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "animation": {
+            "enter": "typewriter",
+            "enterDelay": 0,
+            "exit": "none"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scene-004",
+      "type": "outro",
+      "title": "Summary",
+      "narration": "TypeScript 5.4 brings significant improvements to type inference and developer ergonomics. The NoInfer utility type is a welcome addition for library authors writing complex generic APIs.",
+      "duration": 8,
+      "visualLayers": [
+        {
+          "id": "outro-bg",
+          "type": "screenshot",
+          "content": "https://www.typescriptlang.org/",
+          "position": {
+            "x": "center",
+            "y": "center",
+            "width": "full",
+            "height": "full",
+            "zIndex": 0
+          },
+          "animation": {
+            "enter": "fadeIn",
+            "enterDelay": 0,
+            "exit": "fadeOut"
+          }
+        }
+      ]
     }
   ]
 }

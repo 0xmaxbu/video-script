@@ -1,13 +1,13 @@
 {
   "scenes": [
     {
-      "sceneId": "scene-1",
+      "sceneId": "scene-001",
       "layoutTemplate": "hero-fullscreen",
       "mediaResources": [
         {
-          "id": "hero-image",
+          "id": "hero",
           "type": "hero",
-          "url": "https://example.com/hero.png",
+          "url": "https://www.typescriptlang.org/",
           "role": "primary",
           "narrationBinding": {
             "triggerText": "welcome",
@@ -18,46 +18,95 @@
       ],
       "textElements": [
         {
-          "content": "Welcome",
+          "content": "TypeScript 5.4 新特性",
           "role": "title",
           "position": "top",
           "narrationBinding": {
-            "triggerText": "welcome",
+            "triggerText": "TypeScript",
             "segmentIndex": 0,
-            "appearAt": 0
+            "appearAt": 0.5
           }
         }
       ],
       "transition": { "type": "fade", "duration": 1 }
     },
     {
-      "sceneId": "scene-2",
+      "sceneId": "scene-002",
       "layoutTemplate": "split-vertical",
       "mediaResources": [
         {
-          "id": "article-image",
-          "type": "article",
-          "url": "https://example.com/article.png",
+          "id": "docs-screenshot",
+          "type": "documentation",
+          "url": "https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/",
           "role": "primary",
           "narrationBinding": {
-            "triggerText": "feature",
+            "triggerText": "NoInfer",
             "segmentIndex": 0,
-            "appearAt": 2
+            "appearAt": 0
           }
         }
       ],
       "textElements": [
         {
-          "content": "Bullet point 1",
-          "role": "bullet",
+          "content": "NoInfer 工具类型",
+          "role": "subtitle",
           "position": "bottom",
           "narrationBinding": {
-            "triggerText": "cool",
+            "triggerText": "utility type",
             "segmentIndex": 0,
-            "appearAt": 3
+            "appearAt": 2
           }
         }
-      ]
+      ],
+      "transition": { "type": "slide", "duration": 0.8 }
+    },
+    {
+      "sceneId": "scene-003",
+      "layoutTemplate": "code-focus",
+      "mediaResources": [],
+      "textElements": [
+        {
+          "content": "实际代码示例",
+          "role": "title",
+          "position": "top",
+          "narrationBinding": {
+            "triggerText": "example",
+            "segmentIndex": 0,
+            "appearAt": 0
+          }
+        }
+      ],
+      "transition": { "type": "none", "duration": 0 }
+    },
+    {
+      "sceneId": "scene-004",
+      "layoutTemplate": "hero-fullscreen",
+      "mediaResources": [
+        {
+          "id": "outro-bg",
+          "type": "hero",
+          "url": "https://www.typescriptlang.org/",
+          "role": "primary",
+          "narrationBinding": {
+            "triggerText": "summary",
+            "segmentIndex": 0,
+            "appearAt": 0
+          }
+        }
+      ],
+      "textElements": [
+        {
+          "content": "总结",
+          "role": "title",
+          "position": "center",
+          "narrationBinding": {
+            "triggerText": "TypeScript 5.4",
+            "segmentIndex": 0,
+            "appearAt": 1
+          }
+        }
+      ],
+      "transition": { "type": "fade", "duration": 1 }
     }
   ]
 }
