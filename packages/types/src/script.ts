@@ -37,6 +37,8 @@ export const VisualLayerSchema = z.object({
     })
     .optional(),
   kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
+  // D-02: Annotation overlays scoped to this layer (circles, arrows, boxes, etc.)
+  annotations: z.array(AnnotationSchema).optional(),
 });
 export type VisualLayer = z.infer<typeof VisualLayerSchema>;
 

@@ -97,6 +97,24 @@ export const scriptAgent = new Agent({
         }
       ],
       "codeHighlights": [],
+      "annotations": [
+        {
+          "type": "circle",
+          "target": {
+            "type": "text",
+            "textMatch": "TypeScript 5.4"
+          },
+          "style": {
+            "color": "attention",
+            "size": "medium"
+          },
+          "narrationBinding": {
+            "triggerText": "今天我们将介绍 TypeScript 5.4 的重要更新",
+            "segmentIndex": 1,
+            "appearAt": 2
+          }
+        }
+      ],
       "sourceRef": "[1]"
     }
   ]
@@ -123,6 +141,22 @@ Note: Output must be compatible with NewSceneSchema from visual.ts for visual la
 - importance levels: "critical" (必须标注), "high" (应该标注), "medium" (可选标注)
 - annotationSuggestion: "circle", "underline", "highlight", "number"
 - Include timeInScene so Visual Agent knows WHEN to show the annotation
+
+## Annotations (场景级别视觉标注):
+- For EVERY scene that has a screenshot visualLayer (feature, code scenes), add 1-3 "annotations"
+- Annotation types: "circle" (圈出), "underline" (下划线), "arrow" (箭头), "box" (方框), "highlight" (高亮), "number" (编号), "crossout" (划掉), "checkmark" (勾选)
+- Target types:
+  - { "type": "text", "textMatch": "exact text from screenshot" } — for UI text labels
+  - { "type": "code-line", "lineNumber": 5 } — for code scenes
+  - { "type": "region", "region": "top-right" } — for regions (top-left/top-right/center/bottom-left/bottom-right)
+- Style colors: "attention" (红/橙，重点错误), "highlight" (黄，强调), "info" (蓝，信息), "success" (绿，正确)
+- Style sizes: "small", "medium", "large"
+- narrationBinding.triggerText: the sentence spoken when annotation should appear
+- narrationBinding.segmentIndex: which segment index triggers the annotation
+- narrationBinding.appearAt: seconds after scene start when annotation appears
+- IMPORTANT: intro and outro scenes do NOT need annotations (no screenshots)
+- For code scenes: use "circle" or "number" annotations on specific line numbers
+- For feature scenes: use "highlight" or "arrow" annotations on UI text that matches screenshot content
 
 ## Code Highlights (for code scenes):
 - Mark specific lines that need emphasis
@@ -162,7 +196,8 @@ export function segmentNarration(
   text: string,
   targetSegmentDuration: number = 3,
 ): Array<{ text: string; startTime: number; endTime: number }> {
-  const segments: Array<{ text: string; startTime: number; endTime: number }> = [];
+  const segments: Array<{ text: string; startTime: number; endTime: number }> =
+    [];
 
   // 按句号、问号、感叹号分句
   const sentences = text.split(/(?<=[。！？，、；])|(?<=\s)/);
@@ -212,7 +247,8 @@ export function extractKeyTerms(text: string): string[] {
   const terms: string[] = [];
 
   // 英文术语（连续大写或混合）
-  const englishTerms = text.match(/[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)*/g) || [];
+  const englishTerms =
+    text.match(/[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)*/g) || [];
   terms.push(...englishTerms);
 
   // 带引号的内容
@@ -226,7 +262,9 @@ export function extractKeyTerms(text: string): string[] {
  * 生成 Script Agent 的 prompt
  * @param research - 可以是 Markdown 字符串或 ResearchOutput 对象
  */
-export function generateScriptPrompt(research: string | Record<string, unknown>): string {
+export function generateScriptPrompt(
+  research: string | Record<string, unknown>,
+): string {
   let researchMd: string;
 
   if (typeof research === "string") {
@@ -241,7 +279,9 @@ export function generateScriptPrompt(research: string | Record<string, unknown>)
     for (const seg of segments) {
       const segment = seg as Record<string, unknown>;
       const sentence = String(segment.sentence || "");
-      const keyContent = segment.keyContent as Record<string, string> | undefined;
+      const keyContent = segment.keyContent as
+        | Record<string, string>
+        | undefined;
       const concept = keyContent?.concept || "Segment";
 
       researchMd += `## ${sentence || concept}\n\n`;
@@ -271,7 +311,9 @@ ${researchMd}
 3. 标记所有需要视觉强调的重点（highlights）
 4. 代码场景要标记 codeHighlights
 5. 场景类型：intro, feature, code, outro
-6. 输出结构：{ title, totalDuration, scenes: [{ id, type, title, narration, duration, highlights?, codeHighlights? }] }`;
+6. feature 和 code 类型场景必须包含 annotations 数组（1-3 个标注），intro 和 outro 不需要
+7. 输出结构：{ title, totalDuration, scenes: [{ id, type, title, narration, duration, highlights?, codeHighlights?, annotations? }] }
+8. annotations 结构：[{ type, target: { type, textMatch? | lineNumber? | region? }, style: { color, size }, narrationBinding: { triggerText, segmentIndex, appearAt } }]`;
 }
 
 /**

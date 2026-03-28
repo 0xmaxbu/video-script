@@ -166,6 +166,9 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           objectFit: "contain",
         }}
       />
+      {annotations && annotations.length > 0 && (
+        <AnnotationRenderer annotations={annotations} />
+      )}
     </AbsoluteFill>
   );
 };

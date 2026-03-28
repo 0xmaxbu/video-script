@@ -71,31 +71,6 @@ export const CalloutContentSchema = z.object({
 });
 export type CalloutContent = z.infer<typeof CalloutContentSchema>;
 
-// VisualLayer schema
-export const VisualLayerSchema = z.object({
-  id: z.string(),
-  type: z.enum(["screenshot", "code", "text", "diagram", "image", "callout"]),
-  position: PositionSchema,
-  content: z.string(),
-  animation: AnimationConfigSchema,
-  kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
-  // Natural (pixel) dimensions of the source image — enables web-page pan mode
-  naturalSize: z
-    .object({
-      width: z.number().int().positive(),
-      height: z.number().int().positive(),
-    })
-    .optional(),
-});
-export type VisualLayer = z.infer<typeof VisualLayerSchema>;
-
-// SceneTransition schema
-export const SceneTransitionSchema = z.object({
-  type: z.enum(["fade", "slide", "wipe", "flip", "clockWipe", "iris", "none"]),
-  duration: z.number().min(0).max(1),
-});
-export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
-
 // D-02: AnnotationTarget schema
 export const AnnotationTargetSchema = z.object({
   type: z.enum(["text", "region", "code-line"]),
@@ -135,6 +110,26 @@ export const AnnotationSchema = z.object({
 export type Annotation = z.infer<typeof AnnotationSchema>;
 export type AnnotationColor = "attention" | "highlight" | "info" | "success";
 
+// VisualLayer schema
+export const VisualLayerSchema = z.object({
+  id: z.string(),
+  type: z.enum(["screenshot", "code", "text", "diagram", "image", "callout"]),
+  position: PositionSchema,
+  content: z.string(),
+  animation: AnimationConfigSchema,
+  kenBurnsWaypoints: z.array(KenBurnsWaypointSchema).optional(),
+  // Natural (pixel) dimensions of the source image — enables web-page pan mode
+  naturalSize: z
+    .object({
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .optional(),
+  // D-02: Annotation overlays scoped to this layer (circles, arrows, boxes, etc.)
+  annotations: z.array(AnnotationSchema).optional(),
+});
+export type VisualLayer = z.infer<typeof VisualLayerSchema>;
+
 // D-02: SceneHighlight schema (for script highlights)
 export const SceneHighlightSchema = z.object({
   text: z.string(),
@@ -171,6 +166,13 @@ export const LayoutTemplateEnum = z.enum([
   "inline", // explicit fallback per D-02b
 ]);
 export type LayoutTemplate = z.infer<typeof LayoutTemplateEnum>;
+
+// SceneTransition schema
+export const SceneTransitionSchema = z.object({
+  type: z.enum(["fade", "slide", "wipe", "flip", "clockWipe", "iris", "none"]),
+  duration: z.number().min(0).max(1),
+});
+export type SceneTransition = z.infer<typeof SceneTransitionSchema>;
 
 // D-02: Unified SceneScriptSchema with highlights and codeHighlights
 export const SceneScriptSchema = z.object({

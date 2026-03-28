@@ -17,10 +17,32 @@
 
 import type { SceneScript } from "../types/script.js";
 import type { VisualLayer } from "@video-script/types";
+import type { Annotation } from "@video-script/types";
 
 // =============================================================================
 // Visual JSON Types (from visualAgent output)
 // =============================================================================
+
+interface VisualAnnotation {
+  type: string;
+  target: {
+    type: string;
+    textMatch?: string;
+    lineNumber?: number;
+    region?: string;
+    x?: number;
+    y?: number;
+  };
+  style: {
+    color: string;
+    size: string;
+  };
+  narrationBinding: {
+    triggerText: string;
+    segmentIndex: number;
+    appearAt: number;
+  };
+}
 
 interface MediaResource {
   id: string;
@@ -60,6 +82,7 @@ interface VisualPlan {
     layoutTemplate?: string;
     mediaResources?: MediaResource[];
     textElements?: TextElement[];
+    annotations?: VisualAnnotation[];
     animationPreset?: "fast" | "medium" | "slow" | "dramatic";
     transition?: {
       type: "fade" | "slide" | "wipe" | "flip" | "clockWipe" | "iris" | "none";
@@ -184,11 +207,18 @@ export function adaptSceneForRenderer(
   // Preserve layoutTemplate from visualScene if present
   const layoutTemplate = visualScene?.layoutTemplate;
 
+  // Extract annotations from visualScene and cast to Annotation[] (schema-compatible)
+  const annotations: Annotation[] | undefined =
+    visualScene?.annotations && visualScene.annotations.length > 0
+      ? (visualScene.annotations as unknown as Annotation[])
+      : scene.annotations;
+
   // Use merged visualLayers if we have any, otherwise fall back to existing
   return {
     ...scene,
     layoutTemplate,
     visualLayers: visualLayers.length > 0 ? visualLayers : scene.visualLayers,
+    annotations,
   };
 }
 
