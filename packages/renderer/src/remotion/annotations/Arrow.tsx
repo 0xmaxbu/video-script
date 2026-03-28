@@ -1,5 +1,5 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
+import { useCurrentFrame, interpolate, Easing } from "remotion";
 import { getAnnotationColor, generateHandDrawnArrowPaths } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
@@ -19,7 +19,10 @@ export interface ArrowProps {
  * Hand-drawn arrow annotation
  *
  * Smooth cubic bezier body with a V-shaped arrowhead.
- * One-stroke animation via stroke-dashoffset.
+ * One-stroke animation via stroke-dashoffset with ease-in timing.
+ *
+ * COORDINATE SYSTEM: The SVG element is positioned at screen (minX-15, minY-15).
+ * All path coordinates must be LOCAL to the SVG (subtract SVG element offset).
  */
 export const Arrow: React.FC<ArrowProps> = ({
   x1,
@@ -33,38 +36,56 @@ export const Arrow: React.FC<ArrowProps> = ({
   seed = 42,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
-  // Animation progress
+  // Animation: ease-in over fixed duration
+  const durationFrames = 20; // ~0.67s at 30fps
   const effectiveFrame = Math.max(0, frame - appearAt);
-  const progress = spring({
-    frame: effectiveFrame,
-    fps,
-    config: { damping: 100, stiffness: 300 },
-  });
-
-  // Generate smooth arrow paths
-  const { bodyPath, headPath, bodyLength } = generateHandDrawnArrowPaths(
-    x1, y1, x2, y2, seed, 6, 12,
-  );
-  // Second sketchy pass
-  const pass2 = generateHandDrawnArrowPaths(
-    x1, y1, x2, y2, seed + 1000, 4, 10,
-  );
-
-  // Clamp progress
-  const clampedProgress = Math.min(progress, 1);
-
-  // stroke-dashoffset controls drawing progress
-  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [bodyLength, 0], {
-    extrapolateRight: "clamp",
-  });
 
   const arrowSize = 12;
   const minX = Math.min(x1, x2 - arrowSize);
   const maxX = Math.max(x1, x2 + arrowSize);
   const minY = Math.min(y1, y2 - arrowSize);
   const maxY = Math.max(y1, y2 + arrowSize);
+
+  // SVG-local coordinates: SVG is at (minX-15, minY-15)
+  // so local offsets are: local = screen - SVG_origin = screen - (minX-15) = screen - minX + 15
+  const localX1 = x1 - minX + 15;
+  const localY1 = y1 - minY + 15;
+  const localX2 = x2 - minX + 15;
+  const localY2 = y2 - minY + 15;
+
+  // Generate smooth arrow paths using SVG-local coordinates
+  const { bodyPath, headPath, bodyLength } = generateHandDrawnArrowPaths(
+    localX1,
+    localY1,
+    localX2,
+    localY2,
+    seed,
+    6,
+    12,
+  );
+  // Second sketchy pass
+  const pass2 = generateHandDrawnArrowPaths(
+    localX1,
+    localY1,
+    localX2,
+    localY2,
+    seed + 1000,
+    4,
+    10,
+  );
+
+  // Ease-in stroke draw: starts slow, accelerates to finish
+  const strokeDashoffset = interpolate(
+    effectiveFrame,
+    [0, durationFrames],
+    [bodyLength, 0],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(0.42, 0, 1.0, 1.0), // CSS ease-in
+    },
+  );
 
   return (
     <svg

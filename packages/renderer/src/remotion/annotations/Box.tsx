@@ -1,6 +1,11 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import { getAnnotationColor, generateHandDrawnRectPath, generateHandDrawnRectPoints, estimatePathLength } from "./index.js";
+import { useCurrentFrame, interpolate, Easing } from "remotion";
+import {
+  getAnnotationColor,
+  generateHandDrawnRectPath,
+  generateHandDrawnRectPoints,
+  estimatePathLength,
+} from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface BoxProps {
@@ -19,7 +24,10 @@ export interface BoxProps {
  * Hand-drawn box annotation
  *
  * Four smooth curved sides using cubic beziers.
- * One-stroke animation via stroke-dashoffset.
+ * One-stroke animation via stroke-dashoffset with ease-in timing.
+ *
+ * COORDINATE SYSTEM: The SVG element is positioned at screen (x-15, y-15).
+ * All path coordinates must be LOCAL to the SVG (offset by 15 from SVG origin).
  */
 export const Box: React.FC<BoxProps> = ({
   x,
@@ -33,32 +41,56 @@ export const Box: React.FC<BoxProps> = ({
   seed = 42,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
 
-  // Animation progress
+  // Animation: ease-in over fixed duration
+  const durationFrames = 25; // ~0.83s at 30fps
   const effectiveFrame = Math.max(0, frame - appearAt);
-  const progress = spring({
-    frame: effectiveFrame,
-    fps,
-    config: { damping: 100, stiffness: 300 },
-  });
 
-  // Primary stroke: smooth rect path
-  const path = generateHandDrawnRectPath(x, y, width, height, seed, 5);
-  // Second sketchy pass
-  const path2 = generateHandDrawnRectPath(x, y, width, height, seed + 1000, 4);
+  // SVG-local coordinates: SVG is at (x-15, y-15), so local origin is (15, 15)
+  const localX = 15;
+  const localY = 15;
 
-  // Estimate path length from points
-  const basePoints = generateHandDrawnRectPoints(x, y, width, height, seed, 5);
+  // Primary stroke: smooth rect path (SVG-local coords)
+  const path = generateHandDrawnRectPath(
+    localX,
+    localY,
+    width,
+    height,
+    seed,
+    5,
+  );
+  // Second sketchy pass (SVG-local coords)
+  const path2 = generateHandDrawnRectPath(
+    localX,
+    localY,
+    width,
+    height,
+    seed + 1000,
+    4,
+  );
+
+  // Estimate path length from points (SVG-local coords)
+  const basePoints = generateHandDrawnRectPoints(
+    localX,
+    localY,
+    width,
+    height,
+    seed,
+    5,
+  );
   const pathLength = estimatePathLength(basePoints);
 
-  // Clamp progress
-  const clampedProgress = Math.min(progress, 1);
-
-  // stroke-dashoffset controls drawing progress
-  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
-    extrapolateRight: "clamp",
-  });
+  // Ease-in stroke draw: starts slow, accelerates to finish
+  const strokeDashoffset = interpolate(
+    effectiveFrame,
+    [0, durationFrames],
+    [pathLength, 0],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(0.42, 0, 1.0, 1.0), // CSS ease-in
+    },
+  );
 
   return (
     <svg
