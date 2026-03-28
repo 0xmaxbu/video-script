@@ -131,11 +131,11 @@ Plans:
 **Research sources:** claude-remotion-kickstart, remotion-dev/template-prompt-to-video, AI Jason channel analysis
 **Target quality:** Dark mode aesthetic, kinetic typography, Ken Burns parallax, content-aware screenshots, tutorial-depth narration
 
-| Phase                    | Plans     | Status      | Completed |
-| ------------------------ | --------- | ----------- | --------- |
-| 14. Animation Engine     | 3 + 1 GAP | In Progress | -         |
-| 15. Screenshot + Content | TBD       | Planned     | -         |
-| 16. Visual Polish        | 5/5 | Complete   | 2026-03-27 |
+| Phase                    | Plans     | Status      | Completed  |
+| ------------------------ | --------- | ----------- | ---------- |
+| 14. Animation Engine     | 3 + 1 GAP | In Progress | -          |
+| 15. Screenshot + Content | TBD       | Planned     | -          |
+| 16. Visual Polish        | 5/5       | Complete    | 2026-03-27 |
 | 17. E2E Testing          | TBD       | Complete    | 2026-03-28 |
 
 ### Phase 14: Animation Engine
@@ -324,11 +324,19 @@ _Last updated: 2026-03-23_
 
 ### Phase 18: 14-gap-03 我们需要对项目进行一次模拟用户测试。有你直接通过 bash命令来调用项目功能。 并生成最终的完整视频。 由我来审核视频质量。
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 使用真实 bash 调用现有 CLI，完成一把跑通与暂停恢复两条主链路的视频生成，并交付可供人工审核的完整成片工件包
+**Requirements**: UAT-01, UAT-02, UAT-03
 **Depends on:** Phase 17
-**Plans:** 0 plans
+**Success Criteria**:
+
+1. `video-script create --no-review` 使用精选 Phase 14 链接后可在固定输出目录产出完整工件包：研究、脚本、截图、质量报告、SRT、最终 MP4
+2. `video-script create` 后暂停，再通过 `video-script resume` 恢复，可在独立输出目录产出同等完整的工件包
+3. 用户收到包含两次运行结果的审核包，并按 `通过 / 可接受但需优化 / 不通过` 记录动画优先的结论
+
+**Plans:** 3 plans
 
 Plans:
 
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — 锁定 Phase 18 输入集、审核模板与 bash 预检/打包脚本
+- [ ] 18-02-PLAN.md — 执行 `create --no-review` 一把跑通并封装 one-shot 工件包
+- [ ] 18-03-PLAN.md — 执行 `create` + `resume` 恢复链路并汇总双运行审核包

@@ -76,6 +76,12 @@
 - [ ] **TEST-02**: Real-topic research quality verification test
 - [ ] **TEST-03**: Screenshot capture quality verification test
 
+### Real CLI User Validation
+
+- [ ] **UAT-01**: One-shot CLI path — `video-script create --no-review` with curated Phase 14 links produces a complete review bundle containing `research.json`, `script.json`, `screenshots/`, `quality-report.md`, `output.srt`, and a final `output.mp4`
+- [ ] **UAT-02**: Pause/resume CLI path — `video-script create` suspends cleanly and `video-script resume` completes the same complete review bundle in a separate output directory without manual internal helper calls
+- [ ] **UAT-03**: Human review package compares both runs and captures an animation-first verdict using exactly `通过`, `可接受但需优化`, or `不通过`
+
 ## v2 Requirements
 
 - Deep multi-round research with gap analysis and follow-up
@@ -137,6 +143,9 @@
 | TEST-01     | 17    | Pending  |
 | TEST-02     | 17    | Pending  |
 | TEST-03     | 17    | Pending  |
+| UAT-01      | 18    | Pending  |
+| UAT-02      | 18    | Pending  |
+| UAT-03      | 18    | Pending  |
 
 **Coverage:**
 
