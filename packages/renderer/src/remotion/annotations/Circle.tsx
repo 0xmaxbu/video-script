@@ -24,7 +24,7 @@ export const Circle: React.FC<CircleProps> = ({
   radius,
   color,
   strokeWidth = 3,
-  wobble = 3,
+  wobble = 10,
   appearAt = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -40,7 +40,7 @@ export const Circle: React.FC<CircleProps> = ({
 
   // 生成手绘圆圈路径
   const points: Array<{ x: number; y: number }> = [];
-  const segments = 36; // 圆的分段数
+  const segments = 36;
 
   for (let i = 0; i <= segments; i++) {
     const angle = (i / segments) * Math.PI * 2;
@@ -50,8 +50,11 @@ export const Circle: React.FC<CircleProps> = ({
     });
   }
 
-  const path = generateWobblyPath(points, wobble);
-  const pathLength = 2 * Math.PI * radius; // 近似路径长度
+  // Primary stroke
+  const path = generateWobblyPath(points, wobble, 0);
+  // Second sketchy pass (lighter, slightly offset) for hand-drawn look
+  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
+  const pathLength = 2 * Math.PI * radius;
 
   // stroke-dashoffset 控制绘制进度
   const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
@@ -62,13 +65,26 @@ export const Circle: React.FC<CircleProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: x - radius - 10,
-        top: y - radius - 10,
-        width: radius * 2 + 20,
-        height: radius * 2 + 20,
+        left: x - radius - 15,
+        top: y - radius - 15,
+        width: radius * 2 + 30,
+        height: radius * 2 + 30,
         overflow: "visible",
       }}
     >
+      {/* Second pass - lighter, sketchy overlay */}
+      <path
+        d={path2}
+        stroke={getAnnotationColor(color)}
+        strokeWidth={strokeWidth * 0.6}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.4}
+        strokeDasharray={pathLength}
+        strokeDashoffset={strokeDashoffset}
+      />
+      {/* Primary stroke */}
       <path
         d={path}
         stroke={getAnnotationColor(color)}

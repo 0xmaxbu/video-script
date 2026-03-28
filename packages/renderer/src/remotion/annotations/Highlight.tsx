@@ -47,7 +47,7 @@ export const Highlight: React.FC<HighlightProps> = ({
     { x: x + inset, y: y + height - inset },
     { x: x + inset, y: y + inset },
   ];
-  const path = generateWobblyPath(points, 2);
+  const path = generateWobblyPath(points, 6, 0);
   const pathLength = 2 * ((width - 2 * inset) + (height - 2 * inset));
 
   // stroke-dashoffset 控制绘制进度

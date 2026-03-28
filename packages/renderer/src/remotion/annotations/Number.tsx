@@ -24,7 +24,7 @@ export const Number: React.FC<NumberProps> = ({
   n,
   color,
   strokeWidth = 3,
-  wobble = 3,
+  wobble = 8,
   appearAt = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -51,7 +51,8 @@ export const Number: React.FC<NumberProps> = ({
     });
   }
 
-  const path = generateWobblyPath(points, wobble);
+  const path = generateWobblyPath(points, wobble, 0);
+  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
   const pathLength = 2 * Math.PI * radius;
 
   // stroke-dashoffset 控制绘制进度
@@ -66,13 +67,25 @@ export const Number: React.FC<NumberProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: x - radius - 10,
-        top: y - radius - 10,
-        width: radius * 2 + 20,
-        height: radius * 2 + 20,
+        left: x - radius - 15,
+        top: y - radius - 15,
+        width: radius * 2 + 30,
+        height: radius * 2 + 30,
         overflow: "visible",
       }}
     >
+      {/* Second pass - sketchy overlay */}
+      <path
+        d={path2}
+        stroke={getAnnotationColor(color)}
+        strokeWidth={strokeWidth * 0.6}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.4}
+        strokeDasharray={pathLength}
+        strokeDashoffset={strokeDashoffset}
+      />
       {/* 圆圈路径 */}
       <path
         d={path}

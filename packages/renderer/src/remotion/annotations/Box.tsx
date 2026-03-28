@@ -26,7 +26,7 @@ export const Box: React.FC<BoxProps> = ({
   height,
   color,
   strokeWidth = 3,
-  wobble = 3,
+  wobble = 10,
   appearAt = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -48,7 +48,8 @@ export const Box: React.FC<BoxProps> = ({
     { x, y: y + height },
     { x, y },
   ];
-  const path = generateWobblyPath(points, wobble);
+  const path = generateWobblyPath(points, wobble, 0);
+  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
   const pathLength = 2 * (width + height);
 
   // stroke-dashoffset 控制绘制进度
@@ -60,13 +61,26 @@ export const Box: React.FC<BoxProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: x - 10,
-        top: y - 10,
-        width: width + 20,
-        height: height + 20,
+        left: x - 15,
+        top: y - 15,
+        width: width + 30,
+        height: height + 30,
         overflow: "visible",
       }}
     >
+      {/* Second pass - sketchy overlay */}
+      <path
+        d={path2}
+        stroke={getAnnotationColor(color)}
+        strokeWidth={strokeWidth * 0.6}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.4}
+        strokeDasharray={pathLength}
+        strokeDashoffset={strokeDashoffset}
+      />
+      {/* Primary stroke */}
       <path
         d={path}
         stroke={getAnnotationColor(color)}

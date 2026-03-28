@@ -137,6 +137,7 @@ const InlineScene: React.FC<SceneProps> = ({
                 layer={layer}
                 imagePath={imagePath}
                 sceneType={scene.type}
+                sceneAnnotations={annotations}
               />
             );
           })}
@@ -158,7 +159,6 @@ const InlineScene: React.FC<SceneProps> = ({
               />
             );
           })}
-        <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={narration} />}
         {scene.progressIndicator?.enabled && (
           <ProgressIndicator
@@ -185,6 +185,7 @@ const InlineScene: React.FC<SceneProps> = ({
                 layer={layer}
                 imagePath={imagePath}
                 sceneType={scene.type}
+                sceneAnnotations={annotations}
               />
             );
           })}
@@ -219,7 +220,6 @@ const InlineScene: React.FC<SceneProps> = ({
               />
             );
           })}
-        <AnnotationRenderer annotations={annotations} />
         {showSubtitles && <KineticSubtitle text={narration} />}
         {scene.progressIndicator?.enabled && (
           <ProgressIndicator

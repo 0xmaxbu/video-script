@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { VisualLayer, SceneNarrativeType } from "../../types.js";
+import { VisualLayer, SceneNarrativeType, Annotation } from "../../types.js";
 import {
   useKenBurns,
   useAdvancedKenBurns,
@@ -15,12 +15,15 @@ interface ScreenshotLayerProps {
   layer: VisualLayer;
   imagePath: string | undefined;
   sceneType?: SceneNarrativeType;
+  /** Scene-level annotations to render relative to this screenshot (inside transform) */
+  sceneAnnotations: Annotation[] | undefined;
 }
 
 export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   layer,
   imagePath,
   sceneType,
+  sceneAnnotations,
 }) => {
   const {
     content,
@@ -53,6 +56,13 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
   // imagePath is a filename (e.g. "scene-001-foo.png") served from public/
   const imageSrc = imagePath ? staticFile(imagePath) : content;
 
+  // Merge layer-level and scene-level annotations for rendering inside the transform group
+  const allAnnotations = [
+    ...(annotations ?? []),
+    ...(sceneAnnotations ?? []),
+  ];
+  const hasAnnotations = allAnnotations.length > 0;
+
   // ── Web-page pan mode (naturalSize present) ────────────────────────────────
   // Display the screenshot at 1:1 pixel scale inside an overflow:hidden
   // container.  The `webPan` hook pans/zooms using CSS transform.
@@ -70,8 +80,8 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           zIndex: position.zIndex,
         }}
       >
-        <Img
-          src={imageSrc}
+        {/* Transform group: both image and annotations pan/zoom together */}
+        <div
           style={{
             position: "absolute",
             left: 0,
@@ -81,10 +91,21 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
             transform: `translate(${webPan.translateX}px, ${webPan.translateY}px) scale(${webPan.scale})`,
             transformOrigin: "0 0",
           }}
-        />
-        {annotations && annotations.length > 0 && (
-          <AnnotationRenderer annotations={annotations} />
-        )}
+        >
+          <Img
+            src={imageSrc}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: naturalSize.width,
+              height: naturalSize.height,
+            }}
+          />
+          {hasAnnotations && (
+            <AnnotationRenderer annotations={allAnnotations} />
+          )}
+        </div>
       </div>
     );
   }
@@ -166,8 +187,8 @@ export const ScreenshotLayer: React.FC<ScreenshotLayerProps> = ({
           objectFit: "contain",
         }}
       />
-      {annotations && annotations.length > 0 && (
-        <AnnotationRenderer annotations={annotations} />
+      {hasAnnotations && (
+        <AnnotationRenderer annotations={allAnnotations} />
       )}
     </AbsoluteFill>
   );

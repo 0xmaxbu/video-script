@@ -26,7 +26,7 @@ export const Arrow: React.FC<ArrowProps> = ({
   y2,
   color,
   strokeWidth = 3,
-  wobble = 3,
+  wobble = 8,
   appearAt = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -45,18 +45,19 @@ export const Arrow: React.FC<ArrowProps> = ({
     { x: x1, y: y1 },
     { x: x2, y: y2 },
   ];
-  const bodyPath = generateWobblyPath(bodyPoints, wobble);
+  const bodyPath = generateWobblyPath(bodyPoints, wobble, 0);
+  const bodyPath2 = generateWobblyPath(bodyPoints, wobble * 0.7, 1);
   const pathLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 
   // 箭头头部
-  const arrowSize = 10;
+  const arrowSize = 12;
   const arrowPoints: Array<{ x: number; y: number }> = [
     { x: x2, y: y2 },
     { x: x2 - arrowSize, y: y2 + arrowSize / 2 },
     { x: x2 - arrowSize, y: y2 - arrowSize / 2 },
     { x: x2, y: y2 },
   ];
-  const arrowPath = generateWobblyPath(arrowPoints, wobble * 0.5);
+  const arrowPath = generateWobblyPath(arrowPoints, wobble * 0.5, 0);
 
   // stroke-dashoffset 控制绘制进度
   const strokeDashoffset = interpolate(progress, [0, 1], [pathLength, 0], {
@@ -72,13 +73,25 @@ export const Arrow: React.FC<ArrowProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: minX - 10,
-        top: minY - 10,
-        width: maxX - minX + 20,
-        height: maxY - minY + 20,
+        left: minX - 15,
+        top: minY - 15,
+        width: maxX - minX + 30,
+        height: maxY - minY + 30,
         overflow: "visible",
       }}
     >
+      {/* Second pass - sketchy overlay for body */}
+      <path
+        d={bodyPath2}
+        stroke={getAnnotationColor(color)}
+        strokeWidth={strokeWidth * 0.6}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.4}
+        strokeDasharray={pathLength}
+        strokeDashoffset={strokeDashoffset}
+      />
       {/* 主线 */}
       <path
         d={bodyPath}

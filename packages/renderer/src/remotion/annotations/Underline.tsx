@@ -24,7 +24,7 @@ export const Underline: React.FC<UnderlineProps> = ({
   width,
   color,
   strokeWidth = 3,
-  wobble = 3,
+  wobble = 8,
   appearAt = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -43,7 +43,8 @@ export const Underline: React.FC<UnderlineProps> = ({
     { x, y: y + 5 },
     { x: x + width, y: y + 5 },
   ];
-  const path = generateWobblyPath(points, wobble);
+  const path = generateWobblyPath(points, wobble, 0);
+  const path2 = generateWobblyPath(points, wobble * 0.7, 1);
   const pathLength = width;
 
   // stroke-dashoffset 控制绘制进度
@@ -55,13 +56,26 @@ export const Underline: React.FC<UnderlineProps> = ({
     <svg
       style={{
         position: "absolute",
-        left: x - 10,
-        top: y - 10,
-        width: width + 20,
-        height: 30,
+        left: x - 15,
+        top: y - 15,
+        width: width + 30,
+        height: 40,
         overflow: "visible",
       }}
     >
+      {/* Second pass - sketchy overlay */}
+      <path
+        d={path2}
+        stroke={getAnnotationColor(color)}
+        strokeWidth={strokeWidth * 0.6}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.4}
+        strokeDasharray={pathLength}
+        strokeDashoffset={strokeDashoffset}
+      />
+      {/* Primary stroke */}
       <path
         d={path}
         stroke={getAnnotationColor(color)}
