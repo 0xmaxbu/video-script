@@ -24,29 +24,13 @@ LLM_PROVIDER=$(node --input-type=module -e "import {readFileSync} from 'node:fs'
 if [[ -n "${MINIMAX_API_KEY:-}" ]]; then
   printf 'Provider: minimax (API key present)\n'
 elif [[ "$LLM_PROVIDER" == "openai" ]] && [[ -n "${OPENAI_API_KEY:-}" ]]; then
-LLMM_PROVIDER=$(node --input-type=module -e "import {readFileSync} from 'node:fs'; const config = JSON.parse(readFileSync(process.argv[1], 'utf8')); const provider = config?.llm?.provider; if (!provider) provider = provider) ' + "' && provider else ' ?'"
- + provider = "unknown";
-
-+  process.stdout.write(provider);" "$CONFIG_PATH")
-
-+LLM_KEY_RESOLVED=false
-0
-+  process.stdout.write(resolved);
-+fi
-
-+
-
-+if [[ "$LLM_PROVIDER" == "openai" ]]; then
-+  if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-+    printf 'Provider: openai (API key present)\n'
-  elif [[ "$LLM_PROVIDER" == "anthropic" ]]; then
-+  if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
-+    printf 'Provider: anthropic (API key present)\n'
-  else
-+  printf 'No LLM API key found. Set MINIMAX_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY.\n' >&2
+  printf 'Provider: openai (API key present)\n'
+elif [[ "$LLM_PROVIDER" == "anthropic" ]] && [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+  printf 'Provider: anthropic (API key present)\n'
+else
+  printf 'No LLM API key found. Set MINIMAX_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY.\n' >&2
   exit 1
 fi
-
 
 rm -rf "$ONE_SHOT_DIR" "$RESUME_DIR"
 mkdir -p "$ONE_SHOT_DIR" "$RESUME_DIR"
