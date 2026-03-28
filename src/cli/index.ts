@@ -45,6 +45,7 @@ import {
 import { ScriptOutputSchema, type ScriptOutput } from "../types/script.js";
 import type { SceneScript } from "../types/script.js";
 import { augmentScreenshotLayers } from "../utils/augment-screenshot-layers.js";
+import { runScriptQualityStep } from "../utils/quality/run-script-quality-step.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1376,6 +1377,9 @@ program
       const scriptPath = join(outputDir, "script.json");
       writeFileSync(scriptPath, JSON.stringify(scriptOutput, null, 2));
       workflowStateManager.completeStep("script", { scriptPath });
+
+      // Run script quality eval (non-blocking — only writes to quality-report.md)
+      await runScriptQualityStep(outputDir);
 
       spinner.text = "📝 Processing script output...";
       spinner.succeed("✅ Script generated!");
