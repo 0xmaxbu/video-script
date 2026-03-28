@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)
 ONE_SHOT_DIR="$ROOT_DIR/test-output/phase-18/one-shot"
 RESUME_DIR="$ROOT_DIR/test-output/phase-18/resume"
 CONFIG_PATH="$ROOT_DIR/video-script.config.json"
