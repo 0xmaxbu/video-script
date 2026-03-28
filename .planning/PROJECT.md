@@ -107,12 +107,14 @@ AI-powered CLI tool that generates technical tutorial videos from topics, links,
 Phase 14 animation engine was implemented in `packages/renderer/src/remotion/` with full Ken Burns, parallax, exit animations, kinetic subtitles, and centralized `animation-utils.ts`. However, `remotion-project-generator.ts` was generating COMPLETE SEPARATE SIMPLIFIED CODE that IGNORED all Phase 14 work. The generated `Scene.tsx` used only basic `opacity` fade — not `ScreenshotLayer`, not `TextLayer`, not `CodeLayer`, not `KineticSubtitle`, not `animation-utils.ts`. This caused ALL animation work to be SILENTLY DISCARDED while UAT tests PASSED (testing source files, not rendered output).
 
 **ABSOLUTELY FORBIDDEN — NEVER DO THESE THINGS:**
+
 1. ❌ NEVER generate simplified `Scene.tsx`, `Subtitle.tsx`, or `Composition.tsx` in a temp project
 2. ❌ NEVER copy "simplified" versions of Remotion components to generated projects
 3. ❌ NEVER create new Remotion projects with inline component definitions that duplicate existing work in `packages/renderer/src/remotion/`
 4. ❌ NEVER use generated temp projects as the rendering target when `packages/renderer` already has complete implementations
 
 **REQUIRED APPROACH:**
+
 - ✅ ALWAYS use `packages/renderer/src/remotion/` as the Remotion project
 - ✅ **Pass props (script, images) to the existing components in `packages/renderer/src/remotion/`** — this is how data flows from the CLI to the Remotion rendering pipeline
 - ✅ The Remotion entry point should be `packages/renderer/src/remotion/index.ts` or `packages/renderer/src/remotion/Root.tsx`
@@ -121,12 +123,14 @@ Phase 14 animation engine was implemented in `packages/renderer/src/remotion/` w
 - ✅ **Props-based data flow: CLI → renderVideo(input) → Remotion Root via calculateMetadata/defaultProps → Scene → visualLayers/components**
 
 **VIOLATION OF THIS RULE IS A CATASTROPHIC MISTAKE:**
+
 - Phase 14 animation work was SILENTLY DESTROYED because someone generated simplified projects
 - UAT tests passed but actual video output had NO animations — completely misleading
 - This wastes days of development time and produces broken results
 - Anyone who violates this should expect harsh consequences
 
 **Write this down three times so it sinks in:**
+
 1. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
 2. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
 3. Use `packages/renderer/src/remotion/` directly — not generated simplified copies
@@ -152,14 +156,15 @@ Phase 14 animation engine was implemented in `packages/renderer/src/remotion/` w
 
 **These decisions have KNOWN UNCERTAINTY. They may need revision based on testing or user feedback. Agents should FLAG before changing.**
 
-| Decision | Uncertainty | Investigation Needed |
-| -------- | ----------- | ------------------- |
-| **linkedom DOM parser** | May have compatibility issues with complex JavaScript-rendered pages | Test with more websites; may need JSDOM or Playwright's.evaluate |
-| **30-frame spring settling buffer** | Derived empirically; may need tuning for different animation types | Benchmark with actual renders; adjust per animation type |
-| **Non-blocking quality evaluation** | Pattern established but not fully integrated into main pipeline | Verify it doesn't block but still provides useful feedback |
-| **Single render path (npx remotion render)** | CONCERNS.md notes duplicate rendering paths exist (process-manager.ts vs video-renderer.ts) | Consolidate to single path after Phase 14 |
+| Decision                                     | Uncertainty                                                                                 | Investigation Needed                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **linkedom DOM parser**                      | May have compatibility issues with complex JavaScript-rendered pages                        | Test with more websites; may need JSDOM or Playwright's.evaluate |
+| **30-frame spring settling buffer**          | Derived empirically; may need tuning for different animation types                          | Benchmark with actual renders; adjust per animation type         |
+| **Non-blocking quality evaluation**          | Pattern established but not fully integrated into main pipeline                             | Verify it doesn't block but still provides useful feedback       |
+| **Single render path (npx remotion render)** | CONCERNS.md notes duplicate rendering paths exist (process-manager.ts vs video-renderer.ts) | Consolidate to single path after Phase 14                        |
 
 **RESOLVED:**
+
 - ~~AnnotationRenderer excluded from generated projects~~ — RESOLVED: The entire "generated project" approach was fundamentally wrong. Use `packages/renderer/src/remotion/` directly instead.
 
 ---
@@ -220,4 +225,20 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-03-23 after v1.2 milestone creation_
+### Phase 17 Completion (2026-03-28)
+
+**Phase 17: E2E Testing complete.**
+
+Requirements validated in Phase 17:
+
+- **TEST-01**: fixture-based compose-structure test bound to real renderer entry (`defaultProps`/`calculateMetadata` contract); walks fixture → `adaptScriptForRenderer()` → `augmentScreenshotLayers()` → `generateProject()`.
+- **TEST-02**: Script quality eval (LLM-as-judge, 3 dimensions) integrated non-blocking into `video-script create`, writing to `<outputDir>/quality-report.md`.
+- **TEST-03**: Screenshot quality eval integrated non-blocking into `video-script resume`, updating same `quality-report.md`.
+
+Test architecture established:
+
+- `npm test` = unit + fixture-e2e (TEST-01); never calls real LLM APIs
+- `npm run test:e2e` = real API suites; verified via structured reporter + `assert-suite-execution.mjs`
+- All quality artifacts land in project root `test-output/`, cleared before each run
+
+_Last updated: 2026-03-28 after Phase 17 (E2E Testing) completion_
