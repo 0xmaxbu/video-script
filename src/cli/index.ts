@@ -1404,7 +1404,8 @@ program
       }
 
       // Check if we should continue to Phase 2
-      if (options.noReview) {
+      // Commander.js --no-review sets options.review = false (not options.noReview)
+      if (options.review === false) {
         console.log(
           chalk.blue("\n▶️  Continuing to Phase 2 (screenshot + compose)..."),
         );
