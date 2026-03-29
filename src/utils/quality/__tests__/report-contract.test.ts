@@ -22,32 +22,32 @@ describe("Quality report schema contract", () => {
   });
 
   describe("SceneScriptQualityResult", () => {
-    it("includes D-07 three dimensions: clarity, alignment, duration", () => {
+    it("includes D-07 three dimensions: depth, specificity, coverage", () => {
       const result: SceneScriptQualityResult = {
         sceneId: "scene-1",
         sceneTitle: "Introduction",
-        clarityStatus: "ok",
-        alignmentStatus: "warning",
-        alignmentNote: "visual layers don't match narration well",
-        durationStatus: "error",
-        durationNote: "duration too short for content",
+        depthStatus: "ok",
+        specificityStatus: "warning",
+        specificityNote: "lacks specific version numbers",
+        coverageStatus: "error",
+        coverageNote: "missing core concepts",
       };
-      expect(result.clarityStatus).toBe("ok");
-      expect(result.alignmentStatus).toBe("warning");
-      expect(result.durationStatus).toBe("error");
+      expect(result.depthStatus).toBe("ok");
+      expect(result.specificityStatus).toBe("warning");
+      expect(result.coverageStatus).toBe("error");
     });
 
-    it("includes optional D-08 heuristic score 0-10", () => {
+    it("includes optional LLM score 0-10", () => {
       const result: SceneScriptQualityResult = {
         sceneId: "scene-1",
         sceneTitle: "Introduction",
-        clarityStatus: "ok",
-        alignmentStatus: "ok",
-        durationStatus: "ok",
-        heuristicScore: 8,
-        heuristicNote: "Good pacing and clarity",
+        depthStatus: "ok",
+        specificityStatus: "ok",
+        coverageStatus: "ok",
+        llmScore: 8,
+        llmNote: "Good depth and specificity",
       };
-      expect(result.heuristicScore).toBe(8);
+      expect(result.llmScore).toBe(8);
     });
   });
 
@@ -60,9 +60,9 @@ describe("Quality report schema contract", () => {
           {
             sceneId: "s1",
             sceneTitle: "Intro",
-            clarityStatus: "ok",
-            alignmentStatus: "warning",
-            durationStatus: "ok",
+            depthStatus: "ok",
+            specificityStatus: "warning",
+            coverageStatus: "ok",
           },
         ],
       };

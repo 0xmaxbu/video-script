@@ -61,14 +61,14 @@ function serializeScriptSection(section: ScriptQualitySection): string {
     lines.push(
       `| Dimension | Status | Note |`,
       `|-----------|--------|------|`,
-      `| Clarity | ${statusLabel(scene.clarityStatus)} | ${scene.clarityNote ?? ""} |`,
-      `| Alignment | ${statusLabel(scene.alignmentStatus)} | ${scene.alignmentNote ?? ""} |`,
-      `| Duration | ${statusLabel(scene.durationStatus)} | ${scene.durationNote ?? ""} |`,
+      `| 内容深度 (Depth) | ${statusLabel(scene.depthStatus)} | ${scene.depthNote ?? ""} |`,
+      `| 具体性 (Specificity) | ${statusLabel(scene.specificityStatus)} | ${scene.specificityNote ?? ""} |`,
+      `| 覆盖度 (Coverage) | ${statusLabel(scene.coverageStatus)} | ${scene.coverageNote ?? ""} |`,
     );
-    if (scene.heuristicScore !== undefined) {
+    if (scene.llmScore !== undefined) {
       lines.push(
         "",
-        `**Heuristic score:** ${scene.heuristicScore}/10${scene.heuristicNote ? ` — ${scene.heuristicNote}` : ""}`,
+        `**LLM score:** ${scene.llmScore}/10${scene.llmNote ? ` — ${scene.llmNote}` : ""}`,
       );
     }
     lines.push("");

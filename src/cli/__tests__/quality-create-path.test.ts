@@ -199,7 +199,7 @@ describe("runScriptQualityStep — create path wiring", () => {
     expect(content).not.toContain("## Screenshot Quality");
   });
 
-  it("heuristic score appears in report (0-10 range)", async () => {
+  it("dimension statuses appear in report", async () => {
     const dir = makeTmpDir();
     tmpDirs.push(dir);
     writeScript(dir);
@@ -207,7 +207,10 @@ describe("runScriptQualityStep — create path wiring", () => {
     await runScriptQualityStep(dir);
 
     const content = readFileSync(join(dir, "quality-report.md"), "utf-8");
-    expect(content).toMatch(/\*\*Heuristic score:\*\* \d+\/10/);
+    // Report should contain D-07 dimension rows (Depth, Specificity, Coverage)
+    expect(content).toContain("内容深度");
+    expect(content).toContain("具体性");
+    expect(content).toContain("覆盖度");
   });
 
   it("scene with no visual layers and type 'feature' gets alignment warning", async () => {

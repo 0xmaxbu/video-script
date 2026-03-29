@@ -31,10 +31,10 @@ function makeScriptSection(
       {
         sceneId: "s1",
         sceneTitle: "Introduction",
-        clarityStatus: "ok",
-        alignmentStatus: overallStatus === "warning" ? "warning" : "ok",
-        durationStatus: "ok",
-        heuristicScore: 8,
+        depthStatus: "ok",
+        specificityStatus: overallStatus === "warning" ? "warning" : "ok",
+        coverageStatus: "ok",
+        llmScore: 8,
       },
     ],
   };

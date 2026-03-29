@@ -20,18 +20,19 @@ export type QualityStatus = "ok" | "warning" | "error";
 export interface SceneScriptQualityResult {
   sceneId: string;
   sceneTitle: string;
-  /** Dimension 1: narration clarity */
-  clarityStatus: QualityStatus;
-  clarityNote?: string;
-  /** Dimension 2: visual layer alignment */
-  alignmentStatus: QualityStatus;
-  alignmentNote?: string;
-  /** Dimension 3: duration appropriateness */
-  durationStatus: QualityStatus;
-  durationNote?: string;
-  /** Overall heuristic score 0-10 (D-08) */
-  heuristicScore?: number;
-  heuristicNote?: string;
+  /** Dimension 1: 内容深度 — 是否解释 WHY，是否有类比 */
+  depthStatus: QualityStatus;
+  depthNote?: string;
+  /** Dimension 2: 具体性 — 版本号、具体 API、具体示例 */
+  specificityStatus: QualityStatus;
+  specificityNote?: string;
+  /** Dimension 3: 覆盖度 — 是否覆盖话题核心要点 */
+  coverageStatus: QualityStatus;
+  coverageNote?: string;
+  /** LLM evaluation score 0-10 per scene */
+  llmScore?: number;
+  /** LLM-generated summary of this scene's quality */
+  llmNote?: string;
 }
 
 /** Aggregated script quality section */
