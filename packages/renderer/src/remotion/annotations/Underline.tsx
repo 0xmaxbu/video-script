@@ -1,11 +1,6 @@
 import React from "react";
-import { useCurrentFrame, interpolate, Easing } from "remotion";
-import {
-  getAnnotationColor,
-  generateHandDrawnWavePath,
-  generateHandDrawnWavePoints,
-  estimatePathLength,
-} from "./index.js";
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
+import { getAnnotationColor, generateHandDrawnWavePath, generateHandDrawnWavePoints, estimatePathLength } from "./index.js";
 import type { AnnotationColor } from "../../types.js";
 
 export interface UnderlineProps {
@@ -23,10 +18,7 @@ export interface UnderlineProps {
  * Hand-drawn underline annotation
  *
  * Smooth wave using cubic beziers, not per-point noise.
- * One-stroke animation via stroke-dashoffset with ease-in timing.
- *
- * COORDINATE SYSTEM: The SVG element is positioned at screen (x-15, y-15).
- * All path coordinates must be LOCAL to the SVG (offset by 15 from SVG origin).
+ * One-stroke animation via stroke-dashoffset.
  */
 export const Underline: React.FC<UnderlineProps> = ({
   x,
@@ -39,49 +31,32 @@ export const Underline: React.FC<UnderlineProps> = ({
   seed = 42,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
 
-  // Animation: ease-in over fixed duration
-  const durationFrames = 20; // ~0.67s at 30fps
+  // Animation progress
   const effectiveFrame = Math.max(0, frame - appearAt);
+  const progress = spring({
+    frame: effectiveFrame,
+    fps,
+    config: { damping: 100, stiffness: 300 },
+  });
 
-  // SVG-local coordinates: SVG is at (x-15, y-15), so local origin is (15, 15)
-  const localX = 15;
-  const localY = 15;
-
-  // Primary stroke: smooth wave path (SVG-local coords)
-  const path = generateHandDrawnWavePath(localX, localY, width, seed, 4, 25);
+  // Primary stroke: smooth wave path
+  const path = generateHandDrawnWavePath(x, y, width, seed, 4, 25);
   // Second sketchy pass: different seed
-  const path2 = generateHandDrawnWavePath(
-    localX,
-    localY,
-    width,
-    seed + 1000,
-    3,
-    28,
-  );
+  const path2 = generateHandDrawnWavePath(x, y, width, seed + 1000, 3, 28);
 
-  // Estimate path length from coarse wave points (SVG-local coords)
-  const basePoints = generateHandDrawnWavePoints(
-    localX,
-    localY,
-    width,
-    seed,
-    4,
-    25,
-  );
+  // Estimate path length from coarse wave points
+  const basePoints = generateHandDrawnWavePoints(x, y, width, seed, 4, 25);
   const pathLength = estimatePathLength(basePoints);
 
-  // Ease-in stroke draw: starts slow, accelerates to finish
-  const strokeDashoffset = interpolate(
-    effectiveFrame,
-    [0, durationFrames],
-    [pathLength, 0],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.bezier(0.42, 0, 1.0, 1.0), // CSS ease-in
-    },
-  );
+  // Clamp progress
+  const clampedProgress = Math.min(progress, 1);
+
+  // stroke-dashoffset controls drawing progress
+  const strokeDashoffset = interpolate(clampedProgress, [0, 1], [pathLength, 0], {
+    extrapolateRight: "clamp",
+  });
 
   return (
     <svg

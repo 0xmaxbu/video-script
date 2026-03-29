@@ -85,33 +85,35 @@ function resolveTargetPosition(
 
 /**
  * Map annotation size to dimension scale factors.
- * At 1920x1080, the hardcoded "small" sizes (radius=50, width=100) are tiny.
- * Scale up based on size prop for visibility.
+ *
+ * A 3x3 grid cell at 1920x1080 is 640x360. Annotations should surround
+ * content within those cells, so radii and box dimensions must be large
+ * enough to frame visible content.
  */
 function sizeToRadius(size: "small" | "medium" | "large"): number {
   switch (size) {
-    case "small": return 60;
-    case "medium": return 80;
-    case "large": return 110;
-    default: return 80;
+    case "small": return 100;
+    case "medium": return 150;
+    case "large": return 200;
+    default: return 150;
   }
 }
 
 function sizeToWidth(size: "small" | "medium" | "large"): number {
   switch (size) {
-    case "small": return 120;
-    case "medium": return 180;
-    case "large": return 260;
-    default: return 180;
+    case "small": return 250;
+    case "medium": return 380;
+    case "large": return 520;
+    default: return 380;
   }
 }
 
 function sizeToHeight(size: "small" | "medium" | "large"): number {
   switch (size) {
-    case "small": return 40;
-    case "medium": return 50;
-    case "large": return 70;
-    default: return 50;
+    case "small": return 120;
+    case "medium": return 180;
+    case "large": return 260;
+    default: return 180;
   }
 }
 

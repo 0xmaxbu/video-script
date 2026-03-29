@@ -1696,75 +1696,93 @@ async function runScreenshotAndCompose(
   console.log(chalk.green("\n✨ Your video is ready!"));
 }
 
-// Resume command
+// Resume command — supports both:
+//   video-script resume          (resume from global workflow state)
+//   video-script resume <dir>    (resume from a specific output directory)
 program
-  .command("resume [runId]")
-  .description("Resume a suspended workflow")
-  .action(async (runId) => {
+  .command("resume [path]")
+  .description("Resume a suspended workflow, or re-render from an output directory")
+  .action(async (pathArg) => {
     const spinner = ora();
     gracefulShutdown.setSpinner(spinner);
 
     try {
-      // Try to load existing workflow state
-      const state = workflowStateManager.load();
+      // If pathArg looks like a directory (exists on disk and contains
+      // script.json or is a valid path), treat it as a direct directory resume.
+      // Otherwise fall back to the global workflow-state mechanism.
+      const resolvedPath = pathArg ? resolve(pathArg) : null;
+      const isDirResume =
+        resolvedPath &&
+        existsSync(resolvedPath) &&
+        existsSync(join(resolvedPath, "script.json"));
 
-      if (!state) {
-        if (runId) {
-          spinner.fail(`Workflow ${runId} not found`);
-        } else {
-          spinner.fail(
-            "No workflow state found. Run 'video-script create' first.",
-          );
-        }
-        process.exit(1);
-      }
+      let outputDir: string;
 
-      if (state.status !== "suspended" && state.status !== "failed") {
-        console.log(chalk.blue("\n📊 Workflow Status: " + state.status));
-        console.log(chalk.gray("  Run ID: " + state.runId));
-        console.log(chalk.gray("  Created: " + state.createdAt));
-
-        const progress = workflowStateManager.getProgress();
+      if (isDirResume && resolvedPath) {
+        // Direct directory resume — skip workflow state entirely
+        outputDir = resolvedPath;
         console.log(
-          chalk.gray(
-            `  Progress: ${progress.completed}/${progress.total} steps`,
-          ),
+          chalk.blue("\n▶️  Resuming from directory: " + outputDir),
         );
+      } else {
+        // Legacy: load global workflow state
+        const state = workflowStateManager.load();
 
-        if (state.status === "completed") {
-          console.log(chalk.green("\n✅ Workflow already completed!"));
+        if (!state) {
+          if (pathArg) {
+            spinner.fail(`Workflow ${pathArg} not found`);
+          } else {
+            spinner.fail(
+              "No workflow state found. Run 'video-script create' first.",
+            );
+          }
+          process.exit(1);
+        }
+
+        if (
+          state.status !== "suspended" &&
+          state.status !== "failed" &&
+          !isDirResume
+        ) {
+          console.log(
+            chalk.blue("\n📊 Workflow Status: " + state.status),
+          );
+          console.log(chalk.gray("  Run ID: " + state.runId));
+          console.log(
+            chalk.gray("  Created: " + state.createdAt),
+          );
+
+          const progress = workflowStateManager.getProgress();
           console.log(
             chalk.gray(
-              "  Output: " +
-                (state.output as Record<string, unknown>)?.outputDir,
+              `  Progress: ${progress.completed}/${progress.total} steps`,
             ),
           );
+
+          if (state.status === "completed") {
+            console.log(chalk.green("\n✅ Workflow already completed!"));
+            console.log(
+              chalk.gray(
+                "  Output: " +
+                  (state.output as Record<string, unknown>)?.outputDir,
+              ),
+            );
+          }
+          process.exit(0);
         }
-        process.exit(0);
-      }
 
-      console.log(chalk.blue("\n▶️  Resuming workflow..."));
-      console.log(chalk.gray("  Run ID: " + state.runId));
-      console.log(
-        chalk.gray(
-          "  Title: " + (state.input as Record<string, unknown>)?.title,
-        ),
-      );
-      console.log(
-        chalk.gray(
-          "  Output: " + (state.input as Record<string, unknown>)?.outputDir,
-        ),
-      );
+        console.log(chalk.blue("\n▶️  Resuming workflow..."));
+        console.log(chalk.gray("  Run ID: " + state.runId));
 
-      // Determine where to resume based on completed steps
-      const outputDir = (state.input as Record<string, unknown>)
-        ?.outputDir as string;
+        outputDir = (state.input as Record<string, unknown>)
+          ?.outputDir as string;
 
-      if (!outputDir || !existsSync(outputDir)) {
-        spinner.fail(
-          "Output directory not found. Workflow state may be corrupted.",
-        );
-        process.exit(1);
+        if (!outputDir || !existsSync(outputDir)) {
+          spinner.fail(
+            "Output directory not found. Workflow state may be corrupted.",
+          );
+          process.exit(1);
+        }
       }
 
       // Find the next step to run
