@@ -1,5 +1,5 @@
 ---
-status: verifying
+status: resolved
 trigger: "annotations-invisible-in-video: Annotations generated in script.json but invisible in rendered video because all have target.type=text with textMatch but NO x/y pixel coordinates. AnnotationRenderer defaults to (0,0), 75% off-screen."
 created: 2026-03-28T10:00:00Z
 updated: 2026-03-28T11:05:00Z

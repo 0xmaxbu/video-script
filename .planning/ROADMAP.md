@@ -333,10 +333,10 @@ _Last updated: 2026-03-23_
 2. `video-script create` 后暂停，再通过 `video-script resume` 恢复，可在独立输出目录产出同等完整的工件包
 3. 用户收到包含两次运行结果的审核包，并按 `通过 / 可接受但需优化 / 不通过` 记录动画优先的结论
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 
-- [ ] 18-01-PLAN.md — 锁定 Phase 18 输入集、审核模板与 bash 预检/打包脚本
+- [x] 18-01-PLAN.md — 锁定 Phase 18 输入集、审核模板与 bash 预检/打包脚本
 - [ ] 18-02-PLAN.md — 执行 `create --no-review` 一把跑通并封装 one-shot 工件包
 - [ ] 18-03-PLAN.md — 执行 `create` + `resume` 恢复链路并汇总双运行审核包

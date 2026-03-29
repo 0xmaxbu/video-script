@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Video Quality Leap
 status: unknown
-stopped_at: Phase 18 context gathered
-last_updated: "2026-03-28T11:57:58.921Z"
+stopped_at: Blocked in 18-02 awaiting LLM credentials after completing 18-01
+last_updated: "2026-03-28T11:57:59.110Z"
 progress:
   total_phases: 17
   completed_phases: 15
@@ -73,6 +73,7 @@ _Updated after each plan completion_
 | Phase 16-visual-polish P02 | 10 | 3 tasks | 4 files |
 | Phase 16 P04 | 25 min | 3 tasks | 5 files |
 | Phase 17 P17 | ~3 sessions | 10 tasks | 24 files |
+| Phase 18 P01 | 17min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -135,6 +136,8 @@ From research (2026-03-22):
 - [Phase 17]: Suite execution assertion uses Vitest JSON reporter output, not file-name grep or pass/fail alone
 - [Phase 17]: test-output/ root is project-root/test-output/ in dev (not ~/simple-videos/) to avoid polluting user output
 - [Phase 17]: skipInstall option in GenerateProjectInput skips npm install only, not scaffolding — makes fixture contract tests fast and CI-safe
+- [Phase 18]: Pinned Phase 18 CLI inputs and review outputs in repo docs for reproducible one-shot and resume runs.
+- [Phase 18]: Phase 18 preflight now fails fast on missing provider keys before any real CLI run.
 
 ### Pending Todos
 
@@ -155,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:36:40.195Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-14-gap-03-bash/18-CONTEXT.md
+Last session: 2026-03-28T11:57:59.108Z
+Stopped at: Blocked in 18-02 awaiting LLM credentials after completing 18-01
+Resume file: None

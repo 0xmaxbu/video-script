@@ -1,56 +1,61 @@
 {
-  "runId": "825d29a90ae96218",
+  "runId": "0c9cd2b58f8240e4",
   "workflowId": "video-generation",
-  "status": "failed",
+  "status": "completed",
   "currentStep": "compose",
   "steps": [
     {
       "stepId": "research",
       "status": "completed",
-      "startedAt": "2026-03-26T06:06:22.536Z",
-      "completedAt": "2026-03-26T06:07:54.273Z",
+      "startedAt": "2026-03-28T12:48:03.898Z",
+      "completedAt": "2026-03-28T12:48:23.711Z",
       "retryCount": 0,
       "output": {
-        "researchPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/research.json",
-        "researchMdPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/research.md"
+        "researchPath": "test-output/phase-18/resume/research.json",
+        "researchMdPath": "test-output/phase-18/resume/research.md"
       }
     },
     {
       "stepId": "script",
       "status": "completed",
-      "startedAt": "2026-03-26T06:07:54.279Z",
-      "completedAt": "2026-03-26T06:08:53.920Z",
+      "startedAt": "2026-03-28T12:48:23.712Z",
+      "completedAt": "2026-03-28T12:49:13.042Z",
       "retryCount": 0,
       "output": {
-        "scriptPath": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/script.json"
+        "scriptPath": "test-output/phase-18/resume/script.json"
       }
     },
     {
       "stepId": "screenshot",
       "status": "completed",
       "retryCount": 0,
-      "startedAt": "2026-03-26T06:09:03.957Z",
-      "completedAt": "2026-03-26T06:09:45.392Z",
+      "startedAt": "2026-03-28T12:49:29.096Z",
+      "completedAt": "2026-03-28T12:49:54.108Z",
       "output": {
-        "screenshotsDir": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking/screenshots",
-        "screenshotCount": 6
+        "screenshotsDir": "test-output/phase-18/resume/screenshots",
+        "screenshotCount": 8
       }
     },
     {
       "stepId": "compose",
-      "status": "failed",
+      "status": "completed",
       "retryCount": 0,
-      "startedAt": "2026-03-26T06:09:45.394Z",
-      "error": "Render process timed out",
-      "completedAt": "2026-03-26T06:19:45.658Z"
+      "startedAt": "2026-03-28T12:49:54.110Z",
+      "completedAt": "2026-03-28T12:54:12.628Z",
+      "output": {
+        "videoPath": "test-output/phase-18/resume/out/video.mp4",
+        "srtPath": "test-output/phase-18/resume/output.srt"
+      }
     }
   ],
   "input": {
-    "title": "Remotion Error Tracking",
-    "outputDir": "/Users/max/simple-videos/2026/13-3_23-3_29/remotion-error-tracking",
+    "title": "Phase 14 Animation Engine",
+    "outputDir": "test-output/phase-18/resume",
     "aspectRatio": "16:9"
   },
-  "createdAt": "2026-03-26T06:06:22.522Z",
-  "updatedAt": "2026-03-26T06:19:45.660Z",
-  "error": "Render process timed out"
+  "createdAt": "2026-03-28T12:48:03.896Z",
+  "updatedAt": "2026-03-28T12:54:12.628Z",
+  "output": {
+    "outputDir": "test-output/phase-18/resume"
+  }
 }
