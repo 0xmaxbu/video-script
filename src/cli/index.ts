@@ -47,6 +47,7 @@ import type { SceneScript } from "../types/script.js";
 import { augmentScreenshotLayers } from "../utils/augment-screenshot-layers.js";
 import { runScriptQualityStep } from "../utils/quality/run-script-quality-step.js";
 import { runScreenshotQualityStep } from "../utils/quality/run-screenshot-quality-step.js";
+import { resolveAnnotationPositions } from "../utils/text-position-extractor.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -948,6 +949,44 @@ program
         30,
       );
 
+      // Resolve annotation textMatch targets to pixel coordinates using Playwright
+      {
+        const researchPath = join(dir, "research.json");
+        let composeResearchUrls: string[] = [];
+        if (existsSync(researchPath)) {
+          try {
+            const rd = JSON.parse(readFileSync(researchPath, "utf-8")) as {
+              segments?: Array<{ links?: Array<{ url: string }> }>;
+            };
+            const urlSet = new Set<string>();
+            rd.segments?.forEach((seg) => {
+              seg.links?.forEach((l) => {
+                if (l.url && !l.url.includes("example.com")) urlSet.add(l.url);
+              });
+            });
+            composeResearchUrls = Array.from(urlSet);
+          } catch {
+            // research.json is optional
+          }
+        }
+        if (composeResearchUrls.length > 0) {
+          spinner.start("🎬 Resolving annotation positions...");
+          const sourceUrlMap = new Map<string, string[]>();
+          for (const scene of finalScenesAugmented) {
+            sourceUrlMap.set(scene.id, composeResearchUrls);
+          }
+          try {
+            await resolveAnnotationPositions(
+              finalScenesAugmented as SceneScript[],
+              sourceUrlMap,
+              { timeout: 15000 },
+            );
+          } catch {
+            // Non-blocking: annotation positions are a nice-to-have
+          }
+        }
+      }
+
       const srtPath = join(outputDir, "output.srt");
 
       spinner.start("🎬 Rendering video...");
@@ -1555,9 +1594,27 @@ async function runScreenshotAndCompose(
   spinner.start("🎬 Rendering video...");
   workflowStateManager.startStep("compose");
 
+  // Read visual.json if exists (from visualAgent)
+  const visualPath2 = join(outputDir, "visual.json");
+  let visualPlan2: unknown | undefined;
+  if (existsSync(visualPath2)) {
+    try {
+      const visualContent2 = readFileSync(visualPath2, "utf-8");
+      visualPlan2 = JSON.parse(visualContent2);
+    } catch {
+      // Visual plan is optional, continue without it
+    }
+  }
+
+  // Adapt script to renderer format - convert visual.json to visualLayers
+  const adaptedScript2 = adaptScriptForRenderer(
+    script,
+    visualPlan2 as Parameters<typeof adaptScriptForRenderer>[1],
+  );
+
   // Auto-inject screenshot visualLayers for scenes that have no visual content.
   // When script.json has no visualLayers, fall back to mapping screenshots/scene-001.png etc.
-  const finalScenes2 = script.scenes.map((scene, sceneIndex) => {
+  const finalScenes2 = adaptedScript2.scenes.map((scene, sceneIndex) => {
     if (!scene.visualLayers || scene.visualLayers.length === 0) {
       const screenshotPath = findScreenshotFile(
         screenshotsDir,
@@ -1621,6 +1678,31 @@ async function runScreenshotAndCompose(
     30,
   );
 
+  // Resolve annotation textMatch targets to pixel coordinates using Playwright.
+  // This opens the source URLs and finds the actual element positions on the page,
+  // injecting x/y coordinates into annotation targets that previously only had textMatch.
+  if (researchSourceUrls.length > 0) {
+    spinner.text = "🎬 Resolving annotation positions...";
+    const sourceUrlMap = new Map<string, string[]>();
+    for (const scene of finalScenes2Augmented) {
+      sourceUrlMap.set(scene.id, researchSourceUrls);
+    }
+    try {
+      await resolveAnnotationPositions(
+        finalScenes2Augmented as SceneScript[],
+        sourceUrlMap,
+        { timeout: 15000 },
+      );
+    } catch (err) {
+      // Non-blocking: annotation positions are a nice-to-have, not critical
+      console.warn(
+        chalk.yellow(
+          "  Warning: Could not resolve precise annotation positions, using region-based fallback.",
+        ),
+      );
+    }
+  }
+
   const srtPath = join(outputDir, "output.srt");
 
   const onProgress = (progress: number) => {
@@ -1642,8 +1724,8 @@ async function runScreenshotAndCompose(
   const videoResult = await spawnRenderer(
     {
       script: {
-        title: script.title,
-        totalDuration: script.scenes.reduce((sum, s) => sum + s.duration, 0),
+        title: adaptedScript2.title,
+        totalDuration: adaptedScript2.totalDuration,
         scenes: finalScenes2Augmented.map((scene) => ({
           id: scene.id,
           type: scene.type,
@@ -1915,8 +1997,26 @@ program
       spinner.start("🎬 Rendering video...");
       workflowStateManager.startStep("compose");
 
+      // Read visual.json if exists (from visualAgent)
+      const visualPath3 = join(outputDir, "visual.json");
+      let visualPlan3: unknown | undefined;
+      if (existsSync(visualPath3)) {
+        try {
+          const visualContent = readFileSync(visualPath3, "utf-8");
+          visualPlan3 = JSON.parse(visualContent);
+        } catch {
+          // Visual plan is optional, continue without it
+        }
+      }
+
+      // Adapt script to renderer format - convert visual.json to visualLayers
+      const adaptedScript3 = adaptScriptForRenderer(
+        script,
+        visualPlan3 as Parameters<typeof adaptScriptForRenderer>[1],
+      );
+
       // Auto-inject screenshot visualLayers for scenes that have no visual content.
-      const finalScenes3 = script.scenes.map((scene, sceneIndex) => {
+      const finalScenes3 = adaptedScript3.scenes.map((scene, sceneIndex) => {
         if (!scene.visualLayers || scene.visualLayers.length === 0) {
           const screenshotPath = findScreenshotFile(
             screenshotsDir,
@@ -1980,6 +2080,44 @@ program
         30,
       );
 
+      // Resolve annotation textMatch targets to pixel coordinates using Playwright
+      {
+        const resumeResearchPath = join(outputDir, "research.json");
+        let resumeResearchUrls: string[] = [];
+        if (existsSync(resumeResearchPath)) {
+          try {
+            const rd = JSON.parse(readFileSync(resumeResearchPath, "utf-8")) as {
+              segments?: Array<{ links?: Array<{ url: string }> }>;
+            };
+            const urlSet = new Set<string>();
+            rd.segments?.forEach((seg) => {
+              seg.links?.forEach((l) => {
+                if (l.url && !l.url.includes("example.com")) urlSet.add(l.url);
+              });
+            });
+            resumeResearchUrls = Array.from(urlSet);
+          } catch {
+            // research.json is optional
+          }
+        }
+        if (resumeResearchUrls.length > 0) {
+          spinner.start("🎬 Resolving annotation positions...");
+          const sourceUrlMap = new Map<string, string[]>();
+          for (const scene of finalScenes3Augmented) {
+            sourceUrlMap.set(scene.id, resumeResearchUrls);
+          }
+          try {
+            await resolveAnnotationPositions(
+              finalScenes3Augmented as SceneScript[],
+              sourceUrlMap,
+              { timeout: 15000 },
+            );
+          } catch {
+            // Non-blocking
+          }
+        }
+      }
+
       const srtPath = join(outputDir, "output.srt");
 
       const onProgress = (progress: number) => {
@@ -2001,11 +2139,8 @@ program
       const videoResult = await spawnRenderer(
         {
           script: {
-            title: script.title,
-            totalDuration: script.scenes.reduce(
-              (sum, s) => sum + s.duration,
-              0,
-            ),
+            title: adaptedScript3.title,
+            totalDuration: adaptedScript3.totalDuration,
             scenes: finalScenes3Augmented.map((scene) => ({
               id: scene.id,
               type: scene.type,
